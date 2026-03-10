@@ -21,19 +21,18 @@ function draw() {
   let centerX = width / 2;
   let centerY = height / 2;
 
-  // ROTACIÓN POR POSICIÓN: Sigue al puntero al hacer click
+  // Rotación sigue al puntero
   if (mouseIsPressed && mouseX > 320) {
     currentRotation = atan2(mouseY - centerY, mouseX - centerX);
   }
 
+  // Captura de valores
   let txt = document.getElementById('inText').value;
   let angle = radians(document.getElementById('inAngle').value);
   let rIn = parseInt(document.getElementById('inRin').value);
   let rOutBase = parseInt(document.getElementById('inRout').value);
   let weight = parseFloat(document.getElementById('inWeight').value);
   let dash = parseInt(document.getElementById('inDash').value);
-  let jitter = parseInt(document.getElementById('inJitter').value);
-  let useCollision = document.getElementById('checkCollision').checked;
   let showBalls = document.getElementById('checkBalls').checked;
   let ballSize = parseInt(document.getElementById('inBallSize').value);
   let letterPadding = parseInt(document.getElementById('inLetterPadding').value);
@@ -44,15 +43,14 @@ function draw() {
     let theta = (steps > 1) ? map(i, 0, steps - 1, -angle/2, angle/2) : 0;
     let finalAngle = theta + currentRotation;
     
-    // Margen de seguridad para que la bola no se corte
-    let safetyMargin = showBalls ? ballSize/2 + weight : 15;
+    // Margen para que la bola no se salga del borde al colisionar
+    let safetyMargin = showBalls ? (ballSize/2 + weight) : (weight * 2 + 10);
     
-    let rFinal;
-    if (useCollision) {
-      rFinal = calculateCollision(finalAngle, safetyMargin);
-    } else {
-      rFinal = rOutBase + random(-jitter, jitter);
-    }
+    // Calculamos el límite del lienzo en esta dirección
+    let rMax = calculateCollision(finalAngle, safetyMargin);
+    
+    // El radio final es el menor entre el slider y el límite físico
+    let rFinal = min(rOutBase, rMax);
 
     // 1. DIBUJO DE LÍNEA
     push();
@@ -66,62 +64,66 @@ function draw() {
     line(rIn, 0, rFinal, 0);
     pop();
 
-    // 2. DIBUJO DE LETRA / BOLA (Cálculo de posición vertical fija)
-    let totalDist = rFinal + letterPadding;
-    let lx = centerX + cos(finalAngle) * totalDist;
-    let ly = centerY + sin(finalAngle) * totalDist;
+    // 2. DIBUJO DE BOLA Y LETRA (Siempre vertical)
+    // Calculamos posición final sumando el padding al radio de impacto
+    let distWithPadding = rFinal + letterPadding;
     
+    // Recalculamos el límite para la letra/bola (puede que la letra se salga si el padding es alto)
+    // Para que la letra TAMBIÉN colisione, limitamos lx y ly
+    let lx = centerX + cos(finalAngle) * distWithPadding;
+    let ly = centerY + sin(finalAngle) * distWithPadding;
+    
+    // Constrain para que la bola/letra no desaparezca del visor
+    lx = constrain(lx, safetyMargin, width - safetyMargin);
+    ly = constrain(ly, safetyMargin, height - safetyMargin);
+
     push();
     translate(lx, ly);
-    // No hay rotación aquí -> Letra vertical a 0º
     
     if (showBalls) {
       fill(255);
       stroke(0);
-      strokeWeight(weight); // Grosor unificado
+      strokeWeight(weight);
       drawingContext.setLineDash([]);
       ellipse(0, 0, ballSize, ballSize);
     }
 
+    // Dibujo de Letra
     noStroke();
     fill(0);
-    textSize(ballSize * 0.55); // Escalado dinámico
+    textSize(ballSize * 0.6); // Escala proporcional a la bola
     drawingContext.setLineDash([]);
     
-    // Ajuste de centrado vertical: 
-    // Bajamos la letra un 15% del tamaño de la bola para centrarla ópticamente
-    text(txt[i], 0, ballSize * 0.08); 
+    // AJUSTE DE CENTRADO VULF: 
+    // Bajamos un poco más la letra (0.12) para compensar el "ascent" de la fuente Bold
+    text(txt[i], 0, ballSize * 0.12); 
     pop();
   }
 }
 
+// Cálculo de intersección con el rectángulo del lienzo
 function calculateCollision(a, margin) {
   let dx = cos(a);
   let dy = sin(a);
   let t = Infinity;
   
-  // Límites ajustados con el margen de la bola
-  let limitW = width/2 - margin;
-  let limitH = height/2 - margin;
+  let innerW = width/2 - margin;
+  let innerH = height/2 - margin;
   
-  if (dx > 0) t = min(t, limitW / dx);
-  if (dx < 0) t = min(t, -limitW / dx);
-  if (dy > 0) t = min(t, limitH / dy);
-  if (dy < 0) t = min(t, -limitH / dy);
+  if (dx > 0) t = min(t, innerW / dx);
+  if (dx < 0) t = min(t, -innerW / dx);
+  if (dy > 0) t = min(t, innerH / dy);
+  if (dy < 0) t = min(t, -innerH / dy);
   
   return max(0, t);
 }
 
 function saveSVG() {
-  save("vulf_design_v2.6.svg");
+  save("vulf_pollen_v2.7.svg");
 }
 
 function resetRotation() {
   currentRotation = 0;
-}
-
-function keyPressed() {
-  if (key === 'r' || key === 'R') seed = millis();
 }
 
 function windowResized() {
