@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>POLINIZADOR v3.4</title>
+<title>POLINIZADOR v3.6</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,66 +13,69 @@ body {
   font-family: monospace;
   height: 100vh;
   overflow: hidden;
-  color: #c8c8c8;
+  color: #d0d0d0;
 }
 
-/* ── SIDEBAR ─────────────────────────────────────────────── */
+/* ── SIDEBAR ────────────────────────────────────────────────── */
 #sidebar {
   width: 260px;
   min-width: 260px;
-  background: #1a1a1a;
-  border-right: 1px solid #2c2c2c;
-  padding: 14px 13px 24px;
+  background: #181818;
+  border-right: 1px solid #2a2a2a;
+  padding: 14px 13px 28px;
   display: flex;
   flex-direction: column;
   gap: 0;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #333 transparent;
+  scrollbar-color: #383838 transparent;
 }
 
 h1 {
   font-size: 9px;
   letter-spacing: 3px;
-  color: #444;
+  color: #666;           /* era #444 */
   padding-bottom: 10px;
-  border-bottom: 1px solid #252525;
+  border-bottom: 1px solid #282828;
   margin-bottom: 10px;
+  text-transform: uppercase;
 }
 
+/* Títulos de sección */
 .sec {
   font-size: 8px;
   letter-spacing: 2.5px;
-  color: #484848;
+  color: #666;           /* era #484848 */
   text-transform: uppercase;
-  margin: 12px 0 6px;
+  margin: 13px 0 6px;
 }
 
-.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 7px; }
-
+.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .lrow { display: flex; justify-content: space-between; align-items: baseline; }
 
+/* Labels de controles */
 label {
   font-size: 10px;
-  color: #888;
+  color: #999;           /* era #888 */
   letter-spacing: 0.2px;
   cursor: default;
   user-select: none;
 }
 
+/* Valor numérico */
 .val {
   font-size: 10px;
-  color: #aaa;
+  color: #ccc;           /* era #aaa */
   min-width: 44px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-/* inputs genéricos */
+/* Inputs texto */
 input[type="text"] {
   background: #222;
-  border: 1px solid #383838;
-  color: #e8e8e8;
+  border: 1px solid #3a3a3a;
+  color: #eee;
   padding: 6px 8px;
   font-family: monospace;
   font-size: 12px;
@@ -81,12 +84,13 @@ input[type="text"] {
   outline: none;
   transition: border-color .12s;
 }
-input[type="text"]:focus { border-color: #666; }
+input[type="text"]:focus { border-color: #777; }
 
+/* Select */
 select {
   background: #222;
-  border: 1px solid #383838;
-  color: #c8c8c8;
+  border: 1px solid #3a3a3a;
+  color: #ddd;
   padding: 5px 8px;
   font-family: monospace;
   font-size: 10px;
@@ -94,41 +98,43 @@ select {
   outline: none;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
 }
-select:focus { border-color: #666; }
+select:focus { border-color: #777; }
 
+/* Sliders */
 input[type="range"] {
   width: 100%;
-  accent-color: #aaa;
+  accent-color: #bbb;
   cursor: pointer;
   height: 3px;
 }
 
+/* Checkboxes */
 .tog {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 2px 0;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 input[type="checkbox"] {
-  accent-color: #aaa;
+  accent-color: #bbb;
   width: 12px; height: 12px;
   cursor: pointer;
   flex-shrink: 0;
 }
-.tog label { font-size: 10px; color: #888; cursor: pointer; }
+.tog label { font-size: 10px; color: #999; cursor: pointer; }
 
-hr { border: 0; border-top: 1px solid #232323; margin: 5px 0 8px; }
+hr { border: 0; border-top: 1px solid #242424; margin: 4px 0 8px; }
 
-/* ── LISTA DE SPRAYS ─────────────────────────────────────── */
+/* ── LISTA DE SPRAYS ──────────────────────────────────────── */
 #sprayList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   margin-bottom: 5px;
 }
 
@@ -136,39 +142,37 @@ hr { border: 0; border-top: 1px solid #232323; margin: 5px 0 8px; }
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 5px;
+  padding: 5px 6px;
   border: 1px solid transparent;
   border-radius: 2px;
   cursor: pointer;
   transition: border-color .1s, background .1s;
 }
-.spray-row:hover { background: #212121; }
+.spray-row:hover { background: #202020; }
 .spray-row.active {
-  border-color: #444;
+  border-color: #484848;
   background: #222;
 }
 
-/* Input de texto dentro de cada spray-row */
 .spray-txt {
   flex: 1;
   background: transparent;
   border: none !important;
-  color: #ddd;
+  color: #bbb;
   font-family: monospace;
   font-size: 11px;
   letter-spacing: 1.5px;
-  padding: 2px 4px;
+  padding: 2px 3px;
   outline: none;
   min-width: 0;
 }
-.spray-row.active .spray-txt { color: #fff; }
+.spray-row.active .spray-txt { color: #eee; }
 
-/* Botón × borrar */
 .del-btn {
   background: transparent;
   border: none;
-  color: #444;
-  font-size: 14px;
+  color: #555;           /* era #444 */
+  font-size: 15px;
   line-height: 1;
   cursor: pointer;
   padding: 0 3px;
@@ -181,8 +185,8 @@ hr { border: 0; border-top: 1px solid #232323; margin: 5px 0 8px; }
 #btnAddSpray {
   width: 100%;
   background: transparent;
-  border: 1px dashed #333;
-  color: #555;
+  border: 1px dashed #383838;
+  color: #777;           /* era #555 */
   padding: 6px;
   font-family: monospace;
   font-size: 9px;
@@ -192,17 +196,17 @@ hr { border: 0; border-top: 1px solid #232323; margin: 5px 0 8px; }
   transition: color .12s, border-color .12s;
   margin-top: 2px;
 }
-#btnAddSpray:hover { color: #aaa; border-color: #666; }
+#btnAddSpray:hover { color: #ccc; border-color: #777; }
 
-/* ── BOTONES ─────────────────────────────────────────────── */
+/* ── BOTONES ──────────────────────────────────────────────── */
 .btns { display: flex; gap: 5px; margin-top: 10px; }
 
 button.primary {
   flex: 1;
-  background: #e0e0e0;
+  background: #e8e8e8;
   color: #111;
   border: none;
-  padding: 8px 6px;
+  padding: 9px 6px;
   cursor: pointer;
   font-weight: bold;
   font-size: 9px;
@@ -215,22 +219,73 @@ button.primary:hover { background: #fff; }
 
 button.ghost {
   background: transparent;
-  color: #555;
-  border: 1px solid #2e2e2e;
-  font-size: 9px;
-  padding: 5px 8px;
+  color: #777;           /* era #555 */
+  border: 1px solid #383838;
+  font-size: 11px;
+  padding: 5px 9px;
   font-family: monospace;
   cursor: pointer;
   flex: none;
   transition: color .12s, border-color .12s;
 }
-button.ghost:hover { color: #aaa; border-color: #555; }
+button.ghost:hover { color: #ccc; border-color: #777; }
 
-/* inline jitter row */
 .inline-row { display: flex; align-items: center; gap: 6px; }
 .inline-row input[type="range"] { flex: 1; }
 
-.hint { font-size: 8px; color: #333; line-height: 1.6; margin-top: 8px; }
+/* Color pickers */
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.color-row label { font-size: 10px; color: #999; flex: 1; }
+input[type="color"] {
+  width: 32px;
+  height: 22px;
+  border: 1px solid #3a3a3a;
+  border-radius: 2px;
+  background: none;
+  cursor: pointer;
+  padding: 1px;
+}
+.instructions {
+  margin-top: 14px;
+  border-top: 1px solid #242424;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.instr-title {
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.instr-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.instr-key {
+  font-size: 9px;
+  color: #888;           /* tecla/acción — bien visible */
+  white-space: nowrap;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.instr-desc {
+  font-size: 9px;
+  color: #666;
+  line-height: 1.4;
+}
 
 #canvas-parent { flex-grow: 1; background: #fff; }
 </style>
@@ -238,7 +293,7 @@ button.ghost:hover { color: #aaa; border-color: #555; }
 <body>
 
 <div id="sidebar">
-  <h1>POLINIZADOR v3.4</h1>
+  <h1>Polinizador v3.6</h1>
 
   <!-- ── SPRAYS ── -->
   <div class="sec">Sprays</div>
@@ -329,18 +384,56 @@ button.ghost:hover { color: #aaa; border-color: #555; }
            oninput="document.getElementById('vBall').textContent=this.value+' px'">
   </div>
 
-  <!-- ── ACCIONES ── -->
+  <!-- ── COLOR ── -->
+  <hr>
+  <div class="sec">Color</div>
+
+  <div class="color-row">
+    <label>Fondo</label>
+    <input type="color" id="inColorBg" value="#ffffff">
+  </div>
+  <div class="color-row">
+    <label>Trazo / relleno</label>
+    <input type="color" id="inColorFg" value="#000000">
+  </div>
+
+  <!-- ── EXPORTAR ── -->
   <hr>
   <div class="btns">
     <button class="primary" onclick="saveSVG()">Exportar SVG</button>
-    <button class="ghost" onclick="resetOrigin()" title="Reset origen del spray activo">⌖</button>
+    <button class="ghost" onclick="resetOrigin()" title="Centrar origen del spray activo">⌖</button>
   </div>
 
-  <p class="hint">
-    Click en • → selecciona spray<br>
-    Arrastra • → mueve origen<br>
-    Arrastra canvas → rota el spray activo
-  </p>
+  <!-- ── INSTRUCCIONES ── -->
+  <div class="instructions">
+    <div class="instr-title">Cómo usar</div>
+
+    <div class="instr-row">
+      <span class="instr-key">Click •</span>
+      <span class="instr-desc">Selecciona un spray</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">Drag •</span>
+      <span class="instr-desc">Mueve el origen del spray activo</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">Drag canvas</span>
+      <span class="instr-desc">Rota el spray activo</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">↻</span>
+      <span class="instr-desc">Nueva posición de jitter para el spray activo</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">⌖</span>
+      <span class="instr-desc">Recentra el origen del spray activo</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">SVG</span>
+      <span class="instr-desc">Exporta con capas separadas: lineas / bolas / letras</span>
+    </div>
+  </div>
+
 </div>
 
 <div id="canvas-parent"></div>

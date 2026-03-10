@@ -1,4 +1,4 @@
-// POLINIZADOR VULF v3.4
+// POLINIZADOR VULF v3.6
 // Multi-spray: cada spray tiene texto, posición y rotación propios.
 // El resto de parámetros son globales.
 // Interacción: click en canvas selecciona spray más cercano,
@@ -109,23 +109,20 @@ function rebuildSprayList() {
 
 // ── FUENTES ───────────────────────────────────────────────────────────────────
 async function initFonts() {
-  const FONT_EXTS = ['.otf', '.ttf', '.woff', '.woff2'];
   let sel = document.getElementById('fontSelect');
   sel.innerHTML = '';
   try {
-    let res  = await fetch('fonts/');
-    let html = await res.text();
-    let doc  = new DOMParser().parseFromString(html, 'text/html');
-    let links = Array.from(doc.querySelectorAll('a[href]'))
-      .map(a => a.getAttribute('href'))
-      .filter(h => FONT_EXTS.some(e => h.toLowerCase().endsWith(e)))
-      .map(h => h.split('/').pop());
-    if (links.length === 0) throw new Error('no fonts');
-    FONTS = links.map(f => ({
+    // Lee fonts/index.json — un array de nombres de archivo, p.ej:
+    // ["VulfMono-Bold.otf", "OtraFuente.ttf"]
+    let res   = await fetch('fonts/index.json');
+    let files = await res.json();
+    if (!Array.isArray(files) || files.length === 0) throw new Error('empty');
+    FONTS = files.map(f => ({
       label: f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
       file:  'fonts/' + f,
     }));
   } catch {
+    // Fallback: VulfMono-Bold.otf en la raíz
     FONTS = [{ label: 'VulfMono Bold', file: 'VulfMono-Bold.otf' }];
   }
   FONTS.forEach((f, i) => {
@@ -157,6 +154,8 @@ function getGlobal() {
     ballSize:    parseInt(document.getElementById('inBallSize').value),
     linePadding: parseInt(document.getElementById('inLinePadding').value),
     linesBack:   document.getElementById('checkLinesBack').checked,
+    colorBg:     document.getElementById('inColorBg').value,
+    colorFg:     document.getElementById('inColorFg').value,
   };
 }
 
@@ -214,7 +213,7 @@ function getTypoOffset(fontSize) {
 // ── DRAW ──────────────────────────────────────────────────────────────────────
 function draw() {
   clear();
-  background(255);
+  background(g.colorBg);
   if (!p5Font || sprays.length === 0) return;
 
   let g        = getGlobal();
@@ -262,7 +261,7 @@ function drawLine(r, g, spray) {
   push();
   translate(spray.ox, spray.oy);
   rotate(r.fa);
-  stroke(0); strokeWeight(g.weight); noFill();
+  stroke(g.colorFg); strokeWeight(g.weight); noFill();
   if (g.dash > 0) {
     let len    = r.rLine - r.rIn;
     let offset = len > 0 ? (len % (g.dash*2)) / 2 : 0;
@@ -283,10 +282,10 @@ function drawBall(r, g, fs, tyOffset, spray) {
   push();
   translate(r.lx, r.ly);
   if (g.showBalls) {
-    fill(255); stroke(0); strokeWeight(g.weight);
+    fill(g.colorBg); stroke(g.colorFg); strokeWeight(g.weight);
     ellipse(0, 0, g.ballSize, g.ballSize);
   }
-  fill(0); noStroke();
+  fill(g.colorFg); noStroke();
   textFont(p5Font); textSize(fs); textAlign(CENTER, BASELINE);
   text(r.letter, 0, tyOffset);
   pop();
@@ -364,9 +363,14 @@ function saveSVG() {
 
   let sw = g.weight;
   let da = g.dash > 0 ? ` stroke-dasharray="${g.dash} ${g.dash}"` : '';
+  let fg = g.colorFg;
+  let bg = g.colorBg;
+
+  // Fondo
+  svg.push(`  <rect width="${W}" height="${H}" fill="${bg}"/>`);
 
   // Capa líneas — todos los sprays
-  svg.push(`  <g id="lineas" stroke="black" stroke-width="${sw}" fill="none">`);
+  svg.push(`  <g id="lineas" stroke="${fg}" stroke-width="${sw}" fill="none">`);
   sprays.forEach(spray => {
     let rays = calcRays(spray, g);
     rays.forEach(r => {
@@ -384,8 +388,7 @@ function saveSVG() {
 
   // Capa bolas — todos los sprays
   if (g.showBalls) {
-    svg.push(`  <g id="bolas" fill="white" stroke="black" stroke-width="${sw}">`);
-    sprays.forEach(spray => {
+    svg.push(`  <g id="bolas" fill="${bg}" stroke="${fg}" stroke-width="${sw}">`);    sprays.forEach(spray => {
       calcRays(spray, g).forEach(r => {
         svg.push(`    <circle cx="${r.lx.toFixed(2)}" cy="${r.ly.toFixed(2)}" r="${(g.ballSize/2).toFixed(2)}"/>`);
       });
@@ -394,7 +397,7 @@ function saveSVG() {
   }
 
   // Capa letras — todos los sprays
-  svg.push(`  <g id="letras" fill="black" font-size="${fs.toFixed(2)}" font-family="${fontFamily}" text-anchor="middle">`);
+  svg.push(`  <g id="letras" fill="${fg}" font-size="${fs.toFixed(2)}" font-family="${fontFamily}" text-anchor="middle">`);
   sprays.forEach(spray => {
     calcRays(spray, g).forEach(r => {
       svg.push(`    <text x="${r.lx.toFixed(2)}" y="${(r.ly+tyOffset).toFixed(2)}">${escapeXML(r.letter)}</text>`);
@@ -406,7 +409,7 @@ function saveSVG() {
 
   let blob = new Blob([svg.join('\n')], {type:'image/svg+xml;charset=utf-8'});
   Object.assign(document.createElement('a'), {
-    href: URL.createObjectURL(blob), download: 'polinizador_v3.4.svg'
+    href: URL.createObjectURL(blob), download: 'polinizador_v3.6.svg'
   }).click();
 }
 
