@@ -162,15 +162,9 @@
                oninput="document.getElementById('valAngle').textContent = this.value + '°'">
     </div>
 
-    <!-- ROTACIÓN (antes era interacción ratón) -->
-    <div class="group">
-        <div class="label-row">
-            <label>Rotación</label>
-            <span class="value-display" id="valRotation">0°</span>
-        </div>
-        <input type="range" id="inRotation" min="-180" max="180" value="0"
-               oninput="document.getElementById('valRotation').textContent = this.value + '°'">
-    </div>
+    <!-- ROTACIÓN: controlada por click en canvas, slider oculto solo para JS -->
+    <input type="hidden" id="inRotation" value="0">
+    <input type="hidden" id="valRotation" value="0°">
 
     <!-- HUECO CENTRAL -->
     <div class="group">
@@ -188,7 +182,7 @@
             <label>Largo spray</label>
             <span class="value-display" id="valRout">400 px</span>
         </div>
-        <input type="range" id="inRout" min="10" max="1500" value="400"
+        <input type="range" id="inRout" min="10" max="3000" value="400"
                oninput="document.getElementById('valRout').textContent = this.value + ' px'">
     </div>
 
@@ -267,7 +261,7 @@
         <button onclick="saveSVG()">Exportar SVG</button>
         <button class="secondary" onclick="resetOrigin()">Reset origen</button>
     </div>
-    <p class="hint">Arrastra el punto rojo para mover el origen del haz.</p>
+    <p class="hint">Arrastra el • rojo para mover el origen. Click en el canvas para apuntar el haz.</p>
 
 </div>
 

@@ -4,9 +4,11 @@
 // rotación por slider, unidades en UI, outline de texto para SVG limpio.
 
 let myFont;
-let jitterSeed = 42;        // seed fijo para el jitter — se regenera con botón
-let originX, originY;       // punto de partida (arrastrable con ratón)
+let jitterSeed = 42;
+let originX, originY;
 let draggingOrigin = false;
+let mouseIdleTimer = 0;    // frames desde último movimiento de ratón
+const HIDE_AFTER = 90;     // ocultar dot después de ~1.5s sin mover
 
 // ── PRELOAD ──────────────────────────────────────────────────────────────────
 function preload() {
@@ -113,28 +115,38 @@ function draw() {
       ellipse(0, 0, ballSize, ballSize);
     }
 
-    // — Letra como outline (paths) para SVG limpio sin dependencia de fuente —
+    // — Letra —
     fill(0);
     noStroke();
     textSize(ballSize * 0.55);
 
-    // Calcular descenso tipográfico real para centrar correctamente
+    // Centrado vertical: p5 dibuja desde baseline.
+    // textAscent() sube hasta la parte alta de mayúsculas, textDescent() baja bajo baseline.
+    // Para centrar ópticamente en la bola usamos solo ascent (las letras son mayúsculas):
+    // El centro visual de la letra está a ascent/2 por encima de la baseline.
+    // Desplazamos hacia abajo ascent/2 para que la baseline quede donde debe.
     let tAscent  = textAscent();
     let tDescent = textDescent();
-    let tOffset  = (tAscent - tDescent) / 2;  // offset para centrado óptico real
+    // offset = mueve baseline al centro, luego sube medio ascent para centrar la caja visual
+    let tOffset  = tDescent - (tAscent + tDescent) * 0.08; // pequeña corrección óptica para Vulf Mono
     text(txt[i], 0, tOffset);
     pop();
   }
 
-  // — Indicador del punto de origen (sólo en pantalla, no exportado) —
-  push();
-  noFill();
-  stroke(200, 50, 50, 160);
-  strokeWeight(1);
-  drawingContext.setLineDash([4, 4]);
-  ellipse(originX, originY, 14, 14);
-  drawingContext.setLineDash([]);
-  pop();
+  // — Indicador del punto de origen — solo visible cuando el ratón se mueve —
+  mouseIdleTimer++;
+  if (mouseIdleTimer < HIDE_AFTER) {
+    let alpha = map(mouseIdleTimer, HIDE_AFTER * 0.6, HIDE_AFTER, 160, 0);
+    alpha = constrain(alpha, 0, 160);
+    push();
+    noFill();
+    stroke(200, 50, 50, alpha);
+    strokeWeight(1.2);
+    drawingContext.setLineDash([3, 3]);
+    ellipse(originX, originY, 12, 12);
+    drawingContext.setLineDash([]);
+    pop();
+  }
 }
 
 // ── COLISIÓN CON BOUNDING BOX ────────────────────────────────────────────────
@@ -154,15 +166,31 @@ function calculateCollision(ox, oy, a, margin) {
   return max(0, t);
 }
 
-// ── INTERACCIÓN: arrastrar punto de origen ───────────────────────────────────
+// ── INTERACCIÓN CON RATÓN ────────────────────────────────────────────────────
+function mouseMoved() {
+  mouseIdleTimer = 0;  // resetear contador de inactividad
+}
+
 function mousePressed() {
-  if (mouseX > 320) {
-    let d = dist(mouseX, mouseY, originX, originY);
-    if (d < 20) draggingOrigin = true;
+  if (mouseX <= 320) return;  // ignorar sidebar
+  mouseIdleTimer = 0;
+  let d = dist(mouseX, mouseY, originX, originY);
+  if (d < 18) {
+    draggingOrigin = true;    // arrastrar el origen
+  } else {
+    // Click en canvas → apuntar el spray hacia donde se ha clickado
+    let dx = mouseX - originX;
+    let dy = mouseY - originY;
+    let targetAngle = degrees(atan2(dy, dx));
+    // Actualizar el slider de rotación
+    let slider = document.getElementById('inRotation');
+    slider.value = targetAngle;
+    document.getElementById('valRotation').textContent = Math.round(targetAngle) + '°';
   }
 }
 
 function mouseDragged() {
+  mouseIdleTimer = 0;
   if (draggingOrigin && mouseX > 320) {
     originX = mouseX;
     originY = mouseY;
