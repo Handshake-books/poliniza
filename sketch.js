@@ -18,69 +18,94 @@ function draw() {
   background(255);
   randomSeed(seed);
 
-  // CONTROL DE ROTACIÓN: Solo si el mouse está a la derecha del sidebar (x > 320)
   if (mouseIsPressed && mouseX > 320) {
     currentRotation = map(mouseX, 320, width, -PI, PI);
   }
 
   let txt = document.getElementById('inText').value;
   let angle = radians(document.getElementById('inAngle').value);
-  let rOutBase = parseInt(document.getElementById('inRout').value);
-  let jitter = parseInt(document.getElementById('inJitter').value);
   let weight = parseFloat(document.getElementById('inWeight').value);
+  let dash = parseInt(document.getElementById('inDash').value);
+  let showBalls = document.getElementById('checkBalls').checked;
   let ballSize = parseInt(document.getElementById('inBallSize').value);
   let ballWeight = parseFloat(document.getElementById('inBallWeight').value);
-  let lStyle = document.getElementById('inStyle').value;
+  let margin = parseInt(document.getElementById('inMargin').value);
 
-  // Número de líneas forzado a longitud de texto
   let steps = txt.length;
+  let centerX = (width) / 2;
+  let centerY = height / 2;
 
-  translate((width + 320) / 2 - 160, height / 2);
+  // Dibujar guía visual de la "superficie" (opcional, invisible en el SVG final)
+  noFill(); stroke(230); strokeWeight(1);
+  rect(margin, margin, width - margin * 2, height - margin * 2);
 
   for (let i = 0; i < steps; i++) {
     let theta = (steps > 1) ? map(i, 0, steps - 1, -angle/2, angle/2) : 0;
     let finalAngle = theta + currentRotation;
-    let rVar = rOutBase + random(-jitter, jitter);
 
-    // 1. DIBUJO DE LÍNEA
+    // --- LÓGICA DE PROYECCIÓN HASTA EL BORDE ---
+    // Raycasting simple contra el rectángulo del margen
+    let dirX = cos(finalAngle);
+    let dirY = sin(finalAngle);
+    
+    // Límites de la caja
+    let left = margin - centerX;
+    let right = (width - margin) - centerX;
+    let top = margin - centerY;
+    let bottom = (height - margin) - centerY;
+
+    let t = Infinity;
+    if (dirX > 0) t = min(t, right / dirX);
+    if (dirX < 0) t = min(t, left / dirX);
+    if (dirY > 0) t = min(t, bottom / dirY);
+    if (dirY < 0) t = min(t, top / dirY);
+
+    let rHit = t; // El spray "golpea" a esta distancia
+
     push();
-    rotate(finalAngle);
+    translate(centerX, centerY);
+    
+    // DIBUJO DE LÍNEA
     stroke(0);
     strokeWeight(weight);
-    if (lStyle === 'dashed') {
-      drawingContext.setLineDash([5, 5]);
+    if (dash > 0) {
+      drawingContext.setLineDash([dash, dash]);
     } else {
       drawingContext.setLineDash([]);
     }
-    line(40, 0, rVar, 0); 
-    pop();
+    line(0, 0, dirX * rHit, dirY * rHit);
 
-    // 2. DIBUJO DE BOLITA Y LETRA
-    let lx = cos(finalAngle) * (rVar + ballSize/2 + 5);
-    let ly = sin(finalAngle) * (rVar + ballSize/2 + 5);
+    // DIBUJO DE LETRA + BOLA
+    // Posicionamos exactamente en el punto de choque
+    let lx = dirX * rHit;
+    let ly = dirY * rHit;
     
     push();
     translate(lx, ly);
+    rotate(-finalAngle); // Corregimos para que el siguiente push sea neutro
     
-    // Dibujo de la bolita (si el tamaño es > 0)
-    if (ballSize > 0) {
+    // Bolita
+    if (showBalls) {
       fill(255);
       stroke(0);
       strokeWeight(ballWeight);
+      drawingContext.setLineDash([]);
       ellipse(0, 0, ballSize, ballSize);
     }
 
-    // Dibujo de la letra (siempre recta)
+    // Letra: Ajuste fino de centrado para Vulf Mono Bold
     noStroke();
     fill(0);
-    textSize(18);
-    text(txt[i], 0, 1); // El +1 es un ajuste óptico para la Vulf
+    textSize(ballSize * 0.5); // Escalado automático al tamaño de la bola
+    text(txt[i], 0, ballSize * 0.05); 
+    pop();
+    
     pop();
   }
 }
 
 function saveSVG() {
-  save("vulf_tool_v2.3.svg");
+  save("vulf_collision_v2.4.svg");
 }
 
 function resetRotation() {
