@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>POLINIZADOR VULF v2.9</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+    <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
+    <style>
+        body { margin: 0; display: flex; background: #1a1a1a; font-family: sans-serif; height: 100vh; overflow: hidden; color: white; }
+        #sidebar { width: 320px; background: #222; padding: 25px; border-right: 1px solid #444; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; z-index: 100; }
+        h1 { font-size: 14px; border-bottom: 2px solid #fff; padding-bottom: 5px; font-family: monospace; margin-bottom: 15px; }
+        .group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 5px; }
+        .row { display: flex; align-items: center; gap: 8px; font-size: 10px; }
+        label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
+        input { background: #333; border: 1px solid #555; color: white; padding: 6px; font-family: monospace; font-size: 11px; }
+        input[type="range"] { padding: 0; accent-color: #fff; }
+        button { background: #fff; color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+        button:hover { background: #ddd; }
+        hr { border: 0; border-top: 1px solid #444; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1>Vulf Master v2.9</h1>
+        <div class="group">
+            <label>Palabra</label>
+            <input type="text" id="inText" value="POLINIZADOS">
+        </div>
+        <div class="group">
+            <label>Apertura (º)</label>
+            <input type="range" id="inAngle" min="5" max="360" value="90">
+        </div>
+        <div class="group">
+            <label>Hueco Central (rIn)</label>
+            <input type="range" id="inRin" min="0" max="250" value="40">
+        </div>
+        <div class="group">
+            <label>Largo Spray (rOut)</label>
+            <input type="range" id="inRout" min="10" max="1500" value="400">
+        </div>
+        <div class="group">
+            <label>Caos / Jitter</label>
+            <input type="range" id="inJitter" min="0" max="300" value="50">
+        </div>
+        
+        <hr>
+        
+        <div class="group">
+            <label>Grosor Maestro</label>
+            <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5">
+        </div>
+        <div class="group">
+            <label>Punteado</label>
+            <input type="range" id="inDash" min="0" max="30" value="0">
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <input type="checkbox" id="checkBalls"> 
+            <label>Activar Bolitas</label>
+        </div>
+        <div class="group">
+            <label>Tamaño Bolita</label>
+            <input type="range" id="inBallSize" min="10" max="150" value="45">
+        </div>
+        <div class="group">
+            <label>Distancia Letra (Padding)</label>
+            <input type="range" id="inLetterPadding" min="0" max="100" value="20">
+        </div>
+
+        <button onclick="saveSVG()">Exportar SVG</button>
+        <button style="background:#444; color:white;" onclick="resetRotation()">Reset Rotación</button>
+    </div>
+    <div id="canvas-parent" style="flex-grow:1; background:#fff;"></div>
+    <script src="sketch.js"></script>
+</body>
+</html>
