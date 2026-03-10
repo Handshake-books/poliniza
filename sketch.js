@@ -1,19 +1,17 @@
-let font;
+let myFont;
 let seed = 0;
 let currentRotation = 0;
-let fontLoaded = false;
 
 function preload() {
-  // Cargamos la fuente con callbacks para evitar el cuelgue en "Loading"
-  font = loadFont('./VulfMono-Bold.otf', 
-    () => { fontLoaded = true; console.log("Fuente cargada correctamente"); },
-    () => { fontLoaded = false; console.warn("Fallo al cargar fuente, usando Courier"); }
-  );
+  // Asegúrate de que el archivo en GitHub se llame EXACTAMENTE así:
+  myFont = loadFont('VulfMono-Bold.otf');
 }
 
 function setup() {
   let canvas = createCanvas(windowWidth - 320, windowHeight, SVG);
   canvas.parent('canvas-parent');
+  // Aplicamos la fuente una sola vez en el setup para mayor estabilidad
+  textFont(myFont);
   textAlign(CENTER, CENTER);
 }
 
@@ -22,11 +20,7 @@ function draw() {
   background(255);
   randomSeed(seed);
 
-  // Fuente de respaldo si falla la carga
-  if (fontLoaded) textFont(font);
-  else textFont('Courier New');
-
-  // Solo rotar si el click es en el lienzo
+  // Rotación interactiva
   if (mouseIsPressed && mouseX > 0) {
     currentRotation = map(mouseX, 0, width, -PI, PI);
   }
@@ -43,13 +37,11 @@ function draw() {
   translate(width / 2, height / 2);
 
   for (let i = 0; i < steps; i++) {
-    // 1. Calculamos el ángulo de la línea (incluyendo la rotación global)
     let theta = (steps > 1) ? map(i, 0, steps - 1, -angle/2, angle/2) : 0;
     let finalAngle = theta + currentRotation;
-    
     let rVar = rOutBase + random(-jitter, jitter);
 
-    // DIBUJO DE LÍNEA
+    // 1. DIBUJO DE LÍNEA (Usando rotación local)
     push();
     rotate(finalAngle);
     stroke(0);
@@ -59,17 +51,16 @@ function draw() {
     } else {
       drawingContext.setLineDash([]);
     }
-    line(40, 0, rVar, 0); // Línea desde el hueco central hasta rVar
+    line(40, 0, rVar, 0); 
     pop();
 
-    // DIBUJO DE LETRA (Posición calculada, pero rotación 0)
-    push();
-    // Calculamos la posición X e Y final de la línea rotada
+    // 2. DIBUJO DE LETRA (Calculamos coordenadas globales, SIN ROTAR)
+    // Esto garantiza que la letra esté siempre a 0 grados
     let lx = cos(finalAngle) * (rVar + 30);
     let ly = sin(finalAngle) * (rVar + 30);
     
+    push();
     translate(lx, ly);
-    // IMPORTANTE: Aquí NO rotamos nada, se queda en 0 grados
     noStroke();
     fill(0);
     drawingContext.setLineDash([]); 

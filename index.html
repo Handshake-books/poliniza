@@ -6,12 +6,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
     <style>
-        /* Intentamos cargar la fuente por CSS también */
-        @font-face {
-            font-family: 'Vulf Mono Bold';
-            src: url('./VulfMono-Bold.otf') format('opentype');
-        }
-
         body { margin: 0; display: flex; background: #1a1a1a; font-family: sans-serif; height: 100vh; overflow: hidden; color: white; }
         #sidebar { width: 320px; background: #222; padding: 25px; border-right: 1px solid #444; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
         h1 { font-size: 14px; border-bottom: 2px solid #fff; padding-bottom: 5px; font-family: monospace; }
@@ -26,7 +20,7 @@
 </head>
 <body>
     <div id="sidebar">
-        <h1>Vulf Tool v2.1</h1>
+        <h1>Vulf Tool v2.2</h1>
         <div class="group">
             <label>Palabra / Semilla</label>
             <input type="text" id="inText" value="POLINIZADOS" oninput="updateDensity()">
