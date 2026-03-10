@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>POLINIZADOR v3.6</title>
+<title>POLINIZADOR v3.7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,7 +16,6 @@ body {
   color: #d0d0d0;
 }
 
-/* ── SIDEBAR ────────────────────────────────────────────────── */
 #sidebar {
   width: 260px;
   min-width: 260px;
@@ -25,73 +24,67 @@ body {
   padding: 14px 13px 28px;
   display: flex;
   flex-direction: column;
-  gap: 0;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #383838 transparent;
+  gap: 0;
 }
 
 h1 {
   font-size: 9px;
   letter-spacing: 3px;
-  color: #666;           /* era #444 */
+  color: #666;
   padding-bottom: 10px;
   border-bottom: 1px solid #282828;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   text-transform: uppercase;
 }
 
-/* Títulos de sección */
 .sec {
   font-size: 8px;
   letter-spacing: 2.5px;
-  color: #666;           /* era #484848 */
+  color: #666;
   text-transform: uppercase;
-  margin: 13px 0 6px;
+  margin: 13px 0 7px;
 }
 
 .grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .lrow { display: flex; justify-content: space-between; align-items: baseline; }
 
-/* Labels de controles */
 label {
   font-size: 10px;
-  color: #999;           /* era #888 */
-  letter-spacing: 0.2px;
+  color: #999;
   cursor: default;
   user-select: none;
 }
 
-/* Valor numérico */
 .val {
   font-size: 10px;
-  color: #ccc;           /* era #aaa */
+  color: #ccc;
   min-width: 44px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-/* Inputs texto */
 input[type="text"] {
   background: #222;
   border: 1px solid #3a3a3a;
   color: #eee;
-  padding: 6px 8px;
+  padding: 7px 8px;
   font-family: monospace;
-  font-size: 12px;
-  letter-spacing: 1.5px;
+  font-size: 13px;
+  letter-spacing: 2px;
   width: 100%;
   outline: none;
   transition: border-color .12s;
 }
 input[type="text"]:focus { border-color: #777; }
 
-/* Select */
 select {
   background: #222;
   border: 1px solid #3a3a3a;
   color: #ddd;
-  padding: 5px 8px;
+  padding: 6px 8px;
   font-family: monospace;
   font-size: 10px;
   width: 100%;
@@ -104,7 +97,6 @@ select {
 }
 select:focus { border-color: #777; }
 
-/* Sliders */
 input[type="range"] {
   width: 100%;
   accent-color: #bbb;
@@ -112,7 +104,6 @@ input[type="range"] {
   height: 3px;
 }
 
-/* Checkboxes */
 .tog {
   display: flex;
   align-items: center;
@@ -123,82 +114,35 @@ input[type="range"] {
 input[type="checkbox"] {
   accent-color: #bbb;
   width: 12px; height: 12px;
-  cursor: pointer;
-  flex-shrink: 0;
+  cursor: pointer; flex-shrink: 0;
 }
 .tog label { font-size: 10px; color: #999; cursor: pointer; }
 
 hr { border: 0; border-top: 1px solid #242424; margin: 4px 0 8px; }
 
-/* ── LISTA DE SPRAYS ──────────────────────────────────────── */
-#sprayList {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-bottom: 5px;
-}
-
-.spray-row {
+/* Color pickers */
+.color-row {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 6px;
-  border: 1px solid transparent;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.color-row label { font-size: 10px; color: #999; }
+input[type="color"] {
+  width: 36px;
+  height: 24px;
+  border: 1px solid #3a3a3a;
   border-radius: 2px;
+  background: none;
   cursor: pointer;
-  transition: border-color .1s, background .1s;
-}
-.spray-row:hover { background: #202020; }
-.spray-row.active {
-  border-color: #484848;
-  background: #222;
+  padding: 2px;
 }
 
-.spray-txt {
-  flex: 1;
-  background: transparent;
-  border: none !important;
-  color: #bbb;
-  font-family: monospace;
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  padding: 2px 3px;
-  outline: none;
-  min-width: 0;
-}
-.spray-row.active .spray-txt { color: #eee; }
+/* Inline row (jitter + botón) */
+.inline-row { display: flex; align-items: center; gap: 6px; }
+.inline-row input[type="range"] { flex: 1; }
 
-.del-btn {
-  background: transparent;
-  border: none;
-  color: #555;           /* era #444 */
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 3px;
-  flex-shrink: 0;
-  transition: color .1s;
-}
-.del-btn:hover { color: #cc4444; }
-
-/* Botón añadir spray */
-#btnAddSpray {
-  width: 100%;
-  background: transparent;
-  border: 1px dashed #383838;
-  color: #777;           /* era #555 */
-  padding: 6px;
-  font-family: monospace;
-  font-size: 9px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color .12s, border-color .12s;
-  margin-top: 2px;
-}
-#btnAddSpray:hover { color: #ccc; border-color: #777; }
-
-/* ── BOTONES ──────────────────────────────────────────────── */
+/* Botones */
 .btns { display: flex; gap: 5px; margin-top: 10px; }
 
 button.primary {
@@ -219,7 +163,7 @@ button.primary:hover { background: #fff; }
 
 button.ghost {
   background: transparent;
-  color: #777;           /* era #555 */
+  color: #777;
   border: 1px solid #383838;
   font-size: 11px;
   padding: 5px 9px;
@@ -230,62 +174,31 @@ button.ghost {
 }
 button.ghost:hover { color: #ccc; border-color: #777; }
 
-.inline-row { display: flex; align-items: center; gap: 6px; }
-.inline-row input[type="range"] { flex: 1; }
-
-/* Color pickers */
-.color-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 7px;
-}
-.color-row label { font-size: 10px; color: #999; flex: 1; }
-input[type="color"] {
-  width: 32px;
-  height: 22px;
-  border: 1px solid #3a3a3a;
-  border-radius: 2px;
-  background: none;
-  cursor: pointer;
-  padding: 1px;
-}
+/* Instrucciones */
 .instructions {
-  margin-top: 14px;
+  margin-top: 16px;
   border-top: 1px solid #242424;
   padding-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
-
 .instr-title {
   font-size: 8px;
   letter-spacing: 2px;
   color: #666;
   text-transform: uppercase;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
-
-.instr-row {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-}
-
+.instr-row { display: flex; gap: 8px; align-items: baseline; }
 .instr-key {
   font-size: 9px;
-  color: #888;           /* tecla/acción — bien visible */
+  color: #888;
   white-space: nowrap;
-  min-width: 60px;
+  min-width: 62px;
   flex-shrink: 0;
 }
-
-.instr-desc {
-  font-size: 9px;
-  color: #666;
-  line-height: 1.4;
-}
+.instr-desc { font-size: 9px; color: #666; line-height: 1.4; }
 
 #canvas-parent { flex-grow: 1; background: #fff; }
 </style>
@@ -293,21 +206,22 @@ input[type="color"] {
 <body>
 
 <div id="sidebar">
-  <h1>Polinizador v3.6</h1>
+  <h1>Polinizador v3.7</h1>
 
-  <!-- ── SPRAYS ── -->
-  <div class="sec">Sprays</div>
-  <div id="sprayList"></div>
-  <button id="btnAddSpray" onclick="addNewSpray()">+ añadir spray</button>
+  <!-- TEXTO -->
+  <div class="grp">
+    <label>Palabra</label>
+    <input type="text" id="inText" value="POLINIZADOS"
+           oninput="this.value=this.value.toUpperCase()">
+  </div>
 
-  <!-- ── FUENTE ── -->
-  <hr>
+  <!-- FUENTE -->
   <div class="grp">
     <label>Fuente</label>
     <select id="fontSelect"><option>cargando…</option></select>
   </div>
 
-  <!-- ── HAZ ── -->
+  <!-- HAZ -->
   <hr>
   <div class="sec">Haz</div>
 
@@ -329,7 +243,7 @@ input[type="color"] {
            oninput="document.getElementById('vRout').textContent=this.value+' px'">
   </div>
 
-  <!-- ── JITTER ── -->
+  <!-- JITTER -->
   <hr>
   <div class="sec">Jitter</div>
 
@@ -342,7 +256,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- ── LÍNEA ── -->
+  <!-- LÍNEA -->
   <hr>
   <div class="sec">Línea</div>
 
@@ -360,7 +274,7 @@ input[type="color"] {
 
   <div class="grp">
     <div class="lrow"><label>Sep. línea → bola</label><span class="val" id="vPad">12 px</span></div>
-    <input type="range" id="inLinePadding" min="0" max="120" value="12"
+    <input type="range" id="inLinePad" min="0" max="120" value="12"
            oninput="document.getElementById('vPad').textContent=this.value+' px'">
   </div>
 
@@ -369,7 +283,7 @@ input[type="color"] {
     <label for="checkLinesBack">Líneas detrás de bolas</label>
   </div>
 
-  <!-- ── MOLÉCULAS ── -->
+  <!-- MOLÉCULAS -->
   <hr>
   <div class="sec">Moléculas</div>
 
@@ -384,7 +298,7 @@ input[type="color"] {
            oninput="document.getElementById('vBall').textContent=this.value+' px'">
   </div>
 
-  <!-- ── COLOR ── -->
+  <!-- COLOR -->
   <hr>
   <div class="sec">Color</div>
 
@@ -393,44 +307,39 @@ input[type="color"] {
     <input type="color" id="inColorBg" value="#ffffff">
   </div>
   <div class="color-row">
-    <label>Trazo / relleno</label>
+    <label>Trazo y letra</label>
     <input type="color" id="inColorFg" value="#000000">
   </div>
 
-  <!-- ── EXPORTAR ── -->
+  <!-- EXPORTAR -->
   <hr>
   <div class="btns">
     <button class="primary" onclick="saveSVG()">Exportar SVG</button>
-    <button class="ghost" onclick="resetOrigin()" title="Centrar origen del spray activo">⌖</button>
+    <button class="ghost" onclick="resetOrigin()" title="Centrar origen">⌖</button>
   </div>
 
-  <!-- ── INSTRUCCIONES ── -->
+  <!-- INSTRUCCIONES -->
   <div class="instructions">
     <div class="instr-title">Cómo usar</div>
-
-    <div class="instr-row">
-      <span class="instr-key">Click •</span>
-      <span class="instr-desc">Selecciona un spray</span>
-    </div>
     <div class="instr-row">
       <span class="instr-key">Drag •</span>
-      <span class="instr-desc">Mueve el origen del spray activo</span>
+      <span class="instr-desc">Mueve el origen del spray</span>
     </div>
     <div class="instr-row">
       <span class="instr-key">Drag canvas</span>
-      <span class="instr-desc">Rota el spray activo</span>
+      <span class="instr-desc">Rota el haz</span>
     </div>
     <div class="instr-row">
       <span class="instr-key">↻</span>
-      <span class="instr-desc">Nueva posición de jitter para el spray activo</span>
+      <span class="instr-desc">Nueva posición de jitter</span>
     </div>
     <div class="instr-row">
       <span class="instr-key">⌖</span>
-      <span class="instr-desc">Recentra el origen del spray activo</span>
+      <span class="instr-desc">Recentra el origen</span>
     </div>
     <div class="instr-row">
       <span class="instr-key">SVG</span>
-      <span class="instr-desc">Exporta con capas separadas: lineas / bolas / letras</span>
+      <span class="instr-desc">Capas: lineas / bolas / letras</span>
     </div>
   </div>
 
