@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>POLINIZADOR VULF PRO</title>
+    <title>POLINIZADOR VULF v2.3</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
     <style>
         body { margin: 0; display: flex; background: #1a1a1a; font-family: sans-serif; height: 100vh; overflow: hidden; color: white; }
-        #sidebar { width: 320px; background: #222; padding: 25px; border-right: 1px solid #444; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        #sidebar { width: 320px; background: #222; padding: 25px; border-right: 1px solid #444; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; z-index: 100; }
         h1 { font-size: 14px; border-bottom: 2px solid #fff; padding-bottom: 5px; font-family: monospace; }
         .group { display: flex; flex-direction: column; gap: 4px; }
         label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
@@ -20,22 +20,30 @@
 </head>
 <body>
     <div id="sidebar">
-        <h1>Vulf Tool v2.2</h1>
+        <h1>Vulf Tool v2.3</h1>
         <div class="group">
-            <label>Palabra / Semilla</label>
-            <input type="text" id="inText" value="POLINIZADOS" oninput="updateDensity()">
+            <label>Palabra Semilla</label>
+            <input type="text" id="inText" value="POLINIZADOS">
         </div>
         <div class="group">
-            <label>Apertura (º)</label>
+            <label>Apertura Spray (º)</label>
             <input type="range" id="inAngle" min="5" max="360" value="90">
-        </div>
-        <div class="group">
-            <label>Número de Líneas</label>
-            <input type="number" id="inSteps" value="11">
         </div>
         <div class="group">
             <label>Largo Spray</label>
             <input type="range" id="inRout" min="50" max="500" value="300">
+        </div>
+        <div class="group">
+            <label>Grosor Trazo Línea</label>
+            <input type="range" id="inWeight" min="0.5" max="10" step="0.5" value="1.5">
+        </div>
+        <div class="group">
+            <label>Tamaño Bolita Letra</label>
+            <input type="range" id="inBallSize" min="0" max="80" value="40">
+        </div>
+        <div class="group">
+            <label>Grosor Trazo Bolita</label>
+            <input type="range" id="inBallWeight" min="0" max="5" step="0.5" value="1">
         </div>
         <div class="group">
             <label>Estilo de Línea</label>
@@ -45,34 +53,18 @@
             </select>
         </div>
         <div class="group">
-            <label>Punteado (Ancho/Espacio)</label>
-            <input type="range" id="inDash" min="1" max="20" value="5">
-        </div>
-        <div class="group">
-            <label>Grosor Trazo</label>
-            <input type="range" id="inWeight" min="0.5" max="10" step="0.5" value="1.5">
-        </div>
-        <div class="group">
             <label>Caos (Jitter)</label>
             <input type="range" id="inJitter" min="0" max="200" value="0">
         </div>
         <button onclick="saveSVG()">Exportar SVG</button>
         <button style="background:#444; color:white;" onclick="resetRotation()">Reset Rotación</button>
         <div class="hint">
-            • CLICK + ARRASTRAR para rotar.<br>
+            • ARRASTRAR en el lienzo para rotar.<br>
             • R: Variar aleatoriedad.<br>
-            • Letras SIEMPRE verticales.
+            • Nº de líneas = Nº de letras.
         </div>
     </div>
     <div id="canvas-parent" style="flex-grow:1; background:#fff;"></div>
-
-    <script>
-        function updateDensity() {
-            const txt = document.getElementById('inText').value;
-            document.getElementById('inSteps').value = txt.length;
-        }
-        window.onload = updateDensity;
-    </script>
     <script src="sketch.js"></script>
 </body>
 </html>

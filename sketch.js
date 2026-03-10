@@ -3,14 +3,12 @@ let seed = 0;
 let currentRotation = 0;
 
 function preload() {
-  // Asegúrate de que el archivo en GitHub se llame EXACTAMENTE así:
   myFont = loadFont('VulfMono-Bold.otf');
 }
 
 function setup() {
   let canvas = createCanvas(windowWidth - 320, windowHeight, SVG);
   canvas.parent('canvas-parent');
-  // Aplicamos la fuente una sola vez en el setup para mayor estabilidad
   textFont(myFont);
   textAlign(CENTER, CENTER);
 }
@@ -20,58 +18,69 @@ function draw() {
   background(255);
   randomSeed(seed);
 
-  // Rotación interactiva
-  if (mouseIsPressed && mouseX > 0) {
-    currentRotation = map(mouseX, 0, width, -PI, PI);
+  // CONTROL DE ROTACIÓN: Solo si el mouse está a la derecha del sidebar (x > 320)
+  if (mouseIsPressed && mouseX > 320) {
+    currentRotation = map(mouseX, 320, width, -PI, PI);
   }
 
   let txt = document.getElementById('inText').value;
   let angle = radians(document.getElementById('inAngle').value);
-  let steps = parseInt(document.getElementById('inSteps').value);
   let rOutBase = parseInt(document.getElementById('inRout').value);
   let jitter = parseInt(document.getElementById('inJitter').value);
   let weight = parseFloat(document.getElementById('inWeight').value);
+  let ballSize = parseInt(document.getElementById('inBallSize').value);
+  let ballWeight = parseFloat(document.getElementById('inBallWeight').value);
   let lStyle = document.getElementById('inStyle').value;
-  let dashSize = parseInt(document.getElementById('inDash').value);
 
-  translate(width / 2, height / 2);
+  // Número de líneas forzado a longitud de texto
+  let steps = txt.length;
+
+  translate((width + 320) / 2 - 160, height / 2);
 
   for (let i = 0; i < steps; i++) {
     let theta = (steps > 1) ? map(i, 0, steps - 1, -angle/2, angle/2) : 0;
     let finalAngle = theta + currentRotation;
     let rVar = rOutBase + random(-jitter, jitter);
 
-    // 1. DIBUJO DE LÍNEA (Usando rotación local)
+    // 1. DIBUJO DE LÍNEA
     push();
     rotate(finalAngle);
     stroke(0);
     strokeWeight(weight);
     if (lStyle === 'dashed') {
-      drawingContext.setLineDash([dashSize, dashSize]);
+      drawingContext.setLineDash([5, 5]);
     } else {
       drawingContext.setLineDash([]);
     }
     line(40, 0, rVar, 0); 
     pop();
 
-    // 2. DIBUJO DE LETRA (Calculamos coordenadas globales, SIN ROTAR)
-    // Esto garantiza que la letra esté siempre a 0 grados
-    let lx = cos(finalAngle) * (rVar + 30);
-    let ly = sin(finalAngle) * (rVar + 30);
+    // 2. DIBUJO DE BOLITA Y LETRA
+    let lx = cos(finalAngle) * (rVar + ballSize/2 + 5);
+    let ly = sin(finalAngle) * (rVar + ballSize/2 + 5);
     
     push();
     translate(lx, ly);
+    
+    // Dibujo de la bolita (si el tamaño es > 0)
+    if (ballSize > 0) {
+      fill(255);
+      stroke(0);
+      strokeWeight(ballWeight);
+      ellipse(0, 0, ballSize, ballSize);
+    }
+
+    // Dibujo de la letra (siempre recta)
     noStroke();
     fill(0);
-    drawingContext.setLineDash([]); 
-    textSize(22);
-    text(txt[i % txt.length], 0, 0);
+    textSize(18);
+    text(txt[i], 0, 1); // El +1 es un ajuste óptico para la Vulf
     pop();
   }
 }
 
 function saveSVG() {
-  save("polinizacion_vector.svg");
+  save("vulf_tool_v2.3.svg");
 }
 
 function resetRotation() {
