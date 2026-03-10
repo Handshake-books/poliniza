@@ -6,36 +6,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
     <style>
+        /* Intentamos cargar la fuente por CSS también */
         @font-face {
             font-family: 'Vulf Mono Bold';
             src: url('./VulfMono-Bold.otf') format('opentype');
         }
 
         body { margin: 0; display: flex; background: #1a1a1a; font-family: sans-serif; height: 100vh; overflow: hidden; color: white; }
-        
-        #sidebar { 
-            width: 320px; background: #222; padding: 25px; border-right: 1px solid #444;
-            display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
-        }
-
-        h1 { font-size: 14px; border-bottom: 2px solid #fff; padding-bottom: 5px; font-family: 'Vulf Mono Bold', monospace; }
+        #sidebar { width: 320px; background: #222; padding: 25px; border-right: 1px solid #444; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        h1 { font-size: 14px; border-bottom: 2px solid #fff; padding-bottom: 5px; font-family: monospace; }
         .group { display: flex; flex-direction: column; gap: 4px; }
         label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         input, select { background: #333; border: 1px solid #555; color: white; padding: 8px; font-family: monospace; font-size: 12px; }
         input[type="range"] { padding: 0; accent-color: #fff; }
-
-        button { 
-            background: #fff; color: #000; border: none; padding: 12px; cursor: pointer; 
-            font-weight: bold; text-transform: uppercase; margin-top: 5px;
-        }
+        button { background: #fff; color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
         button:hover { background: #ddd; }
         .hint { font-size: 10px; color: #666; line-height: 1.4; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div id="sidebar">
-        <h1>Vulf Tool v2.0</h1>
-        
+        <h1>Vulf Tool v2.1</h1>
         <div class="group">
             <label>Palabra / Semilla</label>
             <input type="text" id="inText" value="POLINIZADOS" oninput="updateDensity()">
@@ -46,7 +37,7 @@
         </div>
         <div class="group">
             <label>Número de Líneas</label>
-            <input type="number" id="inSteps" value="12">
+            <input type="number" id="inSteps" value="11">
         </div>
         <div class="group">
             <label>Largo Spray</label>
@@ -60,7 +51,7 @@
             </select>
         </div>
         <div class="group">
-            <label>Punteado (Ancho / Espacio)</label>
+            <label>Punteado (Ancho/Espacio)</label>
             <input type="range" id="inDash" min="1" max="20" value="5">
         </div>
         <div class="group">
@@ -71,17 +62,14 @@
             <label>Caos (Jitter)</label>
             <input type="range" id="inJitter" min="0" max="200" value="0">
         </div>
-
         <button onclick="saveSVG()">Exportar SVG</button>
         <button style="background:#444; color:white;" onclick="resetRotation()">Reset Rotación</button>
-        
         <div class="hint">
             • CLICK + ARRASTRAR para rotar.<br>
             • R: Variar aleatoriedad.<br>
-            • Letras bloqueadas a 0º.
+            • Letras SIEMPRE verticales.
         </div>
     </div>
-
     <div id="canvas-parent" style="flex-grow:1; background:#fff;"></div>
 
     <script>
@@ -89,7 +77,6 @@
             const txt = document.getElementById('inText').value;
             document.getElementById('inSteps').value = txt.length;
         }
-        // Inicializar densidad al cargar
         window.onload = updateDensity;
     </script>
     <script src="sketch.js"></script>
