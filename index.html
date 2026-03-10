@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>POLINIZADOR VULF v2.7</title>
+    <title>POLINIZADOR VULF v2.8</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
     <style>
@@ -14,14 +14,14 @@
         label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
         input, select { background: #333; border: 1px solid #555; color: white; padding: 6px; font-family: monospace; font-size: 11px; }
         input[type="range"] { padding: 0; accent-color: #fff; }
-        button { background: #fff; color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+        button { background: #fff; color: #000; border: none; padding: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
         button:hover { background: #ddd; }
         hr { border: 0; border-top: 1px solid #444; margin: 10px 0; }
     </style>
 </head>
 <body>
     <div id="sidebar">
-        <h1>Vulf Master v2.7</h1>
+        <h1>Vulf Master v2.8</h1>
         <div class="group">
             <label>Palabra</label>
             <input type="text" id="inText" value="POLINIZADOS">
@@ -37,6 +37,10 @@
         <div class="group">
             <label>Largo Spray (rOut)</label>
             <input type="range" id="inRout" min="10" max="1500" value="400">
+        </div>
+        <div class="group">
+            <label>Caos / Jitter</label>
+            <input type="range" id="inJitter" min="0" max="300" value="0">
         </div>
         
         <hr>
@@ -67,10 +71,6 @@
 
         <button onclick="saveSVG()">Exportar SVG</button>
         <button style="background:#444; color:white;" onclick="resetRotation()">Reset Rotación</button>
-        
-        <div class="group" style="margin-top:10px; font-size:9px; color:#555;">
-            * El spray colisiona automáticamente con los bordes del lienzo.
-        </div>
     </div>
     <div id="canvas-parent" style="flex-grow:1; background:#fff;"></div>
     <script src="sketch.js"></script>
