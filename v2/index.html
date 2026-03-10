@@ -1,78 +1,232 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>POLINIZADOR VULF v2.9</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
-    <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
-    <style>
-        body { margin: 0; display: flex; background: #1a1a1a; font-family: sans-serif; height: 100vh; overflow: hidden; color: white; }
-        #sidebar { width: 320px; background: #222; padding: 25px; border-right: 1px solid #444; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; z-index: 100; }
-        h1 { font-size: 14px; border-bottom: 2px solid #fff; padding-bottom: 5px; font-family: monospace; margin-bottom: 15px; }
-        .group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 5px; }
-        .row { display: flex; align-items: center; gap: 8px; font-size: 10px; }
-        label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
-        input { background: #333; border: 1px solid #555; color: white; padding: 6px; font-family: monospace; font-size: 11px; }
-        input[type="range"] { padding: 0; accent-color: #fff; }
-        button { background: #fff; color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
-        button:hover { background: #ddd; }
-        hr { border: 0; border-top: 1px solid #444; margin: 10px 0; }
-    </style>
+<meta charset="UTF-8">
+<title>POLINIZADOR v3.2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { display: flex; background: #181818; font-family: monospace; height: 100vh; overflow: hidden; color: #ccc; }
+
+#sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #1c1c1c;
+  border-right: 1px solid #2a2a2a;
+  padding: 16px 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+}
+
+h1 {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #555;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #2a2a2a;
+  margin-bottom: 6px;
+}
+
+.sec {
+  font-size: 7px;
+  letter-spacing: 2px;
+  color: #3a3a3a;
+  text-transform: uppercase;
+  margin: 8px 0 3px;
+}
+
+.grp { display: flex; flex-direction: column; gap: 2px; }
+
+.lrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+label {
+  font-size: 9px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  cursor: default;
+}
+
+.val {
+  font-size: 9px;
+  color: #888;
+  min-width: 42px;
+  text-align: right;
+}
+
+input[type="text"], select {
+  background: #242424;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 6px 7px;
+  font-family: monospace;
+  font-size: 12px;
+  letter-spacing: 1px;
+  width: 100%;
+  outline: none;
+}
+
+select { cursor: pointer; font-size: 9px; padding: 5px 7px; }
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #888;
+  cursor: pointer;
+  height: 2px;
+  margin-top: 1px;
+}
+
+.tog {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 0;
+}
+
+input[type="checkbox"] {
+  accent-color: #888;
+  width: 11px;
+  height: 11px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+hr { border: 0; border-top: 1px solid #222; margin: 4px 0; }
+
+.btns { display: flex; gap: 5px; margin-top: 8px; }
+
+button {
+  flex: 1;
+  background: #ddd;
+  color: #000;
+  border: none;
+  padding: 9px 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: monospace;
+}
+button:hover { background: #fff; }
+button.sec-btn {
+  background: #242424;
+  color: #666;
+  border: 1px solid #333;
+}
+button.sec-btn:hover { background: #2e2e2e; color: #aaa; }
+
+.hint { font-size: 7px; color: #333; line-height: 1.5; margin-top: 3px; }
+
+#canvas-parent { flex-grow: 1; background: #fff; }
+</style>
 </head>
 <body>
-    <div id="sidebar">
-        <h1>Vulf Master v2.9</h1>
-        <div class="group">
-            <label>Palabra</label>
-            <input type="text" id="inText" value="POLINIZADOS">
-        </div>
-        <div class="group">
-            <label>Apertura (º)</label>
-            <input type="range" id="inAngle" min="5" max="360" value="90">
-        </div>
-        <div class="group">
-            <label>Hueco Central (rIn)</label>
-            <input type="range" id="inRin" min="0" max="250" value="40">
-        </div>
-        <div class="group">
-            <label>Largo Spray (rOut)</label>
-            <input type="range" id="inRout" min="10" max="1500" value="400">
-        </div>
-        <div class="group">
-            <label>Caos / Jitter</label>
-            <input type="range" id="inJitter" min="0" max="300" value="50">
-        </div>
-        
-        <hr>
-        
-        <div class="group">
-            <label>Grosor Maestro</label>
-            <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5">
-        </div>
-        <div class="group">
-            <label>Punteado</label>
-            <input type="range" id="inDash" min="0" max="30" value="0">
-        </div>
 
-        <hr>
+<div id="sidebar">
+  <h1>POLINIZADOR v3.2</h1>
 
-        <div class="row">
-            <input type="checkbox" id="checkBalls"> 
-            <label>Activar Bolitas</label>
-        </div>
-        <div class="group">
-            <label>Tamaño Bolita</label>
-            <input type="range" id="inBallSize" min="10" max="150" value="45">
-        </div>
-        <div class="group">
-            <label>Distancia Letra (Padding)</label>
-            <input type="range" id="inLetterPadding" min="0" max="100" value="20">
-        </div>
+  <div class="grp">
+    <label>Palabra</label>
+    <input type="text" id="inText" value="POLINIZADOS"
+           oninput="this.value=this.value.toUpperCase()">
+  </div>
 
-        <button onclick="saveSVG()">Exportar SVG</button>
-        <button style="background:#444; color:white;" onclick="resetRotation()">Reset Rotación</button>
-    </div>
-    <div id="canvas-parent" style="flex-grow:1; background:#fff;"></div>
-    <script src="sketch.js"></script>
+  <div class="grp">
+    <label>Fuente</label>
+    <select id="fontSelect"></select>
+  </div>
+
+  <hr>
+  <div class="sec">Haz</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Apertura</label><span class="val" id="vAngle">90°</span></div>
+    <input type="range" id="inAngle" min="1" max="360" value="90"
+           oninput="document.getElementById('vAngle').textContent=this.value+'°'">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Hueco central</label><span class="val" id="vRin">40 px</span></div>
+    <input type="range" id="inRin" min="0" max="300" value="40"
+           oninput="document.getElementById('vRin').textContent=this.value+' px'">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Largo spray</label><span class="val" id="vRout">400 px</span></div>
+    <input type="range" id="inRout" min="10" max="3000" value="400"
+           oninput="document.getElementById('vRout').textContent=this.value+' px'">
+  </div>
+
+  <hr>
+  <div class="sec">Jitter</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Amplitud</label><span class="val" id="vJitter">50 px</span></div>
+    <input type="range" id="inJitter" min="0" max="400" value="50"
+           oninput="document.getElementById('vJitter').textContent=this.value+' px'">
+  </div>
+  <button class="sec-btn" onclick="newJitter()">↻ nueva posición</button>
+
+  <hr>
+  <div class="sec">Línea</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Grosor</label><span class="val" id="vWeight">1.5 pt</span></div>
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5"
+           oninput="document.getElementById('vWeight').textContent=this.value+' pt'">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Punteado</label><span class="val" id="vDash">off</span></div>
+    <input type="range" id="inDash" min="0" max="40" value="0"
+           oninput="document.getElementById('vDash').textContent=this.value>0?this.value+' px':'off'">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Sep. línea → bola</label><span class="val" id="vPad">12 px</span></div>
+    <input type="range" id="inLinePadding" min="0" max="120" value="12"
+           oninput="document.getElementById('vPad').textContent=this.value+' px'">
+  </div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkLinesBack">
+    <label for="checkLinesBack">Líneas detrás de bolas</label>
+  </div>
+
+  <hr>
+  <div class="sec">Moléculas</div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkBalls" checked>
+    <label for="checkBalls">Mostrar bolitas</label>
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Diámetro bola</label><span class="val" id="vBall">45 px</span></div>
+    <input type="range" id="inBallSize" min="10" max="180" value="45"
+           oninput="document.getElementById('vBall').textContent=this.value+' px'">
+  </div>
+
+  <hr>
+
+  <div class="btns">
+    <button onclick="saveSVG()">Exportar SVG</button>
+    <button class="sec-btn" onclick="resetOrigin()">Reset origen</button>
+  </div>
+  <p class="hint">
+    Arrastra el • rojo → mueve origen<br>
+    Arrastra en canvas → rota el haz
+  </p>
+</div>
+
+<div id="canvas-parent"></div>
+<script src="sketch.js"></script>
 </body>
 </html>

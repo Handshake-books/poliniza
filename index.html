@@ -2,127 +2,235 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>POLINIZADOR v3.2</title>
+<title>POLINIZADOR v3.4</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { display: flex; background: #181818; font-family: monospace; height: 100vh; overflow: hidden; color: #ccc; }
 
+body {
+  display: flex;
+  background: #111;
+  font-family: monospace;
+  height: 100vh;
+  overflow: hidden;
+  color: #c8c8c8;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────── */
 #sidebar {
   width: 260px;
   min-width: 260px;
-  background: #1c1c1c;
-  border-right: 1px solid #2a2a2a;
-  padding: 16px 14px 20px;
+  background: #1a1a1a;
+  border-right: 1px solid #2c2c2c;
+  padding: 14px 13px 24px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 0;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
 }
 
 h1 {
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 3px;
-  color: #555;
+  color: #444;
   padding-bottom: 10px;
-  border-bottom: 1px solid #2a2a2a;
-  margin-bottom: 6px;
+  border-bottom: 1px solid #252525;
+  margin-bottom: 10px;
 }
 
 .sec {
-  font-size: 7px;
-  letter-spacing: 2px;
-  color: #3a3a3a;
+  font-size: 8px;
+  letter-spacing: 2.5px;
+  color: #484848;
   text-transform: uppercase;
-  margin: 8px 0 3px;
+  margin: 12px 0 6px;
 }
 
-.grp { display: flex; flex-direction: column; gap: 2px; }
+.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 7px; }
 
-.lrow {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
+.lrow { display: flex; justify-content: space-between; align-items: baseline; }
 
 label {
-  font-size: 9px;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  font-size: 10px;
+  color: #888;
+  letter-spacing: 0.2px;
   cursor: default;
+  user-select: none;
 }
 
 .val {
-  font-size: 9px;
-  color: #888;
-  min-width: 42px;
+  font-size: 10px;
+  color: #aaa;
+  min-width: 44px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-input[type="text"], select {
-  background: #242424;
-  border: 1px solid #333;
-  color: #ddd;
-  padding: 6px 7px;
+/* inputs genéricos */
+input[type="text"] {
+  background: #222;
+  border: 1px solid #383838;
+  color: #e8e8e8;
+  padding: 6px 8px;
   font-family: monospace;
   font-size: 12px;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   width: 100%;
   outline: none;
+  transition: border-color .12s;
 }
+input[type="text"]:focus { border-color: #666; }
 
-select { cursor: pointer; font-size: 9px; padding: 5px 7px; }
+select {
+  background: #222;
+  border: 1px solid #383838;
+  color: #c8c8c8;
+  padding: 5px 8px;
+  font-family: monospace;
+  font-size: 10px;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+select:focus { border-color: #666; }
 
 input[type="range"] {
   width: 100%;
-  accent-color: #888;
+  accent-color: #aaa;
   cursor: pointer;
-  height: 2px;
-  margin-top: 1px;
+  height: 3px;
 }
 
 .tog {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 3px 0;
+  gap: 8px;
+  padding: 2px 0;
+  margin-bottom: 5px;
 }
-
 input[type="checkbox"] {
-  accent-color: #888;
-  width: 11px;
-  height: 11px;
+  accent-color: #aaa;
+  width: 12px; height: 12px;
   cursor: pointer;
   flex-shrink: 0;
 }
+.tog label { font-size: 10px; color: #888; cursor: pointer; }
 
-hr { border: 0; border-top: 1px solid #222; margin: 4px 0; }
+hr { border: 0; border-top: 1px solid #232323; margin: 5px 0 8px; }
 
-.btns { display: flex; gap: 5px; margin-top: 8px; }
+/* ── LISTA DE SPRAYS ─────────────────────────────────────── */
+#sprayList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 5px;
+}
 
-button {
+.spray-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 5px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: border-color .1s, background .1s;
+}
+.spray-row:hover { background: #212121; }
+.spray-row.active {
+  border-color: #444;
+  background: #222;
+}
+
+/* Input de texto dentro de cada spray-row */
+.spray-txt {
   flex: 1;
-  background: #ddd;
-  color: #000;
+  background: transparent;
+  border: none !important;
+  color: #ddd;
+  font-family: monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  padding: 2px 4px;
+  outline: none;
+  min-width: 0;
+}
+.spray-row.active .spray-txt { color: #fff; }
+
+/* Botón × borrar */
+.del-btn {
+  background: transparent;
   border: none;
-  padding: 9px 4px;
+  color: #444;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 3px;
+  flex-shrink: 0;
+  transition: color .1s;
+}
+.del-btn:hover { color: #cc4444; }
+
+/* Botón añadir spray */
+#btnAddSpray {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed #333;
+  color: #555;
+  padding: 6px;
+  font-family: monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color .12s, border-color .12s;
+  margin-top: 2px;
+}
+#btnAddSpray:hover { color: #aaa; border-color: #666; }
+
+/* ── BOTONES ─────────────────────────────────────────────── */
+.btns { display: flex; gap: 5px; margin-top: 10px; }
+
+button.primary {
+  flex: 1;
+  background: #e0e0e0;
+  color: #111;
+  border: none;
+  padding: 8px 6px;
   cursor: pointer;
   font-weight: bold;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 1px;
   text-transform: uppercase;
   font-family: monospace;
+  transition: background .12s;
 }
-button:hover { background: #fff; }
-button.sec-btn {
-  background: #242424;
-  color: #666;
-  border: 1px solid #333;
-}
-button.sec-btn:hover { background: #2e2e2e; color: #aaa; }
+button.primary:hover { background: #fff; }
 
-.hint { font-size: 7px; color: #333; line-height: 1.5; margin-top: 3px; }
+button.ghost {
+  background: transparent;
+  color: #555;
+  border: 1px solid #2e2e2e;
+  font-size: 9px;
+  padding: 5px 8px;
+  font-family: monospace;
+  cursor: pointer;
+  flex: none;
+  transition: color .12s, border-color .12s;
+}
+button.ghost:hover { color: #aaa; border-color: #555; }
+
+/* inline jitter row */
+.inline-row { display: flex; align-items: center; gap: 6px; }
+.inline-row input[type="range"] { flex: 1; }
+
+.hint { font-size: 8px; color: #333; line-height: 1.6; margin-top: 8px; }
 
 #canvas-parent { flex-grow: 1; background: #fff; }
 </style>
@@ -130,19 +238,21 @@ button.sec-btn:hover { background: #2e2e2e; color: #aaa; }
 <body>
 
 <div id="sidebar">
-  <h1>POLINIZADOR v3.2</h1>
+  <h1>POLINIZADOR v3.4</h1>
 
-  <div class="grp">
-    <label>Palabra</label>
-    <input type="text" id="inText" value="POLINIZADOS"
-           oninput="this.value=this.value.toUpperCase()">
-  </div>
+  <!-- ── SPRAYS ── -->
+  <div class="sec">Sprays</div>
+  <div id="sprayList"></div>
+  <button id="btnAddSpray" onclick="addNewSpray()">+ añadir spray</button>
 
+  <!-- ── FUENTE ── -->
+  <hr>
   <div class="grp">
     <label>Fuente</label>
-    <select id="fontSelect"></select>
+    <select id="fontSelect"><option>cargando…</option></select>
   </div>
 
+  <!-- ── HAZ ── -->
   <hr>
   <div class="sec">Haz</div>
 
@@ -164,16 +274,20 @@ button.sec-btn:hover { background: #2e2e2e; color: #aaa; }
            oninput="document.getElementById('vRout').textContent=this.value+' px'">
   </div>
 
+  <!-- ── JITTER ── -->
   <hr>
   <div class="sec">Jitter</div>
 
   <div class="grp">
     <div class="lrow"><label>Amplitud</label><span class="val" id="vJitter">50 px</span></div>
-    <input type="range" id="inJitter" min="0" max="400" value="50"
-           oninput="document.getElementById('vJitter').textContent=this.value+' px'">
+    <div class="inline-row">
+      <input type="range" id="inJitter" min="0" max="400" value="50"
+             oninput="document.getElementById('vJitter').textContent=this.value+' px'">
+      <button class="ghost" onclick="newJitter()" title="Nueva posición aleatoria">↻</button>
+    </div>
   </div>
-  <button class="sec-btn" onclick="newJitter()">↻ nueva posición</button>
 
+  <!-- ── LÍNEA ── -->
   <hr>
   <div class="sec">Línea</div>
 
@@ -200,6 +314,7 @@ button.sec-btn:hover { background: #2e2e2e; color: #aaa; }
     <label for="checkLinesBack">Líneas detrás de bolas</label>
   </div>
 
+  <!-- ── MOLÉCULAS ── -->
   <hr>
   <div class="sec">Moléculas</div>
 
@@ -214,15 +329,17 @@ button.sec-btn:hover { background: #2e2e2e; color: #aaa; }
            oninput="document.getElementById('vBall').textContent=this.value+' px'">
   </div>
 
+  <!-- ── ACCIONES ── -->
   <hr>
-
   <div class="btns">
-    <button onclick="saveSVG()">Exportar SVG</button>
-    <button class="sec-btn" onclick="resetOrigin()">Reset origen</button>
+    <button class="primary" onclick="saveSVG()">Exportar SVG</button>
+    <button class="ghost" onclick="resetOrigin()" title="Reset origen del spray activo">⌖</button>
   </div>
+
   <p class="hint">
-    Arrastra el • rojo → mueve origen<br>
-    Arrastra en canvas → rota el haz
+    Click en • → selecciona spray<br>
+    Arrastra • → mueve origen<br>
+    Arrastra canvas → rota el spray activo
   </p>
 </div>
 
