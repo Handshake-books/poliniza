@@ -1,16 +1,19 @@
 let font;
 let seed = 0;
 let currentRotation = 0;
+let fontLoaded = false;
 
 function preload() {
-  // Asegúrate de que el nombre coincida con el de tu repositorio
-  font = loadFont('./VulfMono-Bold.otf');
+  // Cargamos la fuente con callbacks para evitar el cuelgue en "Loading"
+  font = loadFont('./VulfMono-Bold.otf', 
+    () => { fontLoaded = true; console.log("Fuente cargada correctamente"); },
+    () => { fontLoaded = false; console.warn("Fallo al cargar fuente, usando Courier"); }
+  );
 }
 
 function setup() {
   let canvas = createCanvas(windowWidth - 320, windowHeight, SVG);
   canvas.parent('canvas-parent');
-  textFont(font);
   textAlign(CENTER, CENTER);
 }
 
@@ -19,7 +22,11 @@ function draw() {
   background(255);
   randomSeed(seed);
 
-  // Rotación interactiva: solo si se hace click en el área blanca
+  // Fuente de respaldo si falla la carga
+  if (fontLoaded) textFont(font);
+  else textFont('Courier New');
+
+  // Solo rotar si el click es en el lienzo
   if (mouseIsPressed && mouseX > 0) {
     currentRotation = map(mouseX, 0, width, -PI, PI);
   }
@@ -34,16 +41,17 @@ function draw() {
   let dashSize = parseInt(document.getElementById('inDash').value);
 
   translate(width / 2, height / 2);
-  
-  // Aplicamos la rotación global para las líneas
-  push();
-  rotate(currentRotation);
 
   for (let i = 0; i < steps; i++) {
-    let theta = (steps > 1) ? map(i, 0, steps - 1, -angle / 2, angle / 2) : 0;
+    // 1. Calculamos el ángulo de la línea (incluyendo la rotación global)
+    let theta = (steps > 1) ? map(i, 0, steps - 1, -angle/2, angle/2) : 0;
+    let finalAngle = theta + currentRotation;
+    
     let rVar = rOutBase + random(-jitter, jitter);
 
-    // Dibujo de línea
+    // DIBUJO DE LÍNEA
+    push();
+    rotate(finalAngle);
     stroke(0);
     strokeWeight(weight);
     if (lStyle === 'dashed') {
@@ -51,38 +59,28 @@ function draw() {
     } else {
       drawingContext.setLineDash([]);
     }
+    line(40, 0, rVar, 0); // Línea desde el hueco central hasta rVar
+    pop();
 
-    let x1 = cos(theta) * 40; // Hueco central
-    let y1 = sin(theta) * 40;
-    let x2 = cos(theta) * rOut;
-    let y2 = sin(theta) * rOut;
-    line(x1, y1, x2, y2);
-
-    // --- DIBUJO DE LETRA ---
-    // Salimos de la rotación de la línea pero mantenemos la posición
+    // DIBUJO DE LETRA (Posición calculada, pero rotación 0)
     push();
-    let lx = cos(theta) * (rOut + 30);
-    let ly = sin(theta) * (rOut + 30);
+    // Calculamos la posición X e Y final de la línea rotada
+    let lx = cos(finalAngle) * (rVar + 30);
+    let ly = sin(finalAngle) * (rVar + 30);
     
-    // Para que la letra esté SIEMPRE a 0º:
-    // 1. Movemos al punto final de la línea rotada
-    // 2. Aplicamos la rotación inversa (negativa) del sistema Y del brazo
     translate(lx, ly);
-    rotate(-(theta + currentRotation));
-    
+    // IMPORTANTE: Aquí NO rotamos nada, se queda en 0 grados
     noStroke();
     fill(0);
-    drawingContext.setLineDash([]); // Reset para el texto
-    textSize(20);
-    // Usamos el módulo para repetir la palabra si hay más líneas que letras
+    drawingContext.setLineDash([]); 
+    textSize(22);
     text(txt[i % txt.length], 0, 0);
     pop();
   }
-  pop();
 }
 
 function saveSVG() {
-  save("vulf_design_vector.svg");
+  save("polinizacion_vector.svg");
 }
 
 function resetRotation() {
