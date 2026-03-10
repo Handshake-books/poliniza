@@ -18,12 +18,14 @@ function draw() {
   background(255);
   randomSeed(seed);
 
-  // Rotación solo en el lienzo
+  let centerX = width / 2;
+  let centerY = height / 2;
+
+  // ROTACIÓN POR POSICIÓN: Sigue al puntero al hacer click
   if (mouseIsPressed && mouseX > 320) {
-    currentRotation = map(mouseX, 320, width, -PI, PI);
+    currentRotation = atan2(mouseY - centerY, mouseX - centerX);
   }
 
-  // Inputs
   let txt = document.getElementById('inText').value;
   let angle = radians(document.getElementById('inAngle').value);
   let rIn = parseInt(document.getElementById('inRin').value);
@@ -31,32 +33,30 @@ function draw() {
   let weight = parseFloat(document.getElementById('inWeight').value);
   let dash = parseInt(document.getElementById('inDash').value);
   let jitter = parseInt(document.getElementById('inJitter').value);
-  
   let useCollision = document.getElementById('checkCollision').checked;
   let showBalls = document.getElementById('checkBalls').checked;
   let ballSize = parseInt(document.getElementById('inBallSize').value);
   let letterPadding = parseInt(document.getElementById('inLetterPadding').value);
 
   let steps = txt.length;
-  let centerX = width / 2;
-  let centerY = height / 2;
-
-  translate(centerX, centerY);
 
   for (let i = 0; i < steps; i++) {
     let theta = (steps > 1) ? map(i, 0, steps - 1, -angle/2, angle/2) : 0;
     let finalAngle = theta + currentRotation;
     
-    // Determinación del largo de la línea
+    // Margen de seguridad para que la bola no se corte
+    let safetyMargin = showBalls ? ballSize/2 + weight : 15;
+    
     let rFinal;
     if (useCollision) {
-      rFinal = calculateCollision(finalAngle, centerX, centerY);
+      rFinal = calculateCollision(finalAngle, safetyMargin);
     } else {
       rFinal = rOutBase + random(-jitter, jitter);
     }
 
-    // 1. Dibujo de la Línea
+    // 1. DIBUJO DE LÍNEA
     push();
+    translate(centerX, centerY);
     rotate(finalAngle);
     stroke(0);
     strokeWeight(weight);
@@ -66,50 +66,54 @@ function draw() {
     line(rIn, 0, rFinal, 0);
     pop();
 
-    // 2. Dibujo de Letra/Bola (Rotación Fija Robusta)
-    // Calculamos posición exacta al final de la línea + padding
+    // 2. DIBUJO DE LETRA / BOLA (Cálculo de posición vertical fija)
     let totalDist = rFinal + letterPadding;
-    let lx = cos(finalAngle) * totalDist;
-    let ly = sin(finalAngle) * totalDist;
+    let lx = centerX + cos(finalAngle) * totalDist;
+    let ly = centerY + sin(finalAngle) * totalDist;
     
     push();
     translate(lx, ly);
-    // IMPORTANTE: NO rotamos el push, para que la letra herede 0 grados.
+    // No hay rotación aquí -> Letra vertical a 0º
     
     if (showBalls) {
       fill(255);
       stroke(0);
-      strokeWeight(1);
+      strokeWeight(weight); // Grosor unificado
       drawingContext.setLineDash([]);
       ellipse(0, 0, ballSize, ballSize);
     }
 
     noStroke();
     fill(0);
-    textSize(22);
+    textSize(ballSize * 0.55); // Escalado dinámico
     drawingContext.setLineDash([]);
-    // Centrado óptico para Vulf Mono Bold
-    text(txt[i % txt.length], 0, 5); 
+    
+    // Ajuste de centrado vertical: 
+    // Bajamos la letra un 15% del tamaño de la bola para centrarla ópticamente
+    text(txt[i], 0, ballSize * 0.08); 
     pop();
   }
 }
 
-// Función de colisión con bordes del lienzo
-function calculateCollision(a, cx, cy) {
+function calculateCollision(a, margin) {
   let dx = cos(a);
   let dy = sin(a);
   let t = Infinity;
   
-  if (dx > 0) t = min(t, (width/2) / dx);
-  if (dx < 0) t = min(t, (-width/2) / dx);
-  if (dy > 0) t = min(t, (height/2) / dy);
-  if (dy < 0) t = min(t, (-height/2) / dy);
+  // Límites ajustados con el margen de la bola
+  let limitW = width/2 - margin;
+  let limitH = height/2 - margin;
   
-  return t;
+  if (dx > 0) t = min(t, limitW / dx);
+  if (dx < 0) t = min(t, -limitW / dx);
+  if (dy > 0) t = min(t, limitH / dy);
+  if (dy < 0) t = min(t, -limitH / dy);
+  
+  return max(0, t);
 }
 
 function saveSVG() {
-  save("vulf_master_v2.5.svg");
+  save("vulf_design_v2.6.svg");
 }
 
 function resetRotation() {

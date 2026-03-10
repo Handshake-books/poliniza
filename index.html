@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>POLINIZADOR VULF v2.5 - MASTER</title>
+    <title>POLINIZADOR VULF v2.6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
     <style>
@@ -21,7 +21,7 @@
 </head>
 <body>
     <div id="sidebar">
-        <h1>Vulf Master v2.5</h1>
+        <h1>Vulf Master v2.6</h1>
         <div class="group">
             <label>Palabra</label>
             <input type="text" id="inText" value="POLINIZADOS">
@@ -35,18 +35,22 @@
             <input type="range" id="inRin" min="0" max="200" value="40">
         </div>
         <div class="group">
-            <label>Largo Línea (rOut)</label>
-            <input type="range" id="inRout" min="10" max="1000" value="300">
+            <label>Distancia Letra (Padding)</label>
+            <input type="range" id="inLetterPadding" min="0" max="150" value="25">
+        </div>
+        <div class="group">
+            <label>Largo Spray (rOut)</label>
+            <input type="range" id="inRout" min="10" max="1200" value="300">
         </div>
         <div class="row">
             <input type="checkbox" id="checkCollision"> 
-            <label>Proyectar a Bordes</label>
+            <label>Auto-Ajustar a Bordes</label>
         </div>
         
         <hr>
         
         <div class="group">
-            <label>Grosor Línea</label>
+            <label>Grosor General (Línea + Bolas)</label>
             <input type="range" id="inWeight" min="0.5" max="10" step="0.5" value="1.5">
         </div>
         <div class="group">
@@ -66,11 +70,7 @@
         </div>
         <div class="group">
             <label>Tamaño Bolita</label>
-            <input type="range" id="inBallSize" min="10" max="100" value="40">
-        </div>
-        <div class="group">
-            <label>Distancia Letra (Padding)</label>
-            <input type="range" id="inLetterPadding" min="0" max="100" value="25">
+            <input type="range" id="inBallSize" min="10" max="120" value="40">
         </div>
 
         <button onclick="saveSVG()">Exportar SVG</button>
