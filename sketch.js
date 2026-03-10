@@ -44,11 +44,10 @@ function draw() {
     
     let safetyMargin = showBalls ? (ballSize/2 + weight) : (weight * 2 + 10);
     
-    // Aplicamos Jitter al largo base antes de calcular la colisión
+    // CORRECCIÓN JITTER: Se aplica a cada línea de forma individual
     let rConJitter = rOutBase + random(-jitter, jitter);
     let rMax = calculateCollision(finalAngle, safetyMargin);
     
-    // El radio final respeta el choque con el borde
     let rFinal = min(rConJitter, rMax);
 
     // 1. LÍNEA
@@ -62,7 +61,7 @@ function draw() {
     line(rIn, 0, rFinal, 0);
     pop();
 
-    // 2. LETRA / BOLA (Vertical fija)
+    // 2. LETRA / BOLA
     let distWithPadding = rFinal + letterPadding;
     let lx = centerX + cos(finalAngle) * distWithPadding;
     let ly = centerY + sin(finalAngle) * distWithPadding;
@@ -85,7 +84,10 @@ function draw() {
     fill(0);
     textSize(ballSize * 0.6);
     drawingContext.setLineDash([]);
-    text(txt[i], 0, ballSize * 0.12); 
+    
+    // CORRECCIÓN CENTRADO: Se ha subido el offset (de 0.12 a 0.04) 
+    // para que la Vulf Mono Bold no aparezca caída.
+    text(txt[i], 0, ballSize * 0.04); 
     pop();
   }
 }
@@ -94,8 +96,8 @@ function calculateCollision(a, margin) {
   let dx = cos(a);
   let dy = sin(a);
   let t = Infinity;
-  let innerW = width/2 - margin;
-  let innerH = height/2 - margin;
+  let innerW = (width/2) - margin;
+  let innerH = (height/2) - margin;
   if (dx > 0) t = min(t, innerW / dx);
   if (dx < 0) t = min(t, -innerW / dx);
   if (dy > 0) t = min(t, innerH / dy);
@@ -104,7 +106,7 @@ function calculateCollision(a, margin) {
 }
 
 function saveSVG() {
-  save("vulf_master_v2.8.svg");
+  save("vulf_master_v2.9.svg");
 }
 
 function resetRotation() {

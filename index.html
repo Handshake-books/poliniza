@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>POLINIZADOR VULF v2.8</title>
+    <title>POLINIZADOR VULF v2.9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
     <style>
@@ -12,16 +12,16 @@
         .group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 5px; }
         .row { display: flex; align-items: center; gap: 8px; font-size: 10px; }
         label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
-        input, select { background: #333; border: 1px solid #555; color: white; padding: 6px; font-family: monospace; font-size: 11px; }
+        input { background: #333; border: 1px solid #555; color: white; padding: 6px; font-family: monospace; font-size: 11px; }
         input[type="range"] { padding: 0; accent-color: #fff; }
-        button { background: #fff; color: #000; border: none; padding: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+        button { background: #fff; color: #000; border: none; padding: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
         button:hover { background: #ddd; }
         hr { border: 0; border-top: 1px solid #444; margin: 10px 0; }
     </style>
 </head>
 <body>
     <div id="sidebar">
-        <h1>Vulf Master v2.8</h1>
+        <h1>Vulf Master v2.9</h1>
         <div class="group">
             <label>Palabra</label>
             <input type="text" id="inText" value="POLINIZADOS">
@@ -40,7 +40,7 @@
         </div>
         <div class="group">
             <label>Caos / Jitter</label>
-            <input type="range" id="inJitter" min="0" max="300" value="0">
+            <input type="range" id="inJitter" min="0" max="300" value="50">
         </div>
         
         <hr>
