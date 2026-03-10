@@ -3,11 +3,12 @@ let seed = 0;
 let currentRotation = 0;
 
 function preload() {
+  // Asegúrate de que el nombre coincida con el de tu repositorio
   font = loadFont('./VulfMono-Bold.otf');
 }
 
 function setup() {
-  let canvas = createCanvas(windowWidth - 300, windowHeight, SVG);
+  let canvas = createCanvas(windowWidth - 320, windowHeight, SVG);
   canvas.parent('canvas-parent');
   textFont(font);
   textAlign(CENTER, CENTER);
@@ -18,55 +19,74 @@ function draw() {
   background(255);
   randomSeed(seed);
 
-  // Interacción: solo rota si el mouse está presionado en el canvas
+  // Rotación interactiva: solo si se hace click en el área blanca
   if (mouseIsPressed && mouseX > 0) {
     currentRotation = map(mouseX, 0, width, -PI, PI);
   }
 
-  // Captura de inputs del DOM
   let txt = document.getElementById('inText').value;
   let angle = radians(document.getElementById('inAngle').value);
-  let rIn = parseInt(document.getElementById('inRin').value);
+  let steps = parseInt(document.getElementById('inSteps').value);
   let rOutBase = parseInt(document.getElementById('inRout').value);
-  let steps = parseInt(document.getElementById('inDensity').value);
   let jitter = parseInt(document.getElementById('inJitter').value);
   let weight = parseFloat(document.getElementById('inWeight').value);
+  let lStyle = document.getElementById('inStyle').value;
+  let dashSize = parseInt(document.getElementById('inDash').value);
 
   translate(width / 2, height / 2);
+  
+  // Aplicamos la rotación global para las líneas
+  push();
   rotate(currentRotation);
 
   for (let i = 0; i < steps; i++) {
-    let theta = map(i, 0, steps - 1, -angle / 2, angle / 2);
-    let rOut = rOutBase + random(-jitter, jitter);
+    let theta = (steps > 1) ? map(i, 0, steps - 1, -angle / 2, angle / 2) : 0;
+    let rVar = rOutBase + random(-jitter, jitter);
 
-    let x1 = cos(theta) * rIn;
-    let y1 = sin(theta) * rIn;
-    let x2 = cos(theta) * rOut;
-    let y2 = sin(theta) * rOut;
-
+    // Dibujo de línea
     stroke(0);
     strokeWeight(weight);
+    if (lStyle === 'dashed') {
+      drawingContext.setLineDash([dashSize, dashSize]);
+    } else {
+      drawingContext.setLineDash([]);
+    }
+
+    let x1 = cos(theta) * 40; // Hueco central
+    let y1 = sin(theta) * 40;
+    let x2 = cos(theta) * rOut;
+    let y2 = sin(theta) * rOut;
     line(x1, y1, x2, y2);
 
-    // DIBUJO DE LETRA RECTA
+    // --- DIBUJO DE LETRA ---
+    // Salimos de la rotación de la línea pero mantenemos la posición
     push();
-    let lx = cos(theta) * (rOut + 25);
-    let ly = sin(theta) * (rOut + 25);
-    translate(lx, ly);
+    let lx = cos(theta) * (rOut + 30);
+    let ly = sin(theta) * (rOut + 30);
     
-    // Cancelamos la rotación del brazo Y la rotación global del ratón
+    // Para que la letra esté SIEMPRE a 0º:
+    // 1. Movemos al punto final de la línea rotada
+    // 2. Aplicamos la rotación inversa (negativa) del sistema Y del brazo
+    translate(lx, ly);
     rotate(-(theta + currentRotation));
     
     noStroke();
     fill(0);
-    textSize(18);
+    drawingContext.setLineDash([]); // Reset para el texto
+    textSize(20);
+    // Usamos el módulo para repetir la palabra si hay más líneas que letras
     text(txt[i % txt.length], 0, 0);
     pop();
   }
+  pop();
 }
 
 function saveSVG() {
-  save("polinizacion_vulf.svg");
+  save("vulf_design_vector.svg");
+}
+
+function resetRotation() {
+  currentRotation = 0;
 }
 
 function keyPressed() {
@@ -74,5 +94,5 @@ function keyPressed() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth - 300, windowHeight);
+  resizeCanvas(windowWidth - 320, windowHeight);
 }

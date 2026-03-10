@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador Polinización Vulf</title>
+    <title>POLINIZADOR VULF PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
     <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
     <style>
@@ -12,70 +11,87 @@
             src: url('./VulfMono-Bold.otf') format('opentype');
         }
 
-        body { margin: 0; display: flex; background: #f0f0f0; font-family: sans-serif; height: 100vh; overflow: hidden; }
+        body { margin: 0; display: flex; background: #1a1a1a; font-family: sans-serif; height: 100vh; overflow: hidden; color: white; }
         
         #sidebar { 
-            width: 300px; background: #fff; padding: 25px; border-right: 1px solid #ddd;
-            display: flex; flex-direction: column; gap: 15px; box-shadow: 5px 0 15px rgba(0,0,0,0.05);
-            z-index: 10;
+            width: 320px; background: #222; padding: 25px; border-right: 1px solid #444;
+            display: flex; flex-direction: column; gap: 12px; overflow-y: auto;
         }
 
-        h1 { font-size: 14px; margin: 0 0 10px 0; border-bottom: 2px solid #000; padding-bottom: 5px; font-family: 'Vulf Mono Bold', monospace; }
-        .group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #666; }
-        input, select { padding: 8px; border: 1px solid #ccc; font-family: monospace; }
-        
-        .hint { font-size: 10px; color: #999; margin-top: 10px; line-height: 1.4; }
+        h1 { font-size: 14px; border-bottom: 2px solid #fff; padding-bottom: 5px; font-family: 'Vulf Mono Bold', monospace; }
+        .group { display: flex; flex-direction: column; gap: 4px; }
+        label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
+        input, select { background: #333; border: 1px solid #555; color: white; padding: 8px; font-family: monospace; font-size: 12px; }
+        input[type="range"] { padding: 0; accent-color: #fff; }
+
         button { 
-            background: #000; color: #fff; border: none; padding: 12px; cursor: pointer; 
-            font-weight: bold; text-transform: uppercase; margin-top: 10px;
+            background: #fff; color: #000; border: none; padding: 12px; cursor: pointer; 
+            font-weight: bold; text-transform: uppercase; margin-top: 5px;
         }
-        button:hover { background: #333; }
+        button:hover { background: #ddd; }
+        .hint { font-size: 10px; color: #666; line-height: 1.4; margin-top: 10px; }
     </style>
 </head>
 <body>
     <div id="sidebar">
-        <h1>Vulf Pollen Tool</h1>
+        <h1>Vulf Tool v2.0</h1>
         
         <div class="group">
-            <label>Texto</label>
-            <input type="text" id="inText" value="POLINIZADOS">
+            <label>Palabra / Semilla</label>
+            <input type="text" id="inText" value="POLINIZADOS" oninput="updateDensity()">
         </div>
         <div class="group">
             <label>Apertura (º)</label>
-            <input type="range" id="inAngle" min="10" max="360" value="85">
+            <input type="range" id="inAngle" min="5" max="360" value="90">
         </div>
         <div class="group">
-            <label>Radio Central</label>
-            <input type="range" id="inRin" min="0" max="150" value="40">
+            <label>Número de Líneas</label>
+            <input type="number" id="inSteps" value="12">
         </div>
         <div class="group">
             <label>Largo Spray</label>
-            <input type="range" id="inRout" min="50" max="450" value="300">
+            <input type="range" id="inRout" min="50" max="500" value="300">
         </div>
         <div class="group">
-            <label>Densidad</label>
-            <input type="range" id="inDensity" min="1" max="80" value="12">
+            <label>Estilo de Línea</label>
+            <select id="inStyle">
+                <option value="solid">Sólida</option>
+                <option value="dashed">Punteada</option>
+            </select>
+        </div>
+        <div class="group">
+            <label>Punteado (Ancho / Espacio)</label>
+            <input type="range" id="inDash" min="1" max="20" value="5">
+        </div>
+        <div class="group">
+            <label>Grosor Trazo</label>
+            <input type="range" id="inWeight" min="0.5" max="10" step="0.5" value="1.5">
         </div>
         <div class="group">
             <label>Caos (Jitter)</label>
-            <input type="range" id="inJitter" min="0" max="150" value="0">
-        </div>
-        <div class="group">
-            <label>Grosor</label>
-            <input type="range" id="inWeight" min="0.5" max="10" step="0.5" value="1.5">
+            <input type="range" id="inJitter" min="0" max="200" value="0">
         </div>
 
-        <button onclick="saveSVG()">Descargar SVG</button>
+        <button onclick="saveSVG()">Exportar SVG</button>
+        <button style="background:#444; color:white;" onclick="resetRotation()">Reset Rotación</button>
         
         <div class="hint">
-            • CLICK + ARRASTRAR: Rotar sistema.<br>
-            • TECLA R: Variar aleatoriedad.<br>
-            • Las letras mantienen 0º siempre.
+            • CLICK + ARRASTRAR para rotar.<br>
+            • R: Variar aleatoriedad.<br>
+            • Letras bloqueadas a 0º.
         </div>
     </div>
 
-    <div id="canvas-parent" style="flex-grow:1;"></div>
+    <div id="canvas-parent" style="flex-grow:1; background:#fff;"></div>
+
+    <script>
+        function updateDensity() {
+            const txt = document.getElementById('inText').value;
+            document.getElementById('inSteps').value = txt.length;
+        }
+        // Inicializar densidad al cargar
+        window.onload = updateDensity;
+    </script>
     <script src="sketch.js"></script>
 </body>
 </html>
