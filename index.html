@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+    <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
+    <style>
+        @font-face {
+            font-family: 'Vulf Mono Bold';
+            src: url('VulfMono-Bold.otf') format('opentype');
+        }
+
+        body { margin: 0; background: #f4f4f4; font-family: 'Vulf Mono Bold', monospace; overflow: hidden; }
+        
+        #ui { 
+            position: absolute; top: 0; left: 0; bottom: 0; 
+            width: 260px; background: white; padding: 25px; 
+            border-right: 2px solid #000; display: flex; flex-direction: column; gap: 15px;
+            box-shadow: 10px 0 20px rgba(0,0,0,0.05); z-index: 100;
+        }
+
+        h1 { font-size: 12px; border-bottom: 2px solid #000; padding-bottom: 5px; margin: 0; }
+        .control-group { display: flex; flex-direction: column; gap: 4px; }
+        label { font-size: 9px; text-transform: uppercase; font-weight: bold; color: #555; }
+        
+        input[type="range"] { width: 100%; accent-color: #000; }
+        input[type="text"], select { 
+            padding: 8px; border: 1px solid #000; 
+            font-family: 'Vulf Mono Bold', monospace; font-size: 11px;
+        }
+
+        .shortcuts { margin-top: auto; font-size: 10px; background: #000; color: #fff; padding: 10px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <h1>VULF SPRAY-POLLEN</h1>
+        
+        <div class="control-group">
+            <label>Texto</label>
+            <input type="text" id="in_text" value="POLINIZADOS">
+        </div>
+
+        <div class="control-group">
+            <label>Apertura Grados</label>
+            <input type="range" id="in_angle" min="5" max="360" value="80">
+        </div>
+
+        <div class="control-group">
+            <label>Hueco Central</label>
+            <input type="range" id="in_rin" min="0" max="150" value="35">
+        </div>
+
+        <div class="control-group">
+            <label>Longitud Spray</label>
+            <input type="range" id="in_rout" min="50" max="500" value="320">
+        </div>
+
+        <div class="control-group">
+            <label>Densidad de Líneas</label>
+            <input type="range" id="in_density" min="1" max="100" value="12">
+        </div>
+
+        <div class="control-group">
+            <label>Caos / Jitter</label>
+            <input type="range" id="in_jitter" min="0" max="200" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>Estilo de Trazo</label>
+            <select id="in_style">
+                <option value="1">Sólido Fino</option>
+                <option value="2">Punteado</option>
+                <option value="3">Degradado Grosor</option>
+            </select>
+        </div>
+
+        <div class="shortcuts">
+            [S] EXPORTAR SVG <br>
+            [R] REGENERAR CAOS <br>
+            [MOUSE] ROTAR SISTEMA
+        </div>
+    </div>
+
+    <script>
+        let font;
+        let seed = 0;
+
+        function preload() {
+            // Intentamos cargar el OTF localmente
+            font = loadFont('VulfMono-Bold.otf');
+        }
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight, SVG);
+            textFont(font);
+            textAlign(CENTER, CENTER);
+        }
+
+        function draw() {
+            clear();
+            background(255);
+            randomSeed(seed);
+
+            // Obtener valores de la interfaz
+            let txt = document.getElementById('in_text').value;
+            let angleDeg = radians(document.getElementById('in_angle').value);
+            let rIn = parseInt(document.getElementById('in_rin').value);
+            let rOutBase = parseInt(document.getElementById('in_rout').value);
+            let steps = parseInt(document.getElementById('in_density').value);
+            let jitter = parseInt(document.getElementById('in_jitter').value);
+            let style = document.getElementById('in_style').value;
+
+            // La rotación global sigue al mouse o al eje vertical
+            let globalRot = map(mouseX, 0, width, -PI, PI);
+            
+            translate(width / 2 + 130, height / 2); // Centrado desplazado por el menú
+            rotate(globalRot);
+
+            for (let i = 0; i < steps; i++) {
+                // Cálculo de ángulo individual
+                let theta = map(i, 0, steps - 1, -angleDeg/2, angleDeg/2);
+                
+                // Variación aleatoria controlada
+                let rVar = rOutBase + random(-jitter, jitter);
+                
+                let x1 = cos(theta) * rIn;
+                let y1 = sin(theta) * rIn;
+                let x2 = cos(theta) * rVar;
+                let y2 = sin(theta) * rVar;
+
+                // Aplicar estilo de línea
+                stroke(0);
+                if (style == "1") {
+                    strokeWeight(1);
+                    drawingContext.setLineDash([]);
+                } else if (style == "2") {
+                    strokeWeight(1.5);
+                    drawingContext.setLineDash([2, 6]);
+                } else if (style == "3") {
+                    strokeWeight(map(i, 0, steps, 0.5, 4));
+                    drawingContext.setLineDash([]);
+                }
+
+                line(x1, y1, x2, y2);
+
+                // --- DIBUJO DE LETRA ---
+                push();
+                // Posicionamos al final de la línea + un margen
+                let lx = cos(theta) * (rVar + 25);
+                let ly = sin(theta) * (rVar + 25);
+                
+                translate(lx, ly);
+                
+                // ANULACIÓN TOTAL DE ROTACIÓN
+                // Para que la letra esté siempre recta respecto a la pantalla:
+                // Debemos restar la rotación del brazo (theta) y la rotación global (globalRot)
+                rotate(-(theta + globalRot));
+                
+                noStroke();
+                fill(0);
+                textSize(18);
+                text(txt[i % txt.length], 0, 0);
+                pop();
+            }
+        }
+
+        function keyPressed() {
+            if (key === 's' || key === 'S') {
+                save("vulf_pollen_design.svg");
+            }
+            if (key === 'r' || key === 'R') {
+                seed = floor(random(10000));
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
+</body>
+</html>
