@@ -18,94 +18,98 @@ function draw() {
   background(255);
   randomSeed(seed);
 
+  // Rotación solo en el lienzo
   if (mouseIsPressed && mouseX > 320) {
     currentRotation = map(mouseX, 320, width, -PI, PI);
   }
 
+  // Inputs
   let txt = document.getElementById('inText').value;
   let angle = radians(document.getElementById('inAngle').value);
+  let rIn = parseInt(document.getElementById('inRin').value);
+  let rOutBase = parseInt(document.getElementById('inRout').value);
   let weight = parseFloat(document.getElementById('inWeight').value);
   let dash = parseInt(document.getElementById('inDash').value);
+  let jitter = parseInt(document.getElementById('inJitter').value);
+  
+  let useCollision = document.getElementById('checkCollision').checked;
   let showBalls = document.getElementById('checkBalls').checked;
   let ballSize = parseInt(document.getElementById('inBallSize').value);
-  let ballWeight = parseFloat(document.getElementById('inBallWeight').value);
-  let margin = parseInt(document.getElementById('inMargin').value);
+  let letterPadding = parseInt(document.getElementById('inLetterPadding').value);
 
   let steps = txt.length;
-  let centerX = (width) / 2;
+  let centerX = width / 2;
   let centerY = height / 2;
 
-  // Dibujar guía visual de la "superficie" (opcional, invisible en el SVG final)
-  noFill(); stroke(230); strokeWeight(1);
-  rect(margin, margin, width - margin * 2, height - margin * 2);
+  translate(centerX, centerY);
 
   for (let i = 0; i < steps; i++) {
     let theta = (steps > 1) ? map(i, 0, steps - 1, -angle/2, angle/2) : 0;
     let finalAngle = theta + currentRotation;
-
-    // --- LÓGICA DE PROYECCIÓN HASTA EL BORDE ---
-    // Raycasting simple contra el rectángulo del margen
-    let dirX = cos(finalAngle);
-    let dirY = sin(finalAngle);
     
-    // Límites de la caja
-    let left = margin - centerX;
-    let right = (width - margin) - centerX;
-    let top = margin - centerY;
-    let bottom = (height - margin) - centerY;
+    // Determinación del largo de la línea
+    let rFinal;
+    if (useCollision) {
+      rFinal = calculateCollision(finalAngle, centerX, centerY);
+    } else {
+      rFinal = rOutBase + random(-jitter, jitter);
+    }
 
-    let t = Infinity;
-    if (dirX > 0) t = min(t, right / dirX);
-    if (dirX < 0) t = min(t, left / dirX);
-    if (dirY > 0) t = min(t, bottom / dirY);
-    if (dirY < 0) t = min(t, top / dirY);
-
-    let rHit = t; // El spray "golpea" a esta distancia
-
+    // 1. Dibujo de la Línea
     push();
-    translate(centerX, centerY);
-    
-    // DIBUJO DE LÍNEA
+    rotate(finalAngle);
     stroke(0);
     strokeWeight(weight);
-    if (dash > 0) {
-      drawingContext.setLineDash([dash, dash]);
-    } else {
-      drawingContext.setLineDash([]);
-    }
-    line(0, 0, dirX * rHit, dirY * rHit);
+    if (dash > 0) drawingContext.setLineDash([dash, dash]);
+    else drawingContext.setLineDash([]);
+    
+    line(rIn, 0, rFinal, 0);
+    pop();
 
-    // DIBUJO DE LETRA + BOLA
-    // Posicionamos exactamente en el punto de choque
-    let lx = dirX * rHit;
-    let ly = dirY * rHit;
+    // 2. Dibujo de Letra/Bola (Rotación Fija Robusta)
+    // Calculamos posición exacta al final de la línea + padding
+    let totalDist = rFinal + letterPadding;
+    let lx = cos(finalAngle) * totalDist;
+    let ly = sin(finalAngle) * totalDist;
     
     push();
     translate(lx, ly);
-    rotate(-finalAngle); // Corregimos para que el siguiente push sea neutro
+    // IMPORTANTE: NO rotamos el push, para que la letra herede 0 grados.
     
-    // Bolita
     if (showBalls) {
       fill(255);
       stroke(0);
-      strokeWeight(ballWeight);
+      strokeWeight(1);
       drawingContext.setLineDash([]);
       ellipse(0, 0, ballSize, ballSize);
     }
 
-    // Letra: Ajuste fino de centrado para Vulf Mono Bold
     noStroke();
     fill(0);
-    textSize(ballSize * 0.5); // Escalado automático al tamaño de la bola
-    text(txt[i], 0, ballSize * 0.05); 
-    pop();
-    
+    textSize(22);
+    drawingContext.setLineDash([]);
+    // Centrado óptico para Vulf Mono Bold
+    text(txt[i % txt.length], 0, 5); 
     pop();
   }
 }
 
+// Función de colisión con bordes del lienzo
+function calculateCollision(a, cx, cy) {
+  let dx = cos(a);
+  let dy = sin(a);
+  let t = Infinity;
+  
+  if (dx > 0) t = min(t, (width/2) / dx);
+  if (dx < 0) t = min(t, (-width/2) / dx);
+  if (dy > 0) t = min(t, (height/2) / dy);
+  if (dy < 0) t = min(t, (-height/2) / dy);
+  
+  return t;
+}
+
 function saveSVG() {
-  save("vulf_collision_v2.4.svg");
+  save("vulf_master_v2.5.svg");
 }
 
 function resetRotation() {
