@@ -397,6 +397,7 @@ window.addEventListener('keydown', function(e) {
       cb.checked = !cb.checked;
       break;
     }
+    case 's': case 'S': saveSVG(); break;
 
     case 'ArrowLeft':
       e.preventDefault();
