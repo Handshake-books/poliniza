@@ -1,265 +1,248 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>POLINIZADOR v3.0</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=National+Park:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
-    <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0; display: flex;
-            background: #1a1a1a;
-            height: 100vh; overflow: hidden;
-            color: white;
-            font-family: 'National Park', monospace;
-        }
-        #sidebar {
-            width: 300px;
-            background: #1e1e1e;
-            padding: 18px 16px 30px;
-            border-right: 1px solid #333;
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            overflow-y: auto;
-            z-index: 100;
-        }
-        h1 {
-            font-size: 12px;
-            border-bottom: 2px solid #fff;
-            padding-bottom: 5px;
-            font-family: monospace;
-            margin: 0 0 8px;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-        .group { display: flex; flex-direction: column; gap: 3px; }
-        label {
-            font-size: 9px;
-            text-transform: uppercase;
-            color: #666;
-            letter-spacing: 0.8px;
-        }
-        /* Fila slider + número editable */
-        .slider-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .slider-row input[type="range"] {
-            flex: 1;
-            accent-color: #fff;
-            padding: 0;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-        .num-input {
-            width: 46px;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: #ddd;
-            font-family: monospace;
-            font-size: 10px;
-            padding: 3px 5px;
-            text-align: right;
-            -moz-appearance: textfield;
-        }
-        .num-input::-webkit-inner-spin-button,
-        .num-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-        .num-input:focus { outline: 1px solid #777; border-color: #777; }
+  <meta charset="UTF-8">
+  <title>POLINIZADOR v3.1</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+  <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      display: flex; height: 100vh; overflow: hidden;
+      background: #161616; color: #ddd;
+      font-family: 'Courier New', monospace;
+    }
 
-        input[type="text"] {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: white;
-            padding: 7px 8px;
-            font-family: 'National Park', monospace;
-            font-size: 14px;
-            width: 100%;
-            letter-spacing: 1px;
-        }
-        .row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 10px;
-            color: #aaa;
-        }
-        input[type="checkbox"] { accent-color: #fff; width: 13px; height: 13px; }
-        hr { border: 0; border-top: 1px solid #2c2c2c; margin: 5px 0; }
+    #sidebar {
+      width: 290px; min-width: 290px;
+      background: #1c1c1c;
+      border-right: 1px solid #2e2e2e;
+      display: flex; flex-direction: column;
+      gap: 6px; padding: 16px 14px 28px;
+      overflow-y: auto; z-index: 10;
+    }
 
-        button {
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-family: 'National Park', monospace;
-            font-size: 10px;
-            letter-spacing: 0.5px;
-            margin-top: 2px;
-            transition: background 0.1s;
-        }
-        button:hover { background: #ddd; }
-        button.secondary {
-            background: #2a2a2a;
-            color: #aaa;
-            border: 1px solid #444;
-        }
-        button.secondary:hover { background: #333; color: #fff; }
-        button.accent {
-            background: #2255ee;
-            color: #fff;
-        }
-        button.accent:hover { background: #3366ff; }
-        button.toggle {
-            background: #2a2a2a;
-            color: #aaa;
-            border: 1px solid #444;
-        }
-        button.toggle.active {
-            background: #e8f000;
-            color: #000;
-            border-color: #e8f000;
-        }
-        button.toggle:hover { background: #333; color: #fff; }
-        button.toggle.active:hover { background: #d4dc00; }
-    </style>
+    h1 {
+      font-size: 11px; letter-spacing: 2px;
+      text-transform: uppercase; color: #fff;
+      border-bottom: 1px solid #3a3a3a;
+      padding-bottom: 8px; margin-bottom: 4px;
+      font-family: monospace;
+    }
+
+    .section-label {
+      font-size: 8px; letter-spacing: 1.5px;
+      text-transform: uppercase; color: #444;
+      margin-top: 4px; margin-bottom: 1px;
+    }
+
+    hr { border: none; border-top: 1px solid #252525; margin: 4px 0; }
+
+    .group { display: flex; flex-direction: column; gap: 2px; }
+
+    label.lbl {
+      font-size: 8.5px; text-transform: uppercase;
+      color: #555; letter-spacing: 0.7px;
+    }
+
+    .slider-row { display: flex; align-items: center; gap: 5px; }
+    .slider-row input[type=range] {
+      flex: 1; accent-color: #fff; cursor: pointer;
+      background: none; border: none; padding: 0;
+    }
+    input.num {
+      width: 44px; background: #252525;
+      border: 1px solid #383838; color: #ccc;
+      font-family: monospace; font-size: 10px;
+      padding: 2px 4px; text-align: right;
+      -moz-appearance: textfield;
+    }
+    input.num::-webkit-inner-spin-button,
+    input.num::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input.num:focus { outline: none; border-color: #666; }
+
+    input[type=text] {
+      width: 100%; background: #252525;
+      border: 1px solid #383838; color: #ddd;
+      padding: 6px 8px; font-size: 13px;
+      font-family: monospace; letter-spacing: 1px;
+    }
+
+    /* Selector de fuente */
+    .font-row {
+      display: flex; align-items: center; gap: 6px;
+    }
+    select#inFont {
+      flex: 1; background: #252525;
+      border: 1px solid #383838; color: #ddd;
+      padding: 5px 6px; font-size: 10px;
+      font-family: monospace; cursor: pointer;
+    }
+    select#inFont option { background: #252525; }
+    #fontStatus {
+      font-size: 11px; min-width: 14px; text-align: center;
+      color: #666;
+    }
+
+    .check-row { display: flex; align-items: center; gap: 7px; }
+    .check-row input[type=checkbox] { accent-color: #fff; width: 13px; height: 13px; }
+    .check-row label { font-size: 9px; text-transform: uppercase; color: #666; }
+
+    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 2px; }
+    .btn-grid.single { grid-template-columns: 1fr; }
+
+    button {
+      border: none; padding: 9px 6px; cursor: pointer;
+      font-family: monospace;
+      font-size: 9px; font-weight: bold;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      transition: background 0.1s, color 0.1s;
+    }
+    button.primary   { background: #fff; color: #000; }
+    button.primary:hover { background: #e0e0e0; }
+    button.blue      { background: #1a4fff; color: #fff; }
+    button.blue:hover { background: #2d5fff; }
+    button.dark      { background: #2a2a2a; color: #aaa; border: 1px solid #3a3a3a; }
+    button.dark:hover { background: #333; color: #ddd; }
+    button.toggle    { background: #2a2a2a; color: #888; border: 1px solid #3a3a3a; }
+    button.toggle.active { background: #d4e000; color: #000; border-color: #d4e000; }
+    button.toggle:hover  { background: #333; color: #ccc; }
+    button.toggle.active:hover { background: #bfca00; }
+  </style>
 </head>
 <body>
-    <div id="sidebar">
-        <h1>Polinizador v3.0</h1>
+  <div id="sidebar">
+    <h1>Polinizador v3.1</h1>
 
-        <div class="group">
-            <label>Palabra</label>
-            <input type="text" id="inText" value="POLINIZADOS">
-        </div>
-
-        <hr>
-
-        <div class="group">
-            <label>Apertura (º)</label>
-            <div class="slider-row">
-                <input type="range" id="inAngle" min="5" max="360" value="90"
-                    oninput="syncNum(this, 'nAngle')">
-                <input type="number" class="num-input" id="nAngle" value="90"
-                    oninput="syncSlider(this, 'inAngle')" min="5" max="360">
-            </div>
-        </div>
-
-        <div class="group">
-            <label>Hueco Central (rIn)</label>
-            <div class="slider-row">
-                <input type="range" id="inRin" min="0" max="1500" value="40"
-                    oninput="syncNum(this, 'nRin')">
-                <input type="number" class="num-input" id="nRin" value="40"
-                    oninput="syncSlider(this, 'inRin')" min="0" max="1500">
-            </div>
-        </div>
-
-        <div class="group">
-            <label>Largo Spray (rOut)</label>
-            <div class="slider-row">
-                <input type="range" id="inRout" min="10" max="1500" value="400"
-                    oninput="syncNum(this, 'nRout')">
-                <input type="number" class="num-input" id="nRout" value="400"
-                    oninput="syncSlider(this, 'inRout')" min="10" max="1500">
-            </div>
-        </div>
-
-        <div class="group">
-            <label>Caos / Jitter</label>
-            <div class="slider-row">
-                <input type="range" id="inJitter" min="0" max="300" value="50"
-                    oninput="syncNum(this, 'nJitter')">
-                <input type="number" class="num-input" id="nJitter" value="50"
-                    oninput="syncSlider(this, 'inJitter')" min="0" max="300">
-            </div>
-        </div>
-
-        <hr>
-
-        <div class="group">
-            <label>Grosor Maestro</label>
-            <div class="slider-row">
-                <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5"
-                    oninput="syncNum(this, 'nWeight')">
-                <input type="number" class="num-input" id="nWeight" value="1.5"
-                    oninput="syncSlider(this, 'inWeight')" min="0.5" max="12" step="0.5">
-            </div>
-        </div>
-
-        <div class="group">
-            <label>Punteado</label>
-            <div class="slider-row">
-                <input type="range" id="inDash" min="0" max="30" value="0"
-                    oninput="syncNum(this, 'nDash')">
-                <input type="number" class="num-input" id="nDash" value="0"
-                    oninput="syncSlider(this, 'inDash')" min="0" max="30">
-            </div>
-        </div>
-
-        <hr>
-
-        <div class="row">
-            <input type="checkbox" id="checkBalls" checked>
-            <label style="color:#aaa;">Activar Bolitas</label>
-        </div>
-
-        <div class="group">
-            <label>Tamaño Bolita</label>
-            <div class="slider-row">
-                <input type="range" id="inBallSize" min="10" max="150" value="45"
-                    oninput="syncNum(this, 'nBallSize')">
-                <input type="number" class="num-input" id="nBallSize" value="45"
-                    oninput="syncSlider(this, 'inBallSize')" min="10" max="150">
-            </div>
-        </div>
-
-        <div class="group">
-            <label>Padding Letra</label>
-            <div class="slider-row">
-                <input type="range" id="inLetterPadding" min="0" max="100" value="20"
-                    oninput="syncNum(this, 'nLetterPadding')">
-                <input type="number" class="num-input" id="nLetterPadding" value="20"
-                    oninput="syncSlider(this, 'inLetterPadding')" min="0" max="100">
-            </div>
-        </div>
-
-        <hr>
-
-        <button class="accent" onclick="randomizeLayout()">⚄ Randomize</button>
-        <button class="toggle" id="btnReverse" onclick="toggleReverse()">← Der a Izq</button>
-        <button onclick="saveSVG()">↓ Exportar SVG</button>
-        <button class="secondary" onclick="resetRotation()">↺ Reset Rotación</button>
+    <div class="group">
+      <label class="lbl">Palabra</label>
+      <input type="text" id="inText" value="POLINIZADOS">
     </div>
 
-    <div id="canvas-parent" style="flex-grow:1; background:#fff;"></div>
-    <script src="sketch.js"></script>
-    <script>
-        // Sincroniza slider → número
-        function syncNum(slider, numId) {
-            document.getElementById(numId).value = slider.value;
-        }
-        // Sincroniza número → slider (clamp al rango)
-        function syncSlider(numInput, sliderId) {
-            let slider = document.getElementById(sliderId);
-            let v = parseFloat(numInput.value);
-            let mn = parseFloat(slider.min);
-            let mx = parseFloat(slider.max);
-            if (!isNaN(v)) {
-                let clamped = Math.min(Math.max(v, mn), mx);
-                slider.value = clamped;
-                // No sobreescribir el input mientras el usuario escribe
-            }
-        }
-    </script>
+    <div class="group">
+      <label class="lbl">Tipografía</label>
+      <div class="font-row">
+        <select id="inFont" onchange="onFontChange()">
+          <!-- poblado dinámicamente desde fonts/index.json -->
+        </select>
+        <span id="fontStatus">⏳</span>
+      </div>
+    </div>
+
+    <hr>
+    <div class="section-label">Geometría</div>
+
+    <div class="group">
+      <label class="lbl">Apertura (º)</label>
+      <div class="slider-row">
+        <input type="range" id="inAngle" min="5" max="360" value="90" oninput="S2N('inAngle','nAngle')">
+        <input type="number" class="num" id="nAngle" value="90" min="5" max="360" oninput="N2S('nAngle','inAngle')">
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="lbl">Hueco Central (rIn)</label>
+      <div class="slider-row">
+        <input type="range" id="inRin" min="0" max="1500" value="40" oninput="S2N('inRin','nRin')">
+        <input type="number" class="num" id="nRin" value="40" min="0" max="1500" oninput="N2S('nRin','inRin')">
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="lbl">Largo Spray (rOut)</label>
+      <div class="slider-row">
+        <input type="range" id="inRout" min="10" max="1500" value="400" oninput="S2N('inRout','nRout')">
+        <input type="number" class="num" id="nRout" value="400" min="10" max="1500" oninput="N2S('nRout','inRout')">
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="lbl">Caos / Jitter</label>
+      <div class="slider-row">
+        <input type="range" id="inJitter" min="0" max="300" value="50" oninput="S2N('inJitter','nJitter')">
+        <input type="number" class="num" id="nJitter" value="50" min="0" max="300" oninput="N2S('nJitter','inJitter')">
+      </div>
+    </div>
+
+    <hr>
+    <div class="section-label">Estilo Línea</div>
+
+    <div class="group">
+      <label class="lbl">Grosor</label>
+      <div class="slider-row">
+        <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5" oninput="S2N('inWeight','nWeight')">
+        <input type="number" class="num" id="nWeight" value="1.5" min="0.5" max="12" step="0.5" oninput="N2S('nWeight','inWeight')">
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="lbl">Punteado</label>
+      <div class="slider-row">
+        <input type="range" id="inDash" min="0" max="30" value="0" oninput="S2N('inDash','nDash')">
+        <input type="number" class="num" id="nDash" value="0" min="0" max="30" oninput="N2S('nDash','inDash')">
+      </div>
+    </div>
+
+    <hr>
+    <div class="section-label">Bolas y Letras</div>
+
+    <div class="check-row">
+      <input type="checkbox" id="checkBalls" checked>
+      <label for="checkBalls">Activar Bolitas</label>
+    </div>
+
+    <div class="group">
+      <label class="lbl">Tamaño Bola</label>
+      <div class="slider-row">
+        <input type="range" id="inBallSize" min="10" max="150" value="45" oninput="S2N('inBallSize','nBallSize')">
+        <input type="number" class="num" id="nBallSize" value="45" min="10" max="150" oninput="N2S('nBallSize','inBallSize')">
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="lbl">Tamaño Letra</label>
+      <div class="slider-row">
+        <input type="range" id="inLetterSize" min="4" max="120" value="24" oninput="S2N('inLetterSize','nLetterSize')">
+        <input type="number" class="num" id="nLetterSize" value="24" min="4" max="120" oninput="N2S('nLetterSize','inLetterSize')">
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="lbl">Padding Letra</label>
+      <div class="slider-row">
+        <input type="range" id="inLetterPadding" min="0" max="100" value="20" oninput="S2N('inLetterPadding','nLetterPadding')">
+        <input type="number" class="num" id="nLetterPadding" value="20" min="0" max="100" oninput="N2S('nLetterPadding','inLetterPadding')">
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="btn-grid">
+      <button class="blue" onclick="randomizeAll()" title="R">⚄ Randomize</button>
+      <button class="dark" onclick="randomizeJitter()" title="J">⁘ Jitter</button>
+    </div>
+    <div class="btn-grid">
+      <button class="toggle" id="btnReverse" onclick="toggleReverse()">← Der→Izq</button>
+      <button class="dark" onclick="resetRotation()">↺ Reset</button>
+    </div>
+    <div class="btn-grid single">
+      <button class="primary" onclick="saveSVG()">↓ Exportar SVG</button>
+    </div>
+
+  </div>
+
+  <div id="canvas-parent" style="flex:1; background:#fff;"></div>
+
+  <script>
+    function S2N(sId, nId) {
+      document.getElementById(nId).value = document.getElementById(sId).value;
+    }
+    function N2S(nId, sId) {
+      let v = parseFloat(document.getElementById(nId).value);
+      let s = document.getElementById(sId);
+      if (!isNaN(v)) s.value = Math.min(Math.max(v, parseFloat(s.min)), parseFloat(s.max));
+    }
+  </script>
+  <script src="sketch.js"></script>
 </body>
 </html>
