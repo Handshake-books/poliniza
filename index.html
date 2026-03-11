@@ -304,10 +304,20 @@ button.ghost:hover { color: #ccc; border-color: #777; }
     <label for="checkBalls">Mostrar bolitas</label>
   </div>
 
+  <div class="tog">
+    <input type="checkbox" id="checkBallStroke" checked>
+    <label for="checkBallStroke">Trazo en bola</label>
+  </div>
+
   <div class="grp">
     <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="45 px" onchange="syncFromVal(this)"></div>
     <input type="range" id="inBallSize" min="10" max="180" value="45"
            oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+  </div>
+
+  <div class="color-row">
+    <label>Color bola</label>
+    <input type="color" id="inColorBall" value="#ffffff">
   </div>
 
   <div class="grp">
@@ -316,9 +326,14 @@ button.ghost:hover { color: #ccc; border-color: #777; }
            oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
   </div>
 
+  <div class="color-row">
+    <label>Color letra</label>
+    <input type="color" id="inColorText" value="#000000">
+  </div>
+
   <div class="tog">
     <input type="checkbox" id="checkFlip">
-    <label for="checkFlip">Voltear letras (spray izquierda)</label>
+    <label for="checkFlip">Invertir orden letras</label>
   </div>
 
   <!-- COLOR -->
