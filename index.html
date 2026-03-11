@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>POLINIZADOR v3.7</title>
+<title>POLINIZADOR v3.8</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 <style>
@@ -18,11 +18,11 @@ body {
 }
 
 #sidebar {
-  width: 260px;
-  min-width: 260px;
-  background: #181818;
+  width: 268px;
+  min-width: 268px;
+  background: #161616;
   border-right: 1px solid #2a2a2a;
-  padding: 14px 13px 28px;
+  padding: 14px 14px 32px;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -34,35 +34,35 @@ body {
 h1 {
   font-size: 9px;
   letter-spacing: 3px;
-  color: #666;
+  color: #555;
   padding-bottom: 10px;
-  border-bottom: 1px solid #282828;
-  margin-bottom: 12px;
+  border-bottom: 1px solid #252525;
+  margin-bottom: 14px;
   text-transform: uppercase;
 }
 
 .sec {
   font-size: 8px;
   letter-spacing: 2.5px;
-  color: #666;
+  color: #555;
   text-transform: uppercase;
-  margin: 13px 0 7px;
+  margin: 14px 0 8px;
 }
 
-.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
 .lrow { display: flex; justify-content: space-between; align-items: baseline; }
 
 label {
   font-size: 10px;
-  color: #999;
+  color: #bbb;
   cursor: default;
   user-select: none;
 }
 
 .val {
   font-size: 10px;
-  color: #ccc;
-  min-width: 44px;
+  color: #eee;
+  min-width: 48px;
   text-align: right;
   font-variant-numeric: tabular-nums;
   background: transparent;
@@ -73,15 +73,12 @@ label {
   cursor: text;
   transition: border-color .12s;
 }
-.val:focus {
-  border-bottom-color: #666;
-  color: #fff;
-}
+.val:focus { border-bottom-color: #777; color: #fff; }
 
 input[type="text"] {
   background: #222;
-  border: 1px solid #3a3a3a;
-  color: #eee;
+  border: 1px solid #444;
+  color: #fff;
   padding: 7px 8px;
   font-family: monospace;
   font-size: 13px;
@@ -90,12 +87,12 @@ input[type="text"] {
   outline: none;
   transition: border-color .12s;
 }
-input[type="text"]:focus { border-color: #777; }
+input[type="text"]:focus { border-color: #888; }
 
 select {
   background: #222;
-  border: 1px solid #3a3a3a;
-  color: #ddd;
+  border: 1px solid #444;
+  color: #eee;
   padding: 6px 8px;
   font-family: monospace;
   font-size: 10px;
@@ -103,15 +100,15 @@ select {
   outline: none;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
 }
-select:focus { border-color: #777; }
+select:focus { border-color: #888; }
 
 input[type="range"] {
   width: 100%;
-  accent-color: #bbb;
+  accent-color: #ccc;
   cursor: pointer;
   height: 3px;
 }
@@ -121,40 +118,37 @@ input[type="range"] {
   align-items: center;
   gap: 8px;
   padding: 2px 0;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
 input[type="checkbox"] {
-  accent-color: #bbb;
+  accent-color: #ccc;
   width: 12px; height: 12px;
   cursor: pointer; flex-shrink: 0;
 }
-.tog label { font-size: 10px; color: #999; cursor: pointer; }
+.tog label { font-size: 10px; color: #bbb; cursor: pointer; }
 
-hr { border: 0; border-top: 1px solid #242424; margin: 4px 0 8px; }
+hr { border: 0; border-top: 1px solid #222; margin: 4px 0 8px; }
 
-/* Color pickers */
 .color-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 7px;
+  margin-bottom: 8px;
 }
-.color-row label { font-size: 10px; color: #999; }
+.color-row label { font-size: 10px; color: #bbb; }
 input[type="color"] {
   width: 36px;
   height: 24px;
-  border: 1px solid #3a3a3a;
+  border: 1px solid #444;
   border-radius: 2px;
   background: none;
   cursor: pointer;
   padding: 2px;
 }
 
-/* Inline row (jitter + botón) */
 .inline-row { display: flex; align-items: center; gap: 6px; }
 .inline-row input[type="range"] { flex: 1; }
 
-/* Botones */
 .btns { display: flex; gap: 5px; margin-top: 10px; }
 
 button.primary {
@@ -175,42 +169,62 @@ button.primary:hover { background: #fff; }
 
 button.ghost {
   background: transparent;
-  color: #777;
-  border: 1px solid #383838;
-  font-size: 11px;
+  color: #888;
+  border: 1px solid #333;
+  font-size: 13px;
   padding: 5px 9px;
   font-family: monospace;
   cursor: pointer;
   flex: none;
   transition: color .12s, border-color .12s;
 }
-button.ghost:hover { color: #ccc; border-color: #777; }
+button.ghost:hover { color: #eee; border-color: #888; }
 
-/* Instrucciones */
+/* Instrucciones con estilo de tecla */
 .instructions {
-  margin-top: 16px;
-  border-top: 1px solid #242424;
-  padding-top: 12px;
+  margin-top: 18px;
+  border-top: 1px solid #1e1e1e;
+  padding-top: 13px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
 }
 .instr-title {
   font-size: 8px;
   letter-spacing: 2px;
-  color: #666;
+  color: #555;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: 8px;
 }
-.instr-row { display: flex; gap: 8px; align-items: baseline; }
-.instr-key {
-  font-size: 9px;
-  color: #888;
+.instr-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid #1c1c1c;
+  gap: 8px;
+}
+.instr-row:last-child { border-bottom: none; }
+
+kbd {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 8px;
+  color: #ddd;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-bottom: 2px solid #555;
+  border-radius: 3px;
+  padding: 1px 5px;
   white-space: nowrap;
-  min-width: 62px;
+  min-width: 52px;
+  text-align: center;
   flex-shrink: 0;
 }
-.instr-desc { font-size: 9px; color: #666; line-height: 1.4; }
+.instr-desc {
+  font-size: 9px;
+  color: #777;
+  line-height: 1.4;
+}
 
 #canvas-parent { flex-grow: 1; background: #fff; }
 </style>
@@ -218,7 +232,7 @@ button.ghost:hover { color: #ccc; border-color: #777; }
 <body>
 
 <div id="sidebar">
-  <h1>Polinizador v3.7</h1>
+  <h1>Polinizador v3.8</h1>
 
   <!-- TEXTO -->
   <div class="grp">
@@ -238,8 +252,8 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   <div class="sec">Haz</div>
 
   <div class="grp">
-    <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="90°" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inAngle" min="1" max="360" value="90"
+    <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="87°" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inAngle" min="1" max="360" value="87"
            oninput="syncSlider('inAngle','vAngle',this.value,'°')">
   </div>
 
@@ -250,8 +264,8 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Largo spray</label><input class="val" id="vRout" value="400 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inRout" min="10" max="3000" value="400"
+    <div class="lrow"><label>Largo spray</label><input class="val" id="vRout" value="291 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRout" min="10" max="3000" value="291"
            oninput="syncSlider('inRout','vRout',this.value,' px')">
   </div>
 
@@ -260,11 +274,11 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   <div class="sec">Jitter</div>
 
   <div class="grp">
-    <div class="lrow"><label>Amplitud</label><input class="val" id="vJitter" value="50 px" onchange="syncFromVal(this)"></div>
+    <div class="lrow"><label>Amplitud</label><input class="val" id="vJitter" value="83 px" onchange="syncFromVal(this)"></div>
     <div class="inline-row">
-      <input type="range" id="inJitter" min="0" max="400" value="50"
+      <input type="range" id="inJitter" min="0" max="400" value="83"
              oninput="syncSlider('inJitter','vJitter',this.value,' px')">
-      <button class="ghost" onclick="newJitter()" title="Nueva posición aleatoria">↻</button>
+      <button class="ghost" onclick="newJitter()" title="[J] Nueva semilla de jitter">↻</button>
     </div>
   </div>
 
@@ -273,20 +287,20 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   <div class="sec">Línea</div>
 
   <div class="grp">
-    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="1.5 pt" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5"
+    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="2 pt" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="2"
            oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Punteado</label><input class="val" id="vDash" value="off" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inDash" min="0" max="40" value="0"
+    <div class="lrow"><label>Punteado</label><input class="val" id="vDash" value="4 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inDash" min="0" max="40" value="4"
            oninput="syncSlider('inDash','vDash',this.value,this.value>0?' px':'','',true)">
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Sep. línea → bola</label><input class="val" id="vPad" value="12 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inLinePad" min="0" max="120" value="12"
+    <div class="lrow"><label>Sep. línea → bola</label><input class="val" id="vPad" value="15 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inLinePad" min="0" max="120" value="15"
            oninput="syncSlider('inLinePad','vPad',this.value,' px')">
   </div>
 
@@ -310,8 +324,8 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="45 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inBallSize" min="10" max="180" value="45"
+    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="53 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inBallSize" min="10" max="180" value="53"
            oninput="syncSlider('inBallSize','vBall',this.value,' px')">
   </div>
 
@@ -321,8 +335,8 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="25 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inFontSize" min="4" max="160" value="25"
+    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="36 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inFontSize" min="4" max="160" value="36"
            oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
   </div>
 
@@ -336,54 +350,68 @@ button.ghost:hover { color: #ccc; border-color: #777; }
     <label for="checkFlip">Invertir orden letras</label>
   </div>
 
-  <!-- COLOR -->
+  <!-- COLOR GLOBAL -->
   <hr>
-  <div class="sec">Color</div>
+  <div class="sec">Color global</div>
 
   <div class="color-row">
     <label>Fondo</label>
     <input type="color" id="inColorBg" value="#ffffff">
   </div>
   <div class="color-row">
-    <label>Líneas</label>
+    <label>Líneas + trazo bola</label>
     <input type="color" id="inColorFg" value="#000000">
   </div>
 
-  <!-- EXPORTAR -->
+  <!-- ACCIONES -->
   <hr>
   <div class="btns">
-    <button class="primary" onclick="saveSVG()">Exportar SVG</button>
-    <button class="ghost" onclick="resetOrigin()" title="Centrar origen">⌖</button>
+    <button class="primary" onclick="saveSVG()" title="[S] Exportar SVG">Exportar SVG</button>
+    <button class="ghost" onclick="randomOrigin()" title="[R] Posición y ángulo aleatorio">⚄</button>
+    <button class="ghost" onclick="resetOrigin()" title="[C] Centrar origen">⌖</button>
   </div>
 
-  <!-- INSTRUCCIONES -->
+  <!-- ATAJOS Y TIPS -->
   <div class="instructions">
-    <div class="instr-title">Cómo usar</div>
+    <div class="instr-title">Atajos y controles</div>
     <div class="instr-row">
-      <span class="instr-key">Drag •</span>
-      <span class="instr-desc">Mueve el origen del spray</span>
+      <kbd>drag •</kbd>
+      <span class="instr-desc">Mueve el origen</span>
     </div>
     <div class="instr-row">
-      <span class="instr-key">Drag canvas</span>
+      <kbd>drag canvas</kbd>
       <span class="instr-desc">Rota el haz</span>
     </div>
     <div class="instr-row">
-      <span class="instr-key">↻</span>
-      <span class="instr-desc">Nueva posición de jitter</span>
+      <kbd>← →</kbd>
+      <span class="instr-desc">Rotar 1° izq / der</span>
     </div>
     <div class="instr-row">
-      <span class="instr-key">⌖</span>
-      <span class="instr-desc">Recentra el origen</span>
+      <kbd>J</kbd>
+      <span class="instr-desc">Nueva semilla de jitter</span>
     </div>
     <div class="instr-row">
-      <span class="instr-key">SVG</span>
-      <span class="instr-desc">Capas: lineas / bolas / letras</span>
+      <kbd>R</kbd>
+      <span class="instr-desc">Origen y ángulo aleatorio</span>
+    </div>
+    <div class="instr-row">
+      <kbd>C</kbd>
+      <span class="instr-desc">Centrar origen</span>
+    </div>
+    <div class="instr-row">
+      <kbd>S</kbd>
+      <span class="instr-desc">Exportar SVG</span>
+    </div>
+    <div class="instr-row">
+      <kbd>SVG</kbd>
+      <span class="instr-desc">Letras exportadas como paths vectoriales, sin fuente instalada</span>
     </div>
   </div>
 
 </div>
 
 <div id="canvas-parent"></div>
+
 <script>
 function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
   let el = document.getElementById(valId);
@@ -393,18 +421,14 @@ function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
     el.value = (prefix || '') + val + (suffix || '');
   }
 }
-
-// Val input → slider (el usuario escribe a mano)
 function syncFromVal(inputEl) {
   let raw = parseFloat(inputEl.value);
   if (isNaN(raw)) return;
-  // Encuentra el slider hermano (está en el .grp contenedor)
   let grp = inputEl.closest('.grp') || inputEl.closest('.lrow').parentElement;
   let slider = grp ? grp.querySelector('input[type="range"]') : null;
   if (!slider) return;
   raw = Math.min(Math.max(raw, parseFloat(slider.min)), parseFloat(slider.max));
   slider.value = raw;
-  // Disparar oninput para actualizar el texto del val si hay unidades
   slider.dispatchEvent(new Event('input'));
 }
 </script>

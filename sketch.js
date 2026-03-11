@@ -2,7 +2,7 @@
 // Un solo spray. Fuentes desde fonts/index.json. Color picker bg/fg.
 // Arrastrar • rojo → mueve origen. Arrastrar canvas → rota.
 
-const SIDEBAR_W  = 260;
+const SIDEBAR_W  = 268;
 const HIDE_AFTER = 80;
 
 // ── Fuentes ───────────────────────────────────────────────────────────────────
@@ -109,15 +109,10 @@ function getP() {
     dash       : parseInt(document.getElementById('inDash').value),
     showBalls  : document.getElementById('checkBalls').checked,
     ballSize   : parseInt(document.getElementById('inBallSize').value),
-    fontSize   : parseInt(document.getElementById('inFontSize').value),
     linePad    : parseInt(document.getElementById('inLinePad').value),
     linesBack  : document.getElementById('checkLinesBack').checked,
-    flipText   : document.getElementById('checkFlip').checked,
     colorBg    : document.getElementById('inColorBg').value,
     colorFg    : document.getElementById('inColorFg').value,
-    colorBall  : document.getElementById('inColorBall').value,
-    colorText  : document.getElementById('inColorText').value,
-    ballStroke : document.getElementById('checkBallStroke').checked,
   };
 }
 
@@ -125,7 +120,6 @@ function getP() {
 function calcRays(p) {
   let steps = p.txt.length;
   if (steps === 0) return [];
-  let txt = p.flipText ? p.txt.split('').reverse().join('') : p.txt;
   let margin = p.showBalls
     ? (p.ballSize / 2 + p.weight + p.linePad)
     : (p.weight * 2 + 10 + p.linePad);
@@ -142,7 +136,7 @@ function calcRays(p) {
       fa, rIn: p.rIn, rLine, rBall,
       lx: originX + cos(fa) * rBall,
       ly: originY + sin(fa) * rBall,
-      letter: txt[i],
+      letter: p.txt[i],
     };
   });
 }
@@ -180,7 +174,7 @@ function draw() {
   let rays = calcRays(p);
   if (rays.length === 0) return;
 
-  let fs  = p.fontSize;
+  let fs  = p.ballSize * 0.55;
   let tyo = getTypoOffset(fs);
 
   if (p.linesBack) {
@@ -216,9 +210,10 @@ function doLine(r, p) {
   strokeWeight(p.weight);
   noFill();
   if (p.dash > 0) {
+    let len = r.rLine - r.rIn;
+    let off = len > 0 ? (len % (p.dash * 2)) / 2 : 0;
     drawingContext.setLineDash([p.dash, p.dash]);
-    // offset = -rIn mod (dash*2) → el primer trazo arranca exactamente en rIn
-    drawingContext.lineDashOffset = -(r.rIn % (p.dash * 2));
+    drawingContext.lineDashOffset = -off;
   } else {
     drawingContext.setLineDash([]);
     drawingContext.lineDashOffset = 0;
@@ -233,16 +228,18 @@ function doBall(r, p, fs, tyo) {
   push();
   translate(r.lx, r.ly);
   if (p.showBalls) {
-    fill(p.colorBall);
-    if (p.ballStroke) { stroke(p.colorFg); strokeWeight(p.weight); }
-    else noStroke();
+    fill(p.colorBg);
+    stroke(p.colorFg);
+    strokeWeight(p.weight);
     ellipse(0, 0, p.ballSize, p.ballSize);
   }
+  // Usar drawingContext directamente para renderizar con FontFace nativo
   noStroke();
+  fill(p.colorFg);
   drawingContext.font = `${fs}px "${p5Font || 'monospace'}"`;
   drawingContext.textAlign = 'center';
   drawingContext.textBaseline = 'alphabetic';
-  drawingContext.fillStyle = p.colorText;
+  drawingContext.fillStyle = p.colorFg;
   drawingContext.fillText(r.letter, 0, tyo);
   pop();
 }
@@ -286,7 +283,7 @@ function saveSVG() {
   let rays = calcRays(p);
   if (rays.length === 0) return;
 
-  let fs  = p.fontSize;
+  let fs  = p.ballSize * 0.55;
   let tyo = getTypoOffset(fs);
   let W   = width, H = height;
   let fam = FONTS.length ? fontFamily(currentFontIdx) : 'sans-serif';
@@ -314,8 +311,7 @@ function saveSVG() {
   svg.push(`  </g>`);
 
   if (p.showBalls) {
-    let ballStrokeAttr = p.ballStroke ? ` stroke="${fg}" stroke-width="${sw}"` : ' stroke="none"';
-    svg.push(`  <g id="bolas" fill="${p.colorBall}"${ballStrokeAttr}>`);
+    svg.push(`  <g id="bolas" fill="${bg}" stroke="${fg}" stroke-width="${sw}">`);
     rays.forEach(r => {
       svg.push(`    <circle cx="${r.lx.toFixed(2)}" cy="${r.ly.toFixed(2)}" r="${(p.ballSize/2).toFixed(2)}"/>`);
     });
@@ -327,26 +323,30 @@ function saveSVG() {
     // Escala: opentype trabaja en unidades de fuente (UPM), hay que escalar a px
     let upm      = otFont.unitsPerEm;
     let scale    = fs / upm;
-    svg.push(`  <g id="letras" fill="${p.colorText}">`);
+    svg.push(`  <g id="letras" fill="${fg}">`);
     rays.forEach(r => {
-      let glyph    = otFont.charToGlyph(r.letter);
-      let path     = glyph.getPath(0, 0, fs);
+      let glyph = otFont.charToGlyph(r.letter);
+      let path  = glyph.getPath(0, 0, fs);   // x=0,y=0 — luego translatemos
+      // Calcular offset de centrado (cap-height del glifo 'H')
+      let hGlyph  = otFont.charToGlyph('H');
+      let hBB     = hGlyph.getBoundingBox();
+      let capH    = hBB.y2 * scale;
+      let offsetY = capH / 2;
+      let tx = r.lx.toFixed(2);
+      let ty = (r.ly + offsetY).toFixed(2);
+      // Obtener el path data y aplicar transform de posición
       let pathData = path.toPathData(3);
-      // Centrado vertical: cap-height del glifo 'H'
-      let hBB     = otFont.charToGlyph('H').getBoundingBox();
-      let offsetY = (hBB.y2 * scale) / 2;
-      let ty      = (r.ly + offsetY).toFixed(2);
-      // Centrado horizontal
-      let bb      = glyph.getBoundingBox();
-      let offsetX = -((bb.x2 - bb.x1) * scale) / 2 - bb.x1 * scale;
-      let tx       = r.lx + offsetX;
-      svg.push(`    <path transform="translate(${tx.toFixed(2)},${ty})" d="${pathData}"/>`);
+      // Centrar horizontalmente: medir ancho del glifo
+      let bb    = glyph.getBoundingBox();
+      let glyphW = (bb.x2 - bb.x1) * scale;
+      let offsetX = -glyphW / 2 - bb.x1 * scale;
+      svg.push(`    <path transform="translate(${(r.lx + offsetX).toFixed(2)},${ty})" d="${pathData}"/>`);
     });
     svg.push(`  </g>`);
   } else {
     // Fallback: <text> con font-family (requiere fuente instalada)
     let fam = fontFamily(currentFontIdx);
-    svg.push(`  <g id="letras" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">`);
+    svg.push(`  <g id="letras" fill="${fg}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">`);
     rays.forEach(r => {
       svg.push(`    <text x="${r.lx.toFixed(2)}" y="${(r.ly+tyo).toFixed(2)}">${esc(r.letter)}</text>`);
     });
@@ -367,5 +367,32 @@ function esc(s) {
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function newJitter()   { jitterSeed = Math.floor(millis()); }
-function resetOrigin() { originX = width/2; originY = height/2; }
-function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); } 
+
+function resetOrigin() {
+  originX = width / 2;
+  originY = height / 2;
+}
+
+function randomOrigin() {
+  // Posición aleatoria dentro del canvas con margen
+  let m = 60;
+  originX = m + Math.random() * (width  - m * 2);
+  originY = m + Math.random() * (height - m * 2);
+  // Ángulo aleatorio completo
+  rotation = Math.random() * TWO_PI;
+}
+
+function keyPressed() {
+  // No activar si el foco está en un input de texto
+  let tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+  if (key === 'j' || key === 'J') newJitter();
+  if (key === 'r' || key === 'R') randomOrigin();
+  if (key === 'c' || key === 'C') resetOrigin();
+  if (key === 's' || key === 'S') saveSVG();
+  if (keyCode === LEFT_ARROW)  rotation -= radians(1);
+  if (keyCode === RIGHT_ARROW) rotation += radians(1);
+}
+
+function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }
