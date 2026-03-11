@@ -109,10 +109,15 @@ function getP() {
     dash       : parseInt(document.getElementById('inDash').value),
     showBalls  : document.getElementById('checkBalls').checked,
     ballSize   : parseInt(document.getElementById('inBallSize').value),
+    fontSize   : parseInt(document.getElementById('inFontSize').value),
     linePad    : parseInt(document.getElementById('inLinePad').value),
     linesBack  : document.getElementById('checkLinesBack').checked,
+    flipText   : document.getElementById('checkFlip').checked,
+    ballStroke : document.getElementById('checkBallStroke').checked,
     colorBg    : document.getElementById('inColorBg').value,
     colorFg    : document.getElementById('inColorFg').value,
+    colorBall  : document.getElementById('inColorBall').value,
+    colorText  : document.getElementById('inColorText').value,
   };
 }
 
@@ -120,6 +125,7 @@ function getP() {
 function calcRays(p) {
   let steps = p.txt.length;
   if (steps === 0) return [];
+  let txt = p.flipText ? p.txt.split('').reverse().join('') : p.txt;
   let margin = p.showBalls
     ? (p.ballSize / 2 + p.weight + p.linePad)
     : (p.weight * 2 + 10 + p.linePad);
@@ -136,7 +142,7 @@ function calcRays(p) {
       fa, rIn: p.rIn, rLine, rBall,
       lx: originX + cos(fa) * rBall,
       ly: originY + sin(fa) * rBall,
-      letter: p.txt[i],
+      letter: txt[i],
     };
   });
 }
@@ -174,7 +180,7 @@ function draw() {
   let rays = calcRays(p);
   if (rays.length === 0) return;
 
-  let fs  = p.ballSize * 0.55;
+  let fs  = p.fontSize;
   let tyo = getTypoOffset(fs);
 
   if (p.linesBack) {
@@ -228,18 +234,16 @@ function doBall(r, p, fs, tyo) {
   push();
   translate(r.lx, r.ly);
   if (p.showBalls) {
-    fill(p.colorBg);
-    stroke(p.colorFg);
-    strokeWeight(p.weight);
+    fill(p.colorBall);
+    if (p.ballStroke) { stroke(p.colorFg); strokeWeight(p.weight); }
+    else noStroke();
     ellipse(0, 0, p.ballSize, p.ballSize);
   }
-  // Usar drawingContext directamente para renderizar con FontFace nativo
   noStroke();
-  fill(p.colorFg);
   drawingContext.font = `${fs}px "${p5Font || 'monospace'}"`;
   drawingContext.textAlign = 'center';
   drawingContext.textBaseline = 'alphabetic';
-  drawingContext.fillStyle = p.colorFg;
+  drawingContext.fillStyle = p.colorText;
   drawingContext.fillText(r.letter, 0, tyo);
   pop();
 }
@@ -283,7 +287,7 @@ function saveSVG() {
   let rays = calcRays(p);
   if (rays.length === 0) return;
 
-  let fs  = p.ballSize * 0.55;
+  let fs  = p.fontSize;
   let tyo = getTypoOffset(fs);
   let W   = width, H = height;
   let fam = FONTS.length ? fontFamily(currentFontIdx) : 'sans-serif';
@@ -311,7 +315,9 @@ function saveSVG() {
   svg.push(`  </g>`);
 
   if (p.showBalls) {
-    svg.push(`  <g id="bolas" fill="${bg}" stroke="${fg}" stroke-width="${sw}">`);
+    let ballFill   = p.colorBall;
+    let ballStroke = p.ballStroke ? `stroke="${fg}" stroke-width="${sw}"` : `stroke="none"`;
+    svg.push(`  <g id="bolas" fill="${ballFill}" ${ballStroke}>`);
     rays.forEach(r => {
       svg.push(`    <circle cx="${r.lx.toFixed(2)}" cy="${r.ly.toFixed(2)}" r="${(p.ballSize/2).toFixed(2)}"/>`);
     });
@@ -323,7 +329,7 @@ function saveSVG() {
     // Escala: opentype trabaja en unidades de fuente (UPM), hay que escalar a px
     let upm      = otFont.unitsPerEm;
     let scale    = fs / upm;
-    svg.push(`  <g id="letras" fill="${fg}">`);
+    svg.push(`  <g id="letras" fill="${p.colorText}">`);
     rays.forEach(r => {
       let glyph = otFont.charToGlyph(r.letter);
       let path  = glyph.getPath(0, 0, fs);   // x=0,y=0 — luego translatemos
@@ -346,7 +352,7 @@ function saveSVG() {
   } else {
     // Fallback: <text> con font-family (requiere fuente instalada)
     let fam = fontFamily(currentFontIdx);
-    svg.push(`  <g id="letras" fill="${fg}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">`);
+    svg.push(`  <g id="letras" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">`);
     rays.forEach(r => {
       svg.push(`    <text x="${r.lx.toFixed(2)}" y="${(r.ly+tyo).toFixed(2)}">${esc(r.letter)}</text>`);
     });
