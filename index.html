@@ -1,248 +1,352 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>POLINIZADOR v3.1</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
-  <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      display: flex; height: 100vh; overflow: hidden;
-      background: #161616; color: #ddd;
-      font-family: 'Courier New', monospace;
-    }
+<meta charset="UTF-8">
+<title>POLINIZADOR v3.7</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-    #sidebar {
-      width: 290px; min-width: 290px;
-      background: #1c1c1c;
-      border-right: 1px solid #2e2e2e;
-      display: flex; flex-direction: column;
-      gap: 6px; padding: 16px 14px 28px;
-      overflow-y: auto; z-index: 10;
-    }
+body {
+  display: flex;
+  background: #111;
+  font-family: monospace;
+  height: 100vh;
+  overflow: hidden;
+  color: #d0d0d0;
+}
 
-    h1 {
-      font-size: 11px; letter-spacing: 2px;
-      text-transform: uppercase; color: #fff;
-      border-bottom: 1px solid #3a3a3a;
-      padding-bottom: 8px; margin-bottom: 4px;
-      font-family: monospace;
-    }
+#sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #181818;
+  border-right: 1px solid #2a2a2a;
+  padding: 14px 13px 28px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #383838 transparent;
+  gap: 0;
+}
 
-    .section-label {
-      font-size: 8px; letter-spacing: 1.5px;
-      text-transform: uppercase; color: #444;
-      margin-top: 4px; margin-bottom: 1px;
-    }
+h1 {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #666;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #282828;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
 
-    hr { border: none; border-top: 1px solid #252525; margin: 4px 0; }
+.sec {
+  font-size: 8px;
+  letter-spacing: 2.5px;
+  color: #666;
+  text-transform: uppercase;
+  margin: 13px 0 7px;
+}
 
-    .group { display: flex; flex-direction: column; gap: 2px; }
+.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.lrow { display: flex; justify-content: space-between; align-items: baseline; }
 
-    label.lbl {
-      font-size: 8.5px; text-transform: uppercase;
-      color: #555; letter-spacing: 0.7px;
-    }
+label {
+  font-size: 10px;
+  color: #999;
+  cursor: default;
+  user-select: none;
+}
 
-    .slider-row { display: flex; align-items: center; gap: 5px; }
-    .slider-row input[type=range] {
-      flex: 1; accent-color: #fff; cursor: pointer;
-      background: none; border: none; padding: 0;
-    }
-    input.num {
-      width: 44px; background: #252525;
-      border: 1px solid #383838; color: #ccc;
-      font-family: monospace; font-size: 10px;
-      padding: 2px 4px; text-align: right;
-      -moz-appearance: textfield;
-    }
-    input.num::-webkit-inner-spin-button,
-    input.num::-webkit-outer-spin-button { -webkit-appearance: none; }
-    input.num:focus { outline: none; border-color: #666; }
+.val {
+  font-size: 10px;
+  color: #ccc;
+  min-width: 44px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 
-    input[type=text] {
-      width: 100%; background: #252525;
-      border: 1px solid #383838; color: #ddd;
-      padding: 6px 8px; font-size: 13px;
-      font-family: monospace; letter-spacing: 1px;
-    }
+input[type="text"] {
+  background: #222;
+  border: 1px solid #3a3a3a;
+  color: #eee;
+  padding: 7px 8px;
+  font-family: monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  width: 100%;
+  outline: none;
+  transition: border-color .12s;
+}
+input[type="text"]:focus { border-color: #777; }
 
-    /* Selector de fuente */
-    .font-row {
-      display: flex; align-items: center; gap: 6px;
-    }
-    select#inFont {
-      flex: 1; background: #252525;
-      border: 1px solid #383838; color: #ddd;
-      padding: 5px 6px; font-size: 10px;
-      font-family: monospace; cursor: pointer;
-    }
-    select#inFont option { background: #252525; }
-    #fontStatus {
-      font-size: 11px; min-width: 14px; text-align: center;
-      color: #666;
-    }
+select {
+  background: #222;
+  border: 1px solid #3a3a3a;
+  color: #ddd;
+  padding: 6px 8px;
+  font-family: monospace;
+  font-size: 10px;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+select:focus { border-color: #777; }
 
-    .check-row { display: flex; align-items: center; gap: 7px; }
-    .check-row input[type=checkbox] { accent-color: #fff; width: 13px; height: 13px; }
-    .check-row label { font-size: 9px; text-transform: uppercase; color: #666; }
+input[type="range"] {
+  width: 100%;
+  accent-color: #bbb;
+  cursor: pointer;
+  height: 3px;
+}
 
-    .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 2px; }
-    .btn-grid.single { grid-template-columns: 1fr; }
+.tog {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  margin-bottom: 6px;
+}
+input[type="checkbox"] {
+  accent-color: #bbb;
+  width: 12px; height: 12px;
+  cursor: pointer; flex-shrink: 0;
+}
+.tog label { font-size: 10px; color: #999; cursor: pointer; }
 
-    button {
-      border: none; padding: 9px 6px; cursor: pointer;
-      font-family: monospace;
-      font-size: 9px; font-weight: bold;
-      text-transform: uppercase; letter-spacing: 0.6px;
-      transition: background 0.1s, color 0.1s;
-    }
-    button.primary   { background: #fff; color: #000; }
-    button.primary:hover { background: #e0e0e0; }
-    button.blue      { background: #1a4fff; color: #fff; }
-    button.blue:hover { background: #2d5fff; }
-    button.dark      { background: #2a2a2a; color: #aaa; border: 1px solid #3a3a3a; }
-    button.dark:hover { background: #333; color: #ddd; }
-    button.toggle    { background: #2a2a2a; color: #888; border: 1px solid #3a3a3a; }
-    button.toggle.active { background: #d4e000; color: #000; border-color: #d4e000; }
-    button.toggle:hover  { background: #333; color: #ccc; }
-    button.toggle.active:hover { background: #bfca00; }
-  </style>
+hr { border: 0; border-top: 1px solid #242424; margin: 4px 0 8px; }
+
+/* Color pickers */
+.color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.color-row label { font-size: 10px; color: #999; }
+input[type="color"] {
+  width: 36px;
+  height: 24px;
+  border: 1px solid #3a3a3a;
+  border-radius: 2px;
+  background: none;
+  cursor: pointer;
+  padding: 2px;
+}
+
+/* Inline row (jitter + botón) */
+.inline-row { display: flex; align-items: center; gap: 6px; }
+.inline-row input[type="range"] { flex: 1; }
+
+/* Botones */
+.btns { display: flex; gap: 5px; margin-top: 10px; }
+
+button.primary {
+  flex: 1;
+  background: #e8e8e8;
+  color: #111;
+  border: none;
+  padding: 9px 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: monospace;
+  transition: background .12s;
+}
+button.primary:hover { background: #fff; }
+
+button.ghost {
+  background: transparent;
+  color: #777;
+  border: 1px solid #383838;
+  font-size: 11px;
+  padding: 5px 9px;
+  font-family: monospace;
+  cursor: pointer;
+  flex: none;
+  transition: color .12s, border-color .12s;
+}
+button.ghost:hover { color: #ccc; border-color: #777; }
+
+/* Instrucciones */
+.instructions {
+  margin-top: 16px;
+  border-top: 1px solid #242424;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.instr-title {
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.instr-row { display: flex; gap: 8px; align-items: baseline; }
+.instr-key {
+  font-size: 9px;
+  color: #888;
+  white-space: nowrap;
+  min-width: 62px;
+  flex-shrink: 0;
+}
+.instr-desc { font-size: 9px; color: #666; line-height: 1.4; }
+
+#canvas-parent { flex-grow: 1; background: #fff; }
+</style>
 </head>
 <body>
-  <div id="sidebar">
-    <h1>Polinizador v3.1</h1>
 
-    <div class="group">
-      <label class="lbl">Palabra</label>
-      <input type="text" id="inText" value="POLINIZADOS">
-    </div>
+<div id="sidebar">
+  <h1>Polinizador v3.7</h1>
 
-    <div class="group">
-      <label class="lbl">Tipografía</label>
-      <div class="font-row">
-        <select id="inFont" onchange="onFontChange()">
-          <!-- poblado dinámicamente desde fonts/index.json -->
-        </select>
-        <span id="fontStatus">⏳</span>
-      </div>
-    </div>
-
-    <hr>
-    <div class="section-label">Geometría</div>
-
-    <div class="group">
-      <label class="lbl">Apertura (º)</label>
-      <div class="slider-row">
-        <input type="range" id="inAngle" min="5" max="360" value="90" oninput="S2N('inAngle','nAngle')">
-        <input type="number" class="num" id="nAngle" value="90" min="5" max="360" oninput="N2S('nAngle','inAngle')">
-      </div>
-    </div>
-
-    <div class="group">
-      <label class="lbl">Hueco Central (rIn)</label>
-      <div class="slider-row">
-        <input type="range" id="inRin" min="0" max="1500" value="40" oninput="S2N('inRin','nRin')">
-        <input type="number" class="num" id="nRin" value="40" min="0" max="1500" oninput="N2S('nRin','inRin')">
-      </div>
-    </div>
-
-    <div class="group">
-      <label class="lbl">Largo Spray (rOut)</label>
-      <div class="slider-row">
-        <input type="range" id="inRout" min="10" max="1500" value="400" oninput="S2N('inRout','nRout')">
-        <input type="number" class="num" id="nRout" value="400" min="10" max="1500" oninput="N2S('nRout','inRout')">
-      </div>
-    </div>
-
-    <div class="group">
-      <label class="lbl">Caos / Jitter</label>
-      <div class="slider-row">
-        <input type="range" id="inJitter" min="0" max="300" value="50" oninput="S2N('inJitter','nJitter')">
-        <input type="number" class="num" id="nJitter" value="50" min="0" max="300" oninput="N2S('nJitter','inJitter')">
-      </div>
-    </div>
-
-    <hr>
-    <div class="section-label">Estilo Línea</div>
-
-    <div class="group">
-      <label class="lbl">Grosor</label>
-      <div class="slider-row">
-        <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5" oninput="S2N('inWeight','nWeight')">
-        <input type="number" class="num" id="nWeight" value="1.5" min="0.5" max="12" step="0.5" oninput="N2S('nWeight','inWeight')">
-      </div>
-    </div>
-
-    <div class="group">
-      <label class="lbl">Punteado</label>
-      <div class="slider-row">
-        <input type="range" id="inDash" min="0" max="30" value="0" oninput="S2N('inDash','nDash')">
-        <input type="number" class="num" id="nDash" value="0" min="0" max="30" oninput="N2S('nDash','inDash')">
-      </div>
-    </div>
-
-    <hr>
-    <div class="section-label">Bolas y Letras</div>
-
-    <div class="check-row">
-      <input type="checkbox" id="checkBalls" checked>
-      <label for="checkBalls">Activar Bolitas</label>
-    </div>
-
-    <div class="group">
-      <label class="lbl">Tamaño Bola</label>
-      <div class="slider-row">
-        <input type="range" id="inBallSize" min="10" max="150" value="45" oninput="S2N('inBallSize','nBallSize')">
-        <input type="number" class="num" id="nBallSize" value="45" min="10" max="150" oninput="N2S('nBallSize','inBallSize')">
-      </div>
-    </div>
-
-    <div class="group">
-      <label class="lbl">Tamaño Letra</label>
-      <div class="slider-row">
-        <input type="range" id="inLetterSize" min="4" max="120" value="24" oninput="S2N('inLetterSize','nLetterSize')">
-        <input type="number" class="num" id="nLetterSize" value="24" min="4" max="120" oninput="N2S('nLetterSize','inLetterSize')">
-      </div>
-    </div>
-
-    <div class="group">
-      <label class="lbl">Padding Letra</label>
-      <div class="slider-row">
-        <input type="range" id="inLetterPadding" min="0" max="100" value="20" oninput="S2N('inLetterPadding','nLetterPadding')">
-        <input type="number" class="num" id="nLetterPadding" value="20" min="0" max="100" oninput="N2S('nLetterPadding','inLetterPadding')">
-      </div>
-    </div>
-
-    <hr>
-
-    <div class="btn-grid">
-      <button class="blue" onclick="randomizeAll()" title="R">⚄ Randomize</button>
-      <button class="dark" onclick="randomizeJitter()" title="J">⁘ Jitter</button>
-    </div>
-    <div class="btn-grid">
-      <button class="toggle" id="btnReverse" onclick="toggleReverse()">← Der→Izq</button>
-      <button class="dark" onclick="resetRotation()">↺ Reset</button>
-    </div>
-    <div class="btn-grid single">
-      <button class="primary" onclick="saveSVG()">↓ Exportar SVG</button>
-    </div>
-
+  <!-- TEXTO -->
+  <div class="grp">
+    <label>Palabra</label>
+    <input type="text" id="inText" value="POLINIZADOS"
+           oninput="this.value=this.value.toUpperCase()">
   </div>
 
-  <div id="canvas-parent" style="flex:1; background:#fff;"></div>
+  <!-- FUENTE -->
+  <div class="grp">
+    <label>Fuente</label>
+    <select id="fontSelect"><option>cargando…</option></select>
+  </div>
 
-  <script>
-    function S2N(sId, nId) {
-      document.getElementById(nId).value = document.getElementById(sId).value;
-    }
-    function N2S(nId, sId) {
-      let v = parseFloat(document.getElementById(nId).value);
-      let s = document.getElementById(sId);
-      if (!isNaN(v)) s.value = Math.min(Math.max(v, parseFloat(s.min)), parseFloat(s.max));
-    }
-  </script>
-  <script src="sketch.js"></script>
+  <!-- HAZ -->
+  <hr>
+  <div class="sec">Haz</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Apertura</label><span class="val" id="vAngle">90°</span></div>
+    <input type="range" id="inAngle" min="1" max="360" value="90"
+           oninput="document.getElementById('vAngle').textContent=this.value+'°'">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Hueco central</label><span class="val" id="vRin">40 px</span></div>
+    <input type="range" id="inRin" min="0" max="300" value="40"
+           oninput="document.getElementById('vRin').textContent=this.value+' px'">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Largo spray</label><span class="val" id="vRout">400 px</span></div>
+    <input type="range" id="inRout" min="10" max="3000" value="400"
+           oninput="document.getElementById('vRout').textContent=this.value+' px'">
+  </div>
+
+  <!-- JITTER -->
+  <hr>
+  <div class="sec">Jitter</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Amplitud</label><span class="val" id="vJitter">50 px</span></div>
+    <div class="inline-row">
+      <input type="range" id="inJitter" min="0" max="400" value="50"
+             oninput="document.getElementById('vJitter').textContent=this.value+' px'">
+      <button class="ghost" onclick="newJitter()" title="Nueva posición aleatoria">↻</button>
+    </div>
+  </div>
+
+  <!-- LÍNEA -->
+  <hr>
+  <div class="sec">Línea</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Grosor</label><span class="val" id="vWeight">1.5 pt</span></div>
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5"
+           oninput="document.getElementById('vWeight').textContent=this.value+' pt'">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Punteado</label><span class="val" id="vDash">off</span></div>
+    <input type="range" id="inDash" min="0" max="40" value="0"
+           oninput="document.getElementById('vDash').textContent=this.value>0?this.value+' px':'off'">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Sep. línea → bola</label><span class="val" id="vPad">12 px</span></div>
+    <input type="range" id="inLinePad" min="0" max="120" value="12"
+           oninput="document.getElementById('vPad').textContent=this.value+' px'">
+  </div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkLinesBack">
+    <label for="checkLinesBack">Líneas detrás de bolas</label>
+  </div>
+
+  <!-- MOLÉCULAS -->
+  <hr>
+  <div class="sec">Moléculas</div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkBalls" checked>
+    <label for="checkBalls">Mostrar bolitas</label>
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Diámetro bola</label><span class="val" id="vBall">45 px</span></div>
+    <input type="range" id="inBallSize" min="10" max="180" value="45"
+           oninput="document.getElementById('vBall').textContent=this.value+' px'">
+  </div>
+
+  <!-- COLOR -->
+  <hr>
+  <div class="sec">Color</div>
+
+  <div class="color-row">
+    <label>Fondo</label>
+    <input type="color" id="inColorBg" value="#ffffff">
+  </div>
+  <div class="color-row">
+    <label>Trazo y letra</label>
+    <input type="color" id="inColorFg" value="#000000">
+  </div>
+
+  <!-- EXPORTAR -->
+  <hr>
+  <div class="btns">
+    <button class="primary" onclick="saveSVG()">Exportar SVG</button>
+    <button class="ghost" onclick="resetOrigin()" title="Centrar origen">⌖</button>
+  </div>
+
+  <!-- INSTRUCCIONES -->
+  <div class="instructions">
+    <div class="instr-title">Cómo usar</div>
+    <div class="instr-row">
+      <span class="instr-key">Drag •</span>
+      <span class="instr-desc">Mueve el origen del spray</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">Drag canvas</span>
+      <span class="instr-desc">Rota el haz</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">↻</span>
+      <span class="instr-desc">Nueva posición de jitter</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">⌖</span>
+      <span class="instr-desc">Recentra el origen</span>
+    </div>
+    <div class="instr-row">
+      <span class="instr-key">SVG</span>
+      <span class="instr-desc">Capas: lineas / bolas / letras</span>
+    </div>
+  </div>
+
+</div>
+
+<div id="canvas-parent"></div>
+<script src="sketch.js"></script>
 </body>
 </html>
