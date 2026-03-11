@@ -382,17 +382,42 @@ function randomOrigin() {
   rotation = Math.random() * TWO_PI;
 }
 
-function keyPressed() {
-  // No activar si el foco está en un input de texto
+// ── TECLADO — listener nativo (no depende del foco del canvas) ────────────────
+window.addEventListener('keydown', function(e) {
+  // No actuar si el foco está en un input, select o textarea
   let tag = document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
 
-  if (key === 'j' || key === 'J') newJitter();
-  if (key === 'r' || key === 'R') randomOrigin();
-  if (key === 'c' || key === 'C') resetOrigin();
-  if (key === 's' || key === 'S') saveSVG();
-  if (keyCode === LEFT_ARROW)  rotation -= radians(1);
-  if (keyCode === RIGHT_ARROW) rotation += radians(1);
-}
+  switch (e.key) {
+    case 'j': case 'J': newJitter(); break;
+    case 'r': case 'R': randomOrigin(); break;
+    case 'c': case 'C': resetOrigin(); break;
+    case 's': case 'S': saveSVG(); break;
+
+    case 'ArrowLeft':
+      e.preventDefault();
+      rotation -= Math.PI / 180;
+      break;
+    case 'ArrowRight':
+      e.preventDefault();
+      rotation += Math.PI / 180;
+      break;
+
+    case 'ArrowUp': {
+      e.preventDefault();
+      let sl = document.getElementById('inRout');
+      sl.value = Math.min(parseInt(sl.value) + 10, parseInt(sl.max));
+      sl.dispatchEvent(new Event('input'));
+      break;
+    }
+    case 'ArrowDown': {
+      e.preventDefault();
+      let sl = document.getElementById('inRout');
+      sl.value = Math.max(parseInt(sl.value) - 10, parseInt(sl.min));
+      sl.dispatchEvent(new Event('input'));
+      break;
+    }
+  }
+});
 
 function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }
