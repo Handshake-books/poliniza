@@ -368,4 +368,4 @@ function esc(s) {
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function newJitter()   { jitterSeed = Math.floor(millis()); }
 function resetOrigin() { originX = width/2; originY = height/2; }
-function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }
+function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); } 
