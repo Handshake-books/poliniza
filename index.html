@@ -1,352 +1,265 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>POLINIZADOR v3.7</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <title>POLINIZADOR v3.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=National+Park:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+    <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; display: flex;
+            background: #1a1a1a;
+            height: 100vh; overflow: hidden;
+            color: white;
+            font-family: 'National Park', monospace;
+        }
+        #sidebar {
+            width: 300px;
+            background: #1e1e1e;
+            padding: 18px 16px 30px;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        h1 {
+            font-size: 12px;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 5px;
+            font-family: monospace;
+            margin: 0 0 8px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .group { display: flex; flex-direction: column; gap: 3px; }
+        label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 0.8px;
+        }
+        /* Fila slider + número editable */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .slider-row input[type="range"] {
+            flex: 1;
+            accent-color: #fff;
+            padding: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .num-input {
+            width: 46px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #ddd;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 3px 5px;
+            text-align: right;
+            -moz-appearance: textfield;
+        }
+        .num-input::-webkit-inner-spin-button,
+        .num-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+        .num-input:focus { outline: 1px solid #777; border-color: #777; }
 
-body {
-  display: flex;
-  background: #111;
-  font-family: monospace;
-  height: 100vh;
-  overflow: hidden;
-  color: #d0d0d0;
-}
+        input[type="text"] {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            padding: 7px 8px;
+            font-family: 'National Park', monospace;
+            font-size: 14px;
+            width: 100%;
+            letter-spacing: 1px;
+        }
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            color: #aaa;
+        }
+        input[type="checkbox"] { accent-color: #fff; width: 13px; height: 13px; }
+        hr { border: 0; border-top: 1px solid #2c2c2c; margin: 5px 0; }
 
-#sidebar {
-  width: 260px;
-  min-width: 260px;
-  background: #181818;
-  border-right: 1px solid #2a2a2a;
-  padding: 14px 13px 28px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #383838 transparent;
-  gap: 0;
-}
-
-h1 {
-  font-size: 9px;
-  letter-spacing: 3px;
-  color: #666;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #282828;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-}
-
-.sec {
-  font-size: 8px;
-  letter-spacing: 2.5px;
-  color: #666;
-  text-transform: uppercase;
-  margin: 13px 0 7px;
-}
-
-.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-.lrow { display: flex; justify-content: space-between; align-items: baseline; }
-
-label {
-  font-size: 10px;
-  color: #999;
-  cursor: default;
-  user-select: none;
-}
-
-.val {
-  font-size: 10px;
-  color: #ccc;
-  min-width: 44px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-input[type="text"] {
-  background: #222;
-  border: 1px solid #3a3a3a;
-  color: #eee;
-  padding: 7px 8px;
-  font-family: monospace;
-  font-size: 13px;
-  letter-spacing: 2px;
-  width: 100%;
-  outline: none;
-  transition: border-color .12s;
-}
-input[type="text"]:focus { border-color: #777; }
-
-select {
-  background: #222;
-  border: 1px solid #3a3a3a;
-  color: #ddd;
-  padding: 6px 8px;
-  font-family: monospace;
-  font-size: 10px;
-  width: 100%;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-}
-select:focus { border-color: #777; }
-
-input[type="range"] {
-  width: 100%;
-  accent-color: #bbb;
-  cursor: pointer;
-  height: 3px;
-}
-
-.tog {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 2px 0;
-  margin-bottom: 6px;
-}
-input[type="checkbox"] {
-  accent-color: #bbb;
-  width: 12px; height: 12px;
-  cursor: pointer; flex-shrink: 0;
-}
-.tog label { font-size: 10px; color: #999; cursor: pointer; }
-
-hr { border: 0; border-top: 1px solid #242424; margin: 4px 0 8px; }
-
-/* Color pickers */
-.color-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 7px;
-}
-.color-row label { font-size: 10px; color: #999; }
-input[type="color"] {
-  width: 36px;
-  height: 24px;
-  border: 1px solid #3a3a3a;
-  border-radius: 2px;
-  background: none;
-  cursor: pointer;
-  padding: 2px;
-}
-
-/* Inline row (jitter + botón) */
-.inline-row { display: flex; align-items: center; gap: 6px; }
-.inline-row input[type="range"] { flex: 1; }
-
-/* Botones */
-.btns { display: flex; gap: 5px; margin-top: 10px; }
-
-button.primary {
-  flex: 1;
-  background: #e8e8e8;
-  color: #111;
-  border: none;
-  padding: 9px 6px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 9px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  font-family: monospace;
-  transition: background .12s;
-}
-button.primary:hover { background: #fff; }
-
-button.ghost {
-  background: transparent;
-  color: #777;
-  border: 1px solid #383838;
-  font-size: 11px;
-  padding: 5px 9px;
-  font-family: monospace;
-  cursor: pointer;
-  flex: none;
-  transition: color .12s, border-color .12s;
-}
-button.ghost:hover { color: #ccc; border-color: #777; }
-
-/* Instrucciones */
-.instructions {
-  margin-top: 16px;
-  border-top: 1px solid #242424;
-  padding-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.instr-title {
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: #666;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-.instr-row { display: flex; gap: 8px; align-items: baseline; }
-.instr-key {
-  font-size: 9px;
-  color: #888;
-  white-space: nowrap;
-  min-width: 62px;
-  flex-shrink: 0;
-}
-.instr-desc { font-size: 9px; color: #666; line-height: 1.4; }
-
-#canvas-parent { flex-grow: 1; background: #fff; }
-</style>
+        button {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-family: 'National Park', monospace;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+            transition: background 0.1s;
+        }
+        button:hover { background: #ddd; }
+        button.secondary {
+            background: #2a2a2a;
+            color: #aaa;
+            border: 1px solid #444;
+        }
+        button.secondary:hover { background: #333; color: #fff; }
+        button.accent {
+            background: #2255ee;
+            color: #fff;
+        }
+        button.accent:hover { background: #3366ff; }
+        button.toggle {
+            background: #2a2a2a;
+            color: #aaa;
+            border: 1px solid #444;
+        }
+        button.toggle.active {
+            background: #e8f000;
+            color: #000;
+            border-color: #e8f000;
+        }
+        button.toggle:hover { background: #333; color: #fff; }
+        button.toggle.active:hover { background: #d4dc00; }
+    </style>
 </head>
 <body>
+    <div id="sidebar">
+        <h1>Polinizador v3.0</h1>
 
-<div id="sidebar">
-  <h1>Polinizador v3.7</h1>
+        <div class="group">
+            <label>Palabra</label>
+            <input type="text" id="inText" value="POLINIZADOS">
+        </div>
 
-  <!-- TEXTO -->
-  <div class="grp">
-    <label>Palabra</label>
-    <input type="text" id="inText" value="POLINIZADOS"
-           oninput="this.value=this.value.toUpperCase()">
-  </div>
+        <hr>
 
-  <!-- FUENTE -->
-  <div class="grp">
-    <label>Fuente</label>
-    <select id="fontSelect"><option>cargando…</option></select>
-  </div>
+        <div class="group">
+            <label>Apertura (º)</label>
+            <div class="slider-row">
+                <input type="range" id="inAngle" min="5" max="360" value="90"
+                    oninput="syncNum(this, 'nAngle')">
+                <input type="number" class="num-input" id="nAngle" value="90"
+                    oninput="syncSlider(this, 'inAngle')" min="5" max="360">
+            </div>
+        </div>
 
-  <!-- HAZ -->
-  <hr>
-  <div class="sec">Haz</div>
+        <div class="group">
+            <label>Hueco Central (rIn)</label>
+            <div class="slider-row">
+                <input type="range" id="inRin" min="0" max="1500" value="40"
+                    oninput="syncNum(this, 'nRin')">
+                <input type="number" class="num-input" id="nRin" value="40"
+                    oninput="syncSlider(this, 'inRin')" min="0" max="1500">
+            </div>
+        </div>
 
-  <div class="grp">
-    <div class="lrow"><label>Apertura</label><span class="val" id="vAngle">90°</span></div>
-    <input type="range" id="inAngle" min="1" max="360" value="90"
-           oninput="document.getElementById('vAngle').textContent=this.value+'°'">
-  </div>
+        <div class="group">
+            <label>Largo Spray (rOut)</label>
+            <div class="slider-row">
+                <input type="range" id="inRout" min="10" max="1500" value="400"
+                    oninput="syncNum(this, 'nRout')">
+                <input type="number" class="num-input" id="nRout" value="400"
+                    oninput="syncSlider(this, 'inRout')" min="10" max="1500">
+            </div>
+        </div>
 
-  <div class="grp">
-    <div class="lrow"><label>Hueco central</label><span class="val" id="vRin">40 px</span></div>
-    <input type="range" id="inRin" min="0" max="300" value="40"
-           oninput="document.getElementById('vRin').textContent=this.value+' px'">
-  </div>
+        <div class="group">
+            <label>Caos / Jitter</label>
+            <div class="slider-row">
+                <input type="range" id="inJitter" min="0" max="300" value="50"
+                    oninput="syncNum(this, 'nJitter')">
+                <input type="number" class="num-input" id="nJitter" value="50"
+                    oninput="syncSlider(this, 'inJitter')" min="0" max="300">
+            </div>
+        </div>
 
-  <div class="grp">
-    <div class="lrow"><label>Largo spray</label><span class="val" id="vRout">400 px</span></div>
-    <input type="range" id="inRout" min="10" max="3000" value="400"
-           oninput="document.getElementById('vRout').textContent=this.value+' px'">
-  </div>
+        <hr>
 
-  <!-- JITTER -->
-  <hr>
-  <div class="sec">Jitter</div>
+        <div class="group">
+            <label>Grosor Maestro</label>
+            <div class="slider-row">
+                <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5"
+                    oninput="syncNum(this, 'nWeight')">
+                <input type="number" class="num-input" id="nWeight" value="1.5"
+                    oninput="syncSlider(this, 'inWeight')" min="0.5" max="12" step="0.5">
+            </div>
+        </div>
 
-  <div class="grp">
-    <div class="lrow"><label>Amplitud</label><span class="val" id="vJitter">50 px</span></div>
-    <div class="inline-row">
-      <input type="range" id="inJitter" min="0" max="400" value="50"
-             oninput="document.getElementById('vJitter').textContent=this.value+' px'">
-      <button class="ghost" onclick="newJitter()" title="Nueva posición aleatoria">↻</button>
+        <div class="group">
+            <label>Punteado</label>
+            <div class="slider-row">
+                <input type="range" id="inDash" min="0" max="30" value="0"
+                    oninput="syncNum(this, 'nDash')">
+                <input type="number" class="num-input" id="nDash" value="0"
+                    oninput="syncSlider(this, 'inDash')" min="0" max="30">
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <input type="checkbox" id="checkBalls" checked>
+            <label style="color:#aaa;">Activar Bolitas</label>
+        </div>
+
+        <div class="group">
+            <label>Tamaño Bolita</label>
+            <div class="slider-row">
+                <input type="range" id="inBallSize" min="10" max="150" value="45"
+                    oninput="syncNum(this, 'nBallSize')">
+                <input type="number" class="num-input" id="nBallSize" value="45"
+                    oninput="syncSlider(this, 'inBallSize')" min="10" max="150">
+            </div>
+        </div>
+
+        <div class="group">
+            <label>Padding Letra</label>
+            <div class="slider-row">
+                <input type="range" id="inLetterPadding" min="0" max="100" value="20"
+                    oninput="syncNum(this, 'nLetterPadding')">
+                <input type="number" class="num-input" id="nLetterPadding" value="20"
+                    oninput="syncSlider(this, 'inLetterPadding')" min="0" max="100">
+            </div>
+        </div>
+
+        <hr>
+
+        <button class="accent" onclick="randomizeLayout()">⚄ Randomize</button>
+        <button class="toggle" id="btnReverse" onclick="toggleReverse()">← Der a Izq</button>
+        <button onclick="saveSVG()">↓ Exportar SVG</button>
+        <button class="secondary" onclick="resetRotation()">↺ Reset Rotación</button>
     </div>
-  </div>
 
-  <!-- LÍNEA -->
-  <hr>
-  <div class="sec">Línea</div>
-
-  <div class="grp">
-    <div class="lrow"><label>Grosor</label><span class="val" id="vWeight">1.5 pt</span></div>
-    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5"
-           oninput="document.getElementById('vWeight').textContent=this.value+' pt'">
-  </div>
-
-  <div class="grp">
-    <div class="lrow"><label>Punteado</label><span class="val" id="vDash">off</span></div>
-    <input type="range" id="inDash" min="0" max="40" value="0"
-           oninput="document.getElementById('vDash').textContent=this.value>0?this.value+' px':'off'">
-  </div>
-
-  <div class="grp">
-    <div class="lrow"><label>Sep. línea → bola</label><span class="val" id="vPad">12 px</span></div>
-    <input type="range" id="inLinePad" min="0" max="120" value="12"
-           oninput="document.getElementById('vPad').textContent=this.value+' px'">
-  </div>
-
-  <div class="tog">
-    <input type="checkbox" id="checkLinesBack">
-    <label for="checkLinesBack">Líneas detrás de bolas</label>
-  </div>
-
-  <!-- MOLÉCULAS -->
-  <hr>
-  <div class="sec">Moléculas</div>
-
-  <div class="tog">
-    <input type="checkbox" id="checkBalls" checked>
-    <label for="checkBalls">Mostrar bolitas</label>
-  </div>
-
-  <div class="grp">
-    <div class="lrow"><label>Diámetro bola</label><span class="val" id="vBall">45 px</span></div>
-    <input type="range" id="inBallSize" min="10" max="180" value="45"
-           oninput="document.getElementById('vBall').textContent=this.value+' px'">
-  </div>
-
-  <!-- COLOR -->
-  <hr>
-  <div class="sec">Color</div>
-
-  <div class="color-row">
-    <label>Fondo</label>
-    <input type="color" id="inColorBg" value="#ffffff">
-  </div>
-  <div class="color-row">
-    <label>Trazo y letra</label>
-    <input type="color" id="inColorFg" value="#000000">
-  </div>
-
-  <!-- EXPORTAR -->
-  <hr>
-  <div class="btns">
-    <button class="primary" onclick="saveSVG()">Exportar SVG</button>
-    <button class="ghost" onclick="resetOrigin()" title="Centrar origen">⌖</button>
-  </div>
-
-  <!-- INSTRUCCIONES -->
-  <div class="instructions">
-    <div class="instr-title">Cómo usar</div>
-    <div class="instr-row">
-      <span class="instr-key">Drag •</span>
-      <span class="instr-desc">Mueve el origen del spray</span>
-    </div>
-    <div class="instr-row">
-      <span class="instr-key">Drag canvas</span>
-      <span class="instr-desc">Rota el haz</span>
-    </div>
-    <div class="instr-row">
-      <span class="instr-key">↻</span>
-      <span class="instr-desc">Nueva posición de jitter</span>
-    </div>
-    <div class="instr-row">
-      <span class="instr-key">⌖</span>
-      <span class="instr-desc">Recentra el origen</span>
-    </div>
-    <div class="instr-row">
-      <span class="instr-key">SVG</span>
-      <span class="instr-desc">Capas: lineas / bolas / letras</span>
-    </div>
-  </div>
-
-</div>
-
-<div id="canvas-parent"></div>
-<script src="sketch.js"></script>
+    <div id="canvas-parent" style="flex-grow:1; background:#fff;"></div>
+    <script src="sketch.js"></script>
+    <script>
+        // Sincroniza slider → número
+        function syncNum(slider, numId) {
+            document.getElementById(numId).value = slider.value;
+        }
+        // Sincroniza número → slider (clamp al rango)
+        function syncSlider(numInput, sliderId) {
+            let slider = document.getElementById(sliderId);
+            let v = parseFloat(numInput.value);
+            let mn = parseFloat(slider.min);
+            let mx = parseFloat(slider.max);
+            if (!isNaN(v)) {
+                let clamped = Math.min(Math.max(v, mn), mx);
+                slider.value = clamped;
+                // No sobreescribir el input mientras el usuario escribe
+            }
+        }
+    </script>
 </body>
 </html>
