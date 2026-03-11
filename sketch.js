@@ -109,8 +109,10 @@ function getP() {
     dash       : parseInt(document.getElementById('inDash').value),
     showBalls  : document.getElementById('checkBalls').checked,
     ballSize   : parseInt(document.getElementById('inBallSize').value),
+    fontSize   : parseInt(document.getElementById('inFontSize').value),
     linePad    : parseInt(document.getElementById('inLinePad').value),
     linesBack  : document.getElementById('checkLinesBack').checked,
+    flipText   : document.getElementById('checkFlip').checked,
     colorBg    : document.getElementById('inColorBg').value,
     colorFg    : document.getElementById('inColorFg').value,
   };
@@ -174,7 +176,7 @@ function draw() {
   let rays = calcRays(p);
   if (rays.length === 0) return;
 
-  let fs  = p.ballSize * 0.55;
+  let fs  = p.fontSize;
   let tyo = getTypoOffset(fs);
 
   if (p.linesBack) {
@@ -210,10 +212,9 @@ function doLine(r, p) {
   strokeWeight(p.weight);
   noFill();
   if (p.dash > 0) {
-    let len = r.rLine - r.rIn;
-    let off = len > 0 ? (len % (p.dash * 2)) / 2 : 0;
     drawingContext.setLineDash([p.dash, p.dash]);
-    drawingContext.lineDashOffset = -off;
+    // offset = -rIn mod (dash*2) → el primer trazo arranca exactamente en rIn
+    drawingContext.lineDashOffset = -(r.rIn % (p.dash * 2));
   } else {
     drawingContext.setLineDash([]);
     drawingContext.lineDashOffset = 0;
@@ -233,9 +234,9 @@ function doBall(r, p, fs, tyo) {
     strokeWeight(p.weight);
     ellipse(0, 0, p.ballSize, p.ballSize);
   }
-  // Usar drawingContext directamente para renderizar con FontFace nativo
   noStroke();
   fill(p.colorFg);
+  if (p.flipText) scale(-1, 1);
   drawingContext.font = `${fs}px "${p5Font || 'monospace'}"`;
   drawingContext.textAlign = 'center';
   drawingContext.textBaseline = 'alphabetic';
@@ -283,7 +284,7 @@ function saveSVG() {
   let rays = calcRays(p);
   if (rays.length === 0) return;
 
-  let fs  = p.ballSize * 0.55;
+  let fs  = p.fontSize;
   let tyo = getTypoOffset(fs);
   let W   = width, H = height;
   let fam = FONTS.length ? fontFamily(currentFontIdx) : 'sans-serif';
@@ -337,10 +338,14 @@ function saveSVG() {
       // Obtener el path data y aplicar transform de posición
       let pathData = path.toPathData(3);
       // Centrar horizontalmente: medir ancho del glifo
-      let bb    = glyph.getBoundingBox();
+      let bb     = glyph.getBoundingBox();
       let glyphW = (bb.x2 - bb.x1) * scale;
       let offsetX = -glyphW / 2 - bb.x1 * scale;
-      svg.push(`    <path transform="translate(${(r.lx + offsetX).toFixed(2)},${ty})" d="${pathData}"/>`);
+      let tx = r.lx + offsetX;
+      let flipAttr = p.flipText
+        ? `translate(${(r.lx*2).toFixed(2)},0) scale(-1,1) translate(${offsetX.toFixed(2)},${ty})`
+        : `translate(${tx.toFixed(2)},${ty})`;
+      svg.push(`    <path transform="${flipAttr}" d="${pathData}"/>`);
     });
     svg.push(`  </g>`);
   } else {

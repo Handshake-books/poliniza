@@ -65,6 +65,17 @@ label {
   min-width: 44px;
   text-align: right;
   font-variant-numeric: tabular-nums;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  outline: none;
+  font-family: monospace;
+  cursor: text;
+  transition: border-color .12s;
+}
+.val:focus {
+  border-bottom-color: #666;
+  color: #fff;
 }
 
 input[type="text"] {
@@ -227,21 +238,21 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   <div class="sec">Haz</div>
 
   <div class="grp">
-    <div class="lrow"><label>Apertura</label><span class="val" id="vAngle">90°</span></div>
+    <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="90°" onchange="syncFromVal(this)"></div>
     <input type="range" id="inAngle" min="1" max="360" value="90"
-           oninput="document.getElementById('vAngle').textContent=this.value+'°'">
+           oninput="syncSlider('inAngle','vAngle',this.value,'°')">
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Hueco central</label><span class="val" id="vRin">40 px</span></div>
+    <div class="lrow"><label>Hueco central</label><input class="val" id="vRin" value="40 px" onchange="syncFromVal(this)"></div>
     <input type="range" id="inRin" min="0" max="300" value="40"
-           oninput="document.getElementById('vRin').textContent=this.value+' px'">
+           oninput="syncSlider('inRin','vRin',this.value,' px')">
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Largo spray</label><span class="val" id="vRout">400 px</span></div>
+    <div class="lrow"><label>Largo spray</label><input class="val" id="vRout" value="400 px" onchange="syncFromVal(this)"></div>
     <input type="range" id="inRout" min="10" max="3000" value="400"
-           oninput="document.getElementById('vRout').textContent=this.value+' px'">
+           oninput="syncSlider('inRout','vRout',this.value,' px')">
   </div>
 
   <!-- JITTER -->
@@ -249,10 +260,10 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   <div class="sec">Jitter</div>
 
   <div class="grp">
-    <div class="lrow"><label>Amplitud</label><span class="val" id="vJitter">50 px</span></div>
+    <div class="lrow"><label>Amplitud</label><input class="val" id="vJitter" value="50 px" onchange="syncFromVal(this)"></div>
     <div class="inline-row">
       <input type="range" id="inJitter" min="0" max="400" value="50"
-             oninput="document.getElementById('vJitter').textContent=this.value+' px'">
+             oninput="syncSlider('inJitter','vJitter',this.value,' px')">
       <button class="ghost" onclick="newJitter()" title="Nueva posición aleatoria">↻</button>
     </div>
   </div>
@@ -262,21 +273,21 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   <div class="sec">Línea</div>
 
   <div class="grp">
-    <div class="lrow"><label>Grosor</label><span class="val" id="vWeight">1.5 pt</span></div>
+    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="1.5 pt" onchange="syncFromVal(this)"></div>
     <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="1.5"
-           oninput="document.getElementById('vWeight').textContent=this.value+' pt'">
+           oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Punteado</label><span class="val" id="vDash">off</span></div>
+    <div class="lrow"><label>Punteado</label><input class="val" id="vDash" value="off" onchange="syncFromVal(this)"></div>
     <input type="range" id="inDash" min="0" max="40" value="0"
-           oninput="document.getElementById('vDash').textContent=this.value>0?this.value+' px':'off'">
+           oninput="syncSlider('inDash','vDash',this.value,this.value>0?' px':'','',true)">
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Sep. línea → bola</label><span class="val" id="vPad">12 px</span></div>
+    <div class="lrow"><label>Sep. línea → bola</label><input class="val" id="vPad" value="12 px" onchange="syncFromVal(this)"></div>
     <input type="range" id="inLinePad" min="0" max="120" value="12"
-           oninput="document.getElementById('vPad').textContent=this.value+' px'">
+           oninput="syncSlider('inLinePad','vPad',this.value,' px')">
   </div>
 
   <div class="tog">
@@ -294,9 +305,20 @@ button.ghost:hover { color: #ccc; border-color: #777; }
   </div>
 
   <div class="grp">
-    <div class="lrow"><label>Diámetro bola</label><span class="val" id="vBall">45 px</span></div>
+    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="45 px" onchange="syncFromVal(this)"></div>
     <input type="range" id="inBallSize" min="10" max="180" value="45"
-           oninput="document.getElementById('vBall').textContent=this.value+' px'">
+           oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="25 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inFontSize" min="4" max="160" value="25"
+           oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
+  </div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkFlip">
+    <label for="checkFlip">Voltear letras (spray izquierda)</label>
   </div>
 
   <!-- COLOR -->
@@ -347,6 +369,30 @@ button.ghost:hover { color: #ccc; border-color: #777; }
 </div>
 
 <div id="canvas-parent"></div>
+<script>
+function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
+  let el = document.getElementById(valId);
+  if (isDash) {
+    el.value = parseFloat(val) > 0 ? val + ' px' : 'off';
+  } else {
+    el.value = (prefix || '') + val + (suffix || '');
+  }
+}
+
+// Val input → slider (el usuario escribe a mano)
+function syncFromVal(inputEl) {
+  let raw = parseFloat(inputEl.value);
+  if (isNaN(raw)) return;
+  // Encuentra el slider hermano (está en el .grp contenedor)
+  let grp = inputEl.closest('.grp') || inputEl.closest('.lrow').parentElement;
+  let slider = grp ? grp.querySelector('input[type="range"]') : null;
+  if (!slider) return;
+  raw = Math.min(Math.max(raw, parseFloat(slider.min)), parseFloat(slider.max));
+  slider.value = raw;
+  // Disparar oninput para actualizar el texto del val si hay unidades
+  slider.dispatchEvent(new Event('input'));
+}
+</script>
 <script src="sketch.js"></script>
 </body>
 </html>
