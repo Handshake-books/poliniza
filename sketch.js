@@ -122,6 +122,7 @@ function getP() {
 function calcRays(p) {
   let steps = p.txt.length;
   if (steps === 0) return [];
+  let txt = p.flipText ? p.txt.split('').reverse().join('') : p.txt;
   let margin = p.showBalls
     ? (p.ballSize / 2 + p.weight + p.linePad)
     : (p.weight * 2 + 10 + p.linePad);
@@ -138,7 +139,7 @@ function calcRays(p) {
       fa, rIn: p.rIn, rLine, rBall,
       lx: originX + cos(fa) * rBall,
       ly: originY + sin(fa) * rBall,
-      letter: p.txt[i],
+      letter: txt[i],
     };
   });
 }
@@ -236,7 +237,6 @@ function doBall(r, p, fs, tyo) {
   }
   noStroke();
   fill(p.colorFg);
-  if (p.flipText) scale(-1, 1);
   drawingContext.font = `${fs}px "${p5Font || 'monospace'}"`;
   drawingContext.textAlign = 'center';
   drawingContext.textBaseline = 'alphabetic';
@@ -336,11 +336,8 @@ function saveSVG() {
       // Centrado horizontal
       let bb      = glyph.getBoundingBox();
       let offsetX = -((bb.x2 - bb.x1) * scale) / 2 - bb.x1 * scale;
-      let tx      = r.lx + offsetX;
-      let flipAttr = p.flipText
-        ? `translate(${(r.lx * 2).toFixed(2)},0) scale(-1,1) translate(${offsetX.toFixed(2)},${ty})`
-        : `translate(${tx.toFixed(2)},${ty})`;
-      svg.push(`    <path transform="${flipAttr}" d="${pathData}"/>`);
+      let tx       = r.lx + offsetX;
+      svg.push(`    <path transform="translate(${tx.toFixed(2)},${ty})" d="${pathData}"/>`);
     });
     svg.push(`  </g>`);
   } else {
