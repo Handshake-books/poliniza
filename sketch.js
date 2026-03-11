@@ -326,24 +326,19 @@ function saveSVG() {
     let scale    = fs / upm;
     svg.push(`  <g id="letras" fill="${fg}">`);
     rays.forEach(r => {
-      let glyph = otFont.charToGlyph(r.letter);
-      let path  = glyph.getPath(0, 0, fs);   // x=0,y=0 — luego translatemos
-      // Calcular offset de centrado (cap-height del glifo 'H')
-      let hGlyph  = otFont.charToGlyph('H');
-      let hBB     = hGlyph.getBoundingBox();
-      let capH    = hBB.y2 * scale;
-      let offsetY = capH / 2;
-      let tx = r.lx.toFixed(2);
-      let ty = (r.ly + offsetY).toFixed(2);
-      // Obtener el path data y aplicar transform de posición
+      let glyph    = otFont.charToGlyph(r.letter);
+      let path     = glyph.getPath(0, 0, fs);
       let pathData = path.toPathData(3);
-      // Centrar horizontalmente: medir ancho del glifo
-      let bb     = glyph.getBoundingBox();
-      let glyphW = (bb.x2 - bb.x1) * scale;
-      let offsetX = -glyphW / 2 - bb.x1 * scale;
-      let tx = r.lx + offsetX;
+      // Centrado vertical: cap-height del glifo 'H'
+      let hBB     = otFont.charToGlyph('H').getBoundingBox();
+      let offsetY = (hBB.y2 * scale) / 2;
+      let ty      = (r.ly + offsetY).toFixed(2);
+      // Centrado horizontal
+      let bb      = glyph.getBoundingBox();
+      let offsetX = -((bb.x2 - bb.x1) * scale) / 2 - bb.x1 * scale;
+      let tx      = r.lx + offsetX;
       let flipAttr = p.flipText
-        ? `translate(${(r.lx*2).toFixed(2)},0) scale(-1,1) translate(${offsetX.toFixed(2)},${ty})`
+        ? `translate(${(r.lx * 2).toFixed(2)},0) scale(-1,1) translate(${offsetX.toFixed(2)},${ty})`
         : `translate(${tx.toFixed(2)},${ty})`;
       svg.push(`    <path transform="${flipAttr}" d="${pathData}"/>`);
     });
