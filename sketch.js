@@ -296,68 +296,62 @@ function saveSVG() {
   let sw  = p.weight;
   let da  = p.dash > 0 ? ` stroke-dasharray="${p.dash} ${p.dash}"` : '';
 
+  // Precalcular offsets tipográficos si opentype disponible
+  let upm = otFont ? otFont.unitsPerEm : 1;
+  let scale = fs / upm;
+  let hCapOffsetY = 0, hCapOffsetX_cache = {};
+  if (otFont) {
+    let hGlyph = otFont.charToGlyph('H');
+    let hBB    = hGlyph.getBoundingBox();
+    hCapOffsetY = (hBB.y2 * scale) / 2;
+  }
+
+  let ballFill   = p.colorBall;
+  let ballStroke = p.ballStroke ? `stroke="${fg}" stroke-width="${sw}"` : `stroke="none"`;
+  let ballR      = (p.ballSize / 2).toFixed(2);
+
   let svg = [];
   svg.push(`<?xml version="1.0" encoding="UTF-8"?>`);
   svg.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`);
   svg.push(`  <rect width="${W}" height="${H}" fill="${bg}"/>`);
 
-  svg.push(`  <g id="lineas" stroke="${fg}" stroke-width="${sw}" fill="none">`);
-  rays.forEach(r => {
-    let x1  = (originX + cos(r.fa)*r.rIn ).toFixed(2);
-    let y1  = (originY + sin(r.fa)*r.rIn ).toFixed(2);
+  // Cada molécula = un <g> propio con línea → bola → letra en orden de pintado
+  rays.forEach((r, i) => {
+    svg.push(`  <g id="molecula-${i}">`);
+
+    // — Línea
+    let x1  = (originX + cos(r.fa)*r.rIn  ).toFixed(2);
+    let y1  = (originY + sin(r.fa)*r.rIn  ).toFixed(2);
     let x2  = (originX + cos(r.fa)*r.rLine).toFixed(2);
     let y2  = (originY + sin(r.fa)*r.rLine).toFixed(2);
     let dof = p.dash > 0
-      ? ` stroke-dashoffset="${(-(r.rLine-r.rIn) % (p.dash*2) / 2).toFixed(2)}"`
+      ? ` stroke-dashoffset="${(-(r.rLine - r.rIn) % (p.dash * 2) / 2).toFixed(2)}"`
       : '';
-    svg.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${da}${dof}/>`);
+    svg.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fg}" stroke-width="${sw}" fill="none"${da}${dof}/>`);
+
+    // — Bola
+    if (p.showBalls) {
+      svg.push(`    <circle cx="${r.lx.toFixed(2)}" cy="${r.ly.toFixed(2)}" r="${ballR}" fill="${ballFill}" ${ballStroke}/>`);
+    }
+
+    // — Letra
+    if (otFont) {
+      let glyph    = otFont.charToGlyph(r.letter);
+      let pathData = glyph.getPath(0, 0, fs).toPathData(3);
+      let bb       = glyph.getBoundingBox();
+      let glyphW   = (bb.x2 - bb.x1) * scale;
+      let offsetX  = -glyphW / 2 - bb.x1 * scale;
+      let tx       = (r.lx + offsetX).toFixed(2);
+      let ty       = (r.ly + hCapOffsetY).toFixed(2);
+      svg.push(`    <path fill="${p.colorText}" transform="translate(${tx},${ty})" d="${pathData}"/>`);
+    } else {
+      let fam = fontFamily(currentFontIdx);
+      svg.push(`    <text x="${r.lx.toFixed(2)}" y="${(r.ly + tyo).toFixed(2)}" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">${esc(r.letter)}</text>`);
+    }
+
+    svg.push(`  </g>`);
   });
-  svg.push(`  </g>`);
 
-  if (p.showBalls) {
-    let ballFill   = p.colorBall;
-    let ballStroke = p.ballStroke ? `stroke="${fg}" stroke-width="${sw}"` : `stroke="none"`;
-    svg.push(`  <g id="bolas" fill="${ballFill}" ${ballStroke}>`);
-    rays.forEach(r => {
-      svg.push(`    <circle cx="${r.lx.toFixed(2)}" cy="${r.ly.toFixed(2)}" r="${(p.ballSize/2).toFixed(2)}"/>`);
-    });
-    svg.push(`  </g>`);
-  }
-
-  // ── Capa letras: paths expandidos si opentype está disponible, <text> como fallback
-  if (otFont) {
-    // Escala: opentype trabaja en unidades de fuente (UPM), hay que escalar a px
-    let upm      = otFont.unitsPerEm;
-    let scale    = fs / upm;
-    svg.push(`  <g id="letras" fill="${p.colorText}">`);
-    rays.forEach(r => {
-      let glyph = otFont.charToGlyph(r.letter);
-      let path  = glyph.getPath(0, 0, fs);   // x=0,y=0 — luego translatemos
-      // Calcular offset de centrado (cap-height del glifo 'H')
-      let hGlyph  = otFont.charToGlyph('H');
-      let hBB     = hGlyph.getBoundingBox();
-      let capH    = hBB.y2 * scale;
-      let offsetY = capH / 2;
-      let tx = r.lx.toFixed(2);
-      let ty = (r.ly + offsetY).toFixed(2);
-      // Obtener el path data y aplicar transform de posición
-      let pathData = path.toPathData(3);
-      // Centrar horizontalmente: medir ancho del glifo
-      let bb    = glyph.getBoundingBox();
-      let glyphW = (bb.x2 - bb.x1) * scale;
-      let offsetX = -glyphW / 2 - bb.x1 * scale;
-      svg.push(`    <path transform="translate(${(r.lx + offsetX).toFixed(2)},${ty})" d="${pathData}"/>`);
-    });
-    svg.push(`  </g>`);
-  } else {
-    // Fallback: <text> con font-family (requiere fuente instalada)
-    let fam = fontFamily(currentFontIdx);
-    svg.push(`  <g id="letras" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">`);
-    rays.forEach(r => {
-      svg.push(`    <text x="${r.lx.toFixed(2)}" y="${(r.ly+tyo).toFixed(2)}">${esc(r.letter)}</text>`);
-    });
-    svg.push(`  </g>`);
-  }
   svg.push(`</svg>`);
 
   let blob = new Blob([svg.join('\n')], {type:'image/svg+xml;charset=utf-8'});
@@ -398,7 +392,11 @@ window.addEventListener('keydown', function(e) {
     case 'j': case 'J': newJitter(); break;
     case 'r': case 'R': randomOrigin(); break;
     case 'c': case 'C': resetOrigin(); break;
-    case 's': case 'S': saveSVG(); break;
+    case 'i': case 'I': {
+      let cb = document.getElementById('checkFlip');
+      cb.checked = !cb.checked;
+      break;
+    }
 
     case 'ArrowLeft':
       e.preventDefault();
