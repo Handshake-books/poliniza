@@ -8,7 +8,8 @@ const HIDE_AFTER = 80;
 // ── Fuentes ───────────────────────────────────────────────────────────────────
 let FONTS          = [];
 let currentFontIdx = 0;
-let p5Font         = null;
+let p5Font         = null;   // nombre CSS para renderizado en canvas
+let otFont         = null;   // objeto opentype.Font para exportar paths
 let _tyCache       = {};
 
 // ── Estado del spray ──────────────────────────────────────────────────────────
@@ -35,44 +36,65 @@ function setup() {
 }
 
 // ── CARGA DE FUENTES ──────────────────────────────────────────────────────────
+// Usa FontFace nativo — evita los problemas de timing de loadFont() de p5.
+// p5Font guarda el nombre CSS de la familia, no un objeto p5.Font.
+// El renderizado usa drawingContext.font directamente.
+
+let fontLoadPromises = [];
+
 async function initFonts() {
   let sel = document.getElementById('fontSelect');
+
   try {
     let res   = await fetch('fonts/index.json');
     let files = await res.json();
     if (!Array.isArray(files) || files.length === 0) throw new Error('empty');
     FONTS = files.map(f => ({
-      label : f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
-      file  : 'fonts/' + f,
+      label  : f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+      file   : 'fonts/' + f,
+      family : f.replace(/\.[^.]+$/, ''),
     }));
   } catch {
-    FONTS = [{ label: 'VulfMono Bold', file: 'VulfMono-Bold.otf' }];
+    FONTS = [{ label: 'VulfMono Bold', file: 'VulfMono-Bold.otf', family: 'VulfMono-Bold' }];
   }
 
-  // Pueblar <select>
+  // Registrar todas con FontFace (para canvas) y opentype (para SVG export)
+  fontLoadPromises = FONTS.map(f => {
+    let ff = new FontFace(f.family, `url(${f.file})`);
+    let cssP = ff.load().then(loaded => { document.fonts.add(loaded); return true; })
+                        .catch(() => false);
+    // También parsear con opentype.js para poder exportar paths
+    let otP = opentype.load(f.file).then(font => { f.otFont = font; })
+                                    .catch(() => {});
+    return Promise.all([cssP, otP]);
+  });
+
+  // Esperar primera fuente antes de arrancar
+  await fontLoadPromises[0];
+  p5Font = FONTS[0].family;
+  otFont = FONTS[0].otFont || null;
+
+  // Pueblar select
   sel.innerHTML = '';
   FONTS.forEach((f, i) => {
     let opt = document.createElement('option');
     opt.value = i;
     opt.textContent = f.label;
     sel.appendChild(opt);
-    // Registrar @font-face para measureText offscreen
-    new FontFace(fontFamily(i), `url(${f.file})`)
-      .load().then(ff => document.fonts.add(ff)).catch(() => {});
   });
 
-  sel.addEventListener('change', () => {
-    currentFontIdx = parseInt(sel.value);
+  sel.addEventListener('change', async () => {
+    let i = parseInt(sel.value);
+    await fontLoadPromises[i];
+    currentFontIdx = i;
     _tyCache = {};
-    loadFont(FONTS[currentFontIdx].file, f => { p5Font = f; });
+    p5Font = FONTS[i].family;
+    otFont = FONTS[i].otFont || null;
   });
-
-  loadFont(FONTS[0].file, f => { p5Font = f; });
 }
 
-// Nombre de familia CSS a partir del índice
 function fontFamily(idx) {
-  return FONTS[idx].file.replace(/.*\//, '').replace(/\.[^.]+$/, '');
+  return (FONTS.length && FONTS[idx]) ? FONTS[idx].family : 'monospace';
 }
 
 // ── LEER PARÁMETROS ───────────────────────────────────────────────────────────
@@ -211,12 +233,14 @@ function doBall(r, p, fs, tyo) {
     strokeWeight(p.weight);
     ellipse(0, 0, p.ballSize, p.ballSize);
   }
-  fill(p.colorFg);
+  // Usar drawingContext directamente para renderizar con FontFace nativo
   noStroke();
-  textFont(p5Font);
-  textSize(fs);
-  textAlign(CENTER, BASELINE);
-  text(r.letter, 0, tyo);
+  fill(p.colorFg);
+  drawingContext.font = `${fs}px "${p5Font || 'monospace'}"`;
+  drawingContext.textAlign = 'center';
+  drawingContext.textBaseline = 'alphabetic';
+  drawingContext.fillStyle = p.colorFg;
+  drawingContext.fillText(r.letter, 0, tyo);
   pop();
 }
 
@@ -294,11 +318,40 @@ function saveSVG() {
     svg.push(`  </g>`);
   }
 
-  svg.push(`  <g id="letras" fill="${fg}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">`);
-  rays.forEach(r => {
-    svg.push(`    <text x="${r.lx.toFixed(2)}" y="${(r.ly+tyo).toFixed(2)}">${esc(r.letter)}</text>`);
-  });
-  svg.push(`  </g>`);
+  // ── Capa letras: paths expandidos si opentype está disponible, <text> como fallback
+  if (otFont) {
+    // Escala: opentype trabaja en unidades de fuente (UPM), hay que escalar a px
+    let upm      = otFont.unitsPerEm;
+    let scale    = fs / upm;
+    svg.push(`  <g id="letras" fill="${fg}">`);
+    rays.forEach(r => {
+      let glyph = otFont.charToGlyph(r.letter);
+      let path  = glyph.getPath(0, 0, fs);   // x=0,y=0 — luego translatemos
+      // Calcular offset de centrado (cap-height del glifo 'H')
+      let hGlyph  = otFont.charToGlyph('H');
+      let hBB     = hGlyph.getBoundingBox();
+      let capH    = hBB.y2 * scale;
+      let offsetY = capH / 2;
+      let tx = r.lx.toFixed(2);
+      let ty = (r.ly + offsetY).toFixed(2);
+      // Obtener el path data y aplicar transform de posición
+      let pathData = path.toPathData(3);
+      // Centrar horizontalmente: medir ancho del glifo
+      let bb    = glyph.getBoundingBox();
+      let glyphW = (bb.x2 - bb.x1) * scale;
+      let offsetX = -glyphW / 2 - bb.x1 * scale;
+      svg.push(`    <path transform="translate(${(r.lx + offsetX).toFixed(2)},${ty})" d="${pathData}"/>`);
+    });
+    svg.push(`  </g>`);
+  } else {
+    // Fallback: <text> con font-family (requiere fuente instalada)
+    let fam = fontFamily(currentFontIdx);
+    svg.push(`  <g id="letras" fill="${fg}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">`);
+    rays.forEach(r => {
+      svg.push(`    <text x="${r.lx.toFixed(2)}" y="${(r.ly+tyo).toFixed(2)}">${esc(r.letter)}</text>`);
+    });
+    svg.push(`  </g>`);
+  }
   svg.push(`</svg>`);
 
   let blob = new Blob([svg.join('\n')], {type:'image/svg+xml;charset=utf-8'});
