@@ -20,6 +20,7 @@ let jitterSeed   = 42;
 // ── Bounding box de trabajo ───────────────────────────────────────────────────
 // El canvas ocupa toda la ventana; el bbox es el área de dibujo/export.
 let bbW = 800, bbH = 600;
+let zoom = 1.0;
 function bbX() { return (width  - bbW) / 2; }
 function bbY() { return (height - bbH) / 2; }
 
@@ -184,48 +185,57 @@ function getTypoOffset(fontSize) {
 function draw() {
   let p = getP();
 
-  // Fondo oscuro fuera del bbox
+  // Fondo del canvas (fuera del bbox)
   background(40);
+
+  // Centro visual del canvas — pivot del zoom
+  let cx = width  / 2;
+  let cy = height / 2;
+
+  // Aplicar zoom centrado en el canvas
+  drawingContext.save();
+  drawingContext.translate(cx, cy);
+  drawingContext.scale(zoom, zoom);
+  drawingContext.translate(-cx, -cy);
 
   let bx = bbX(), by = bbY();
 
-  // Dibujar sólo dentro del bbox (clip)
+  // Clip al bbox (en espacio zoomed)
   drawingContext.save();
   drawingContext.beginPath();
   drawingContext.rect(bx, by, bbW, bbH);
   drawingContext.clip();
 
-  // Fondo del área de trabajo
+  // Fondo área de trabajo
   fill(p.colorBg);
   noStroke();
   rect(bx, by, bbW, bbH);
 
-  if (!p5Font) { drawingContext.restore(); return; }
-
-  let rays = calcRays(p);
-  if (rays.length === 0) { drawingContext.restore(); return; }
-
-  let fs  = p.fontSize;
-  let tyo = getTypoOffset(fs);
-
-  if (p.linesBack) {
-    rays.forEach(r => doLine(r, p));
-    rays.forEach(r => doBall(r, p, fs, tyo));
-  } else {
-    rays.forEach(r => { doLine(r, p); doBall(r, p, fs, tyo); });
+  if (p5Font) {
+    let rays = calcRays(p);
+    if (rays.length > 0) {
+      let fs  = p.fontSize;
+      let tyo = getTypoOffset(fs);
+      if (p.linesBack) {
+        rays.forEach(r => doLine(r, p));
+        rays.forEach(r => doBall(r, p, fs, tyo));
+      } else {
+        rays.forEach(r => { doLine(r, p); doBall(r, p, fs, tyo); });
+      }
+    }
   }
 
-  drawingContext.restore();
+  drawingContext.restore(); // quita el clip
 
-  // Borde del bbox — sobre el clip, siempre visible
+  // Borde del bbox
   noFill();
-  stroke(80);
-  strokeWeight(1);
-  drawingContext.setLineDash([4, 4]);
+  stroke(90);
+  strokeWeight(1 / zoom); // borde siempre 1px visual
+  drawingContext.setLineDash([4 / zoom, 4 / zoom]);
   rect(bx, by, bbW, bbH);
   drawingContext.setLineDash([]);
 
-  // Indicador de origen — sólo en pantalla
+  // Indicador de origen — dentro del zoom para que aparezca en las coords correctas
   mouseIdleTimer++;
   let a = constrain(map(mouseIdleTimer, HIDE_AFTER*0.5, HIDE_AFTER, 220, 0), 0, 220);
   if (a > 0) {
@@ -241,6 +251,8 @@ function draw() {
     line(originX, originY-s, originX, originY+s);
     pop();
   }
+
+  drawingContext.restore(); // quita el zoom
 }
 
 function doLine(r, p) {
@@ -284,26 +296,38 @@ function doBall(r, p, fs, tyo) {
 }
 
 // ── RATÓN ─────────────────────────────────────────────────────────────────────
+// Convierte coordenadas de pantalla (mouseX/Y del canvas) a coordenadas reales (sin zoom)
+function screenToWorld(sx, sy) {
+  let cx = width  / 2;
+  let cy = height / 2;
+  return {
+    x: (sx - cx) / zoom + cx,
+    y: (sy - cy) / zoom + cy,
+  };
+}
+
 function mouseMoved()  { mouseIdleTimer = 0; }
 
 function mousePressed() {
   if (mouseX <= SIDEBAR_W) return;
   mouseIdleTimer = 0;
-  if (dist(mouseX, mouseY, originX, originY) < 16) {
+  let w = screenToWorld(mouseX, mouseY);
+  if (dist(w.x, w.y, originX, originY) < 16 / zoom) {
     draggingOrigin = true;
   } else {
     draggingRotation = true;
-    lastMouseAngle   = atan2(mouseY - originY, mouseX - originX);
+    lastMouseAngle   = atan2(w.y - originY, w.x - originX);
   }
 }
 
 function mouseDragged() {
   mouseIdleTimer = 0;
+  let w = screenToWorld(mouseX, mouseY);
   if (draggingOrigin) {
-    originX = constrain(mouseX, bbX() + 10, bbX() + bbW - 10);
-    originY = constrain(mouseY, bbY() + 10, bbY() + bbH - 10);
+    originX = constrain(w.x, bbX() + 10, bbX() + bbW - 10);
+    originY = constrain(w.y, bbY() + 10, bbY() + bbH - 10);
   } else if (draggingRotation) {
-    let cur   = atan2(mouseY - originY, mouseX - originX);
+    let cur   = atan2(w.y - originY, w.x - originX);
     let delta = cur - lastMouseAngle;
     if (delta >  PI) delta -= TWO_PI;
     if (delta < -PI) delta += TWO_PI;
@@ -411,6 +435,14 @@ function readBBox() {
   bbH = Math.max(100, Math.min(h, 4000));
 }
 
+function setZoom(v) {
+  zoom = Math.max(0.1, Math.min(4, parseFloat(v) || 1));
+  let sl  = document.getElementById('inZoom');
+  let lbl = document.getElementById('vZoom');
+  if (sl)  sl.value  = zoom;
+  if (lbl) lbl.value = Math.round(zoom * 100) + '%';
+}
+
 function applyBBox() {
   readBBox();
   // Recentrar origen si queda fuera del nuevo bbox
@@ -449,6 +481,9 @@ window.addEventListener('keydown', function(e) {
       break;
     }
     case 's': case 'S': saveSVG(); break;
+    case 'z': case 'Z': setZoom(1); break;
+    case '+': case '=': setZoom(zoom * 1.1); break;
+    case '-': case '_': setZoom(zoom * 0.9); break;
 
     case 'ArrowLeft':
       e.preventDefault();
@@ -475,5 +510,13 @@ window.addEventListener('keydown', function(e) {
     }
   }
 });
+
+// Scroll para zoom
+function mouseWheel(e) {
+  if (mouseX <= SIDEBAR_W) return;
+  let factor = e.delta > 0 ? 0.9 : 1.1;
+  setZoom(zoom * factor);
+  return false; // evita scroll de página
+}
 
 function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }

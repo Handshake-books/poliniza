@@ -417,6 +417,18 @@ button.preset:hover { background: #2e2e2e; color: #eee; border-color: #666; }
     </div>
   </div>
 
+  <div class="grp" style="margin-top:8px">
+    <div class="lrow">
+      <label>Zoom</label>
+      <input class="val" id="vZoom" value="100%" onchange="setZoomFromVal(this)">
+    </div>
+    <div class="inline-row">
+      <input type="range" id="inZoom" min="0.1" max="4" step="0.05" value="1"
+             oninput="setZoom(this.value)">
+      <button class="ghost" onclick="setZoom(1)" title="[Z] Reset zoom">1:1</button>
+    </div>
+  </div>
+
   <!-- COLOR GLOBAL -->
   <hr>
   <div class="sec">Color global</div>
@@ -478,6 +490,18 @@ button.preset:hover { background: #2e2e2e; color: #eee; border-color: #666; }
       <span class="instr-desc">Exportar SVG</span>
     </div>
     <div class="instr-row">
+      <kbd>+ / −</kbd>
+      <span class="instr-desc">Zoom entrada / salida</span>
+    </div>
+    <div class="instr-row">
+      <kbd>scroll</kbd>
+      <span class="instr-desc">Zoom con rueda</span>
+    </div>
+    <div class="instr-row">
+      <kbd>Z</kbd>
+      <span class="instr-desc">Reset zoom 100%</span>
+    </div>
+    <div class="instr-row">
       <kbd>SVG</kbd>
       <span class="instr-desc">Letras exportadas como paths vectoriales, sin fuente instalada</span>
     </div>
@@ -496,6 +520,11 @@ function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
     el.value = (prefix || '') + val + (suffix || '');
   }
 }
+function setZoomFromVal(el) {
+  let v = parseFloat(el.value) / 100;
+  if (!isNaN(v) && typeof setZoom === 'function') setZoom(v);
+}
+
 function setBBox(w, h, label) {
   document.getElementById('inBbW').value = w;
   document.getElementById('inBbH').value = h;
