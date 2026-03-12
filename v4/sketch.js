@@ -125,8 +125,6 @@ function getP() {
     colorBg    : document.getElementById('inColorBg').value,
     colorFg    : document.getElementById('inColorFg').value,
     colorBall  : document.getElementById('inColorBall').value,
-    colorBallB : document.getElementById('inColorBallB').value,
-    altBall    : document.getElementById('checkAltBall').checked,
     colorText  : document.getElementById('inColorText').value,
   };
 }
@@ -220,9 +218,9 @@ function draw() {
       let tyo = getTypoOffset(fs);
       if (p.linesBack) {
         rays.forEach(r => doLine(r, p));
-        rays.forEach((r, i) => doBall(r, p, fs, tyo, i));
+        rays.forEach(r => doBall(r, p, fs, tyo));
       } else {
-        rays.forEach((r, i) => { doLine(r, p); doBall(r, p, fs, tyo, i); });
+        rays.forEach(r => { doLine(r, p); doBall(r, p, fs, tyo); });
       }
     }
   }
@@ -279,12 +277,11 @@ function doLine(r, p) {
   pop();
 }
 
-function doBall(r, p, fs, tyo, idx) {
+function doBall(r, p, fs, tyo) {
   push();
   translate(r.lx, r.ly);
   if (p.showBalls) {
-    let bCol = (p.altBall && idx % 2 === 1) ? p.colorBallB : p.colorBall;
-    fill(bCol);
+    fill(p.colorBall);
     if (p.ballStroke) { stroke(p.colorFg); strokeWeight(p.weight); }
     else noStroke();
     ellipse(0, 0, p.ballSize, p.ballSize);
@@ -396,8 +393,7 @@ function saveSVG() {
 
     // — Bola
     if (p.showBalls) {
-      let bFill = (p.altBall && i % 2 === 1) ? p.colorBallB : ballFill;
-      svg.push(`    <circle cx="${(r.lx - ox).toFixed(2)}" cy="${(r.ly - oy).toFixed(2)}" r="${ballR}" fill="${bFill}" ${ballStroke}/>`);
+      svg.push(`    <circle cx="${(r.lx - ox).toFixed(2)}" cy="${(r.ly - oy).toFixed(2)}" r="${ballR}" fill="${ballFill}" ${ballStroke}/>`);
     }
 
     // — Letra

@@ -373,18 +373,8 @@ button.preset:hover { background: #2e2e2e; color: #eee; border-color: #666; }
   </div>
 
   <div class="color-row">
-    <label>Color bola A</label>
+    <label>Color bola</label>
     <input type="color" id="inColorBall" value="#ffffff">
-  </div>
-
-  <div class="tog">
-    <input type="checkbox" id="checkAltBall">
-    <label for="checkAltBall">Alternar color bola (A/B)</label>
-  </div>
-
-  <div class="color-row" id="rowColorBallB" style="opacity:0.35;pointer-events:none">
-    <label>Color bola B</label>
-    <input type="color" id="inColorBallB" value="#000000">
   </div>
 
   <div class="grp">
@@ -540,15 +530,6 @@ function setBBox(w, h, label) {
   document.getElementById('inBbH').value = h;
   if (typeof applyBBox === 'function') applyBBox();
 }
-
-// Activar/desactivar fila color B según el toggle
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('checkAltBall').addEventListener('change', function() {
-    let row = document.getElementById('rowColorBallB');
-    row.style.opacity       = this.checked ? '1'    : '0.35';
-    row.style.pointerEvents = this.checked ? 'auto' : 'none';
-  });
-});
 
 function syncFromVal(inputEl) {
   let raw = parseFloat(inputEl.value);
