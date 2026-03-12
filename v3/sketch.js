@@ -17,12 +17,6 @@ let originX, originY;
 let rotation     = 0;
 let jitterSeed   = 42;
 
-// ── Bounding box de trabajo ───────────────────────────────────────────────────
-// El canvas ocupa toda la ventana; el bbox es el área de dibujo/export.
-let bbW = 800, bbH = 600;
-function bbX() { return (width  - bbW) / 2; }
-function bbY() { return (height - bbH) / 2; }
-
 // ── Interacción ───────────────────────────────────────────────────────────────
 let draggingOrigin   = false;
 let draggingRotation = false;
@@ -36,7 +30,6 @@ function preload() {}
 function setup() {
   let canvas = createCanvas(windowWidth - SIDEBAR_W, windowHeight);
   canvas.parent('canvas-parent');
-  readBBox();
   originX = width  / 2;
   originY = height / 2;
   initFonts();
@@ -155,14 +148,12 @@ function calcRays(p) {
 }
 
 // ── COLISIÓN ──────────────────────────────────────────────────────────────────
-// Usa las coordenadas del bounding box, no el canvas completo.
 function calcCollision(a, margin) {
   let dx = cos(a), dy = sin(a), t = Infinity;
-  let x0 = bbX(), y0 = bbY();
-  if (dx > 0) t = min(t, (x0 + bbW - margin - originX) / dx);
-  if (dx < 0) t = min(t, (x0 + margin - originX) / dx);
-  if (dy > 0) t = min(t, (y0 + bbH - margin - originY) / dy);
-  if (dy < 0) t = min(t, (y0 + margin - originY) / dy);
+  if (dx > 0) t = min(t, (width  - margin - originX) / dx);
+  if (dx < 0) t = min(t, (margin - originX) / dx);
+  if (dy > 0) t = min(t, (height - margin - originY) / dy);
+  if (dy < 0) t = min(t, (margin - originY) / dy);
   return max(0, t);
 }
 
@@ -183,27 +174,11 @@ function getTypoOffset(fontSize) {
 // ── DRAW ──────────────────────────────────────────────────────────────────────
 function draw() {
   let p = getP();
-
-  // Fondo oscuro fuera del bbox
-  background(40);
-
-  let bx = bbX(), by = bbY();
-
-  // Dibujar sólo dentro del bbox (clip)
-  drawingContext.save();
-  drawingContext.beginPath();
-  drawingContext.rect(bx, by, bbW, bbH);
-  drawingContext.clip();
-
-  // Fondo del área de trabajo
-  fill(p.colorBg);
-  noStroke();
-  rect(bx, by, bbW, bbH);
-
-  if (!p5Font) { drawingContext.restore(); return; }
+  background(p.colorBg);
+  if (!p5Font) return;
 
   let rays = calcRays(p);
-  if (rays.length === 0) { drawingContext.restore(); return; }
+  if (rays.length === 0) return;
 
   let fs  = p.fontSize;
   let tyo = getTypoOffset(fs);
@@ -214,16 +189,6 @@ function draw() {
   } else {
     rays.forEach(r => { doLine(r, p); doBall(r, p, fs, tyo); });
   }
-
-  drawingContext.restore();
-
-  // Borde del bbox — sobre el clip, siempre visible
-  noFill();
-  stroke(80);
-  strokeWeight(1);
-  drawingContext.setLineDash([4, 4]);
-  rect(bx, by, bbW, bbH);
-  drawingContext.setLineDash([]);
 
   // Indicador de origen — sólo en pantalla
   mouseIdleTimer++;
@@ -300,8 +265,8 @@ function mousePressed() {
 function mouseDragged() {
   mouseIdleTimer = 0;
   if (draggingOrigin) {
-    originX = constrain(mouseX, bbX() + 10, bbX() + bbW - 10);
-    originY = constrain(mouseY, bbY() + 10, bbY() + bbH - 10);
+    originX = constrain(mouseX, 20, width  - 20);
+    originY = constrain(mouseY, 20, height - 20);
   } else if (draggingRotation) {
     let cur   = atan2(mouseY - originY, mouseX - originX);
     let delta = cur - lastMouseAngle;
@@ -324,9 +289,7 @@ function saveSVG() {
 
   let fs  = p.fontSize;
   let tyo = getTypoOffset(fs);
-  // SVG usa el bbox como área de documento; coordenadas se compensan con el offset
-  let W   = bbW, H = bbH;
-  let ox  = bbX(), oy = bbY();   // offset canvas→bbox
+  let W   = width, H = height;
   let fam = FONTS.length ? fontFamily(currentFontIdx) : 'sans-serif';
   let fg  = p.colorFg;
   let bg  = p.colorBg;
@@ -353,15 +316,14 @@ function saveSVG() {
   svg.push(`  <rect width="${W}" height="${H}" fill="${bg}"/>`);
 
   // Cada molécula = un <g> propio con línea → bola → letra en orden de pintado
-  // Las coordenadas del canvas se compensan restando el offset del bbox (ox, oy)
   rays.forEach((r, i) => {
     svg.push(`  <g id="molecula-${i}">`);
 
-    // — Línea (coordenadas relativas al bbox)
-    let x1  = (originX - ox + cos(r.fa)*r.rIn  ).toFixed(2);
-    let y1  = (originY - oy + sin(r.fa)*r.rIn  ).toFixed(2);
-    let x2  = (originX - ox + cos(r.fa)*r.rLine).toFixed(2);
-    let y2  = (originY - oy + sin(r.fa)*r.rLine).toFixed(2);
+    // — Línea
+    let x1  = (originX + cos(r.fa)*r.rIn  ).toFixed(2);
+    let y1  = (originY + sin(r.fa)*r.rIn  ).toFixed(2);
+    let x2  = (originX + cos(r.fa)*r.rLine).toFixed(2);
+    let y2  = (originY + sin(r.fa)*r.rLine).toFixed(2);
     let dof = p.dash > 0
       ? ` stroke-dashoffset="${(-(r.rLine - r.rIn) % (p.dash * 2) / 2).toFixed(2)}"`
       : '';
@@ -369,7 +331,7 @@ function saveSVG() {
 
     // — Bola
     if (p.showBalls) {
-      svg.push(`    <circle cx="${(r.lx - ox).toFixed(2)}" cy="${(r.ly - oy).toFixed(2)}" r="${ballR}" fill="${ballFill}" ${ballStroke}/>`);
+      svg.push(`    <circle cx="${r.lx.toFixed(2)}" cy="${r.ly.toFixed(2)}" r="${ballR}" fill="${ballFill}" ${ballStroke}/>`);
     }
 
     // — Letra
@@ -379,12 +341,12 @@ function saveSVG() {
       let bb       = glyph.getBoundingBox();
       let glyphW   = (bb.x2 - bb.x1) * scale;
       let offsetX  = -glyphW / 2 - bb.x1 * scale;
-      let tx       = (r.lx - ox + offsetX).toFixed(2);
-      let ty       = (r.ly - oy + hCapOffsetY).toFixed(2);
+      let tx       = (r.lx + offsetX).toFixed(2);
+      let ty       = (r.ly + hCapOffsetY).toFixed(2);
       svg.push(`    <path fill="${p.colorText}" transform="translate(${tx},${ty})" d="${pathData}"/>`);
     } else {
       let fam = fontFamily(currentFontIdx);
-      svg.push(`    <text x="${(r.lx - ox).toFixed(2)}" y="${(r.ly - oy + tyo).toFixed(2)}" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">${esc(r.letter)}</text>`);
+      svg.push(`    <text x="${r.lx.toFixed(2)}" y="${(r.ly + tyo).toFixed(2)}" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">${esc(r.letter)}</text>`);
     }
 
     svg.push(`  </g>`);
@@ -404,32 +366,19 @@ function esc(s) {
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-function readBBox() {
-  let w = parseInt(document.getElementById('inBbW').value) || 800;
-  let h = parseInt(document.getElementById('inBbH').value) || 600;
-  bbW = Math.max(100, Math.min(w, 4000));
-  bbH = Math.max(100, Math.min(h, 4000));
-}
-
-function applyBBox() {
-  readBBox();
-  // Recentrar origen si queda fuera del nuevo bbox
-  let bx = bbX(), by = bbY();
-  originX = constrain(originX, bx + 10, bx + bbW - 10);
-  originY = constrain(originY, by + 10, by + bbH - 10);
-}
-
 function newJitter()   { jitterSeed = Math.floor(millis()); }
 
 function resetOrigin() {
-  originX = bbX() + bbW / 2;
-  originY = bbY() + bbH / 2;
+  originX = width / 2;
+  originY = height / 2;
 }
 
 function randomOrigin() {
+  // Posición aleatoria dentro del canvas con margen
   let m = 60;
-  originX = bbX() + m + Math.random() * (bbW - m * 2);
-  originY = bbY() + m + Math.random() * (bbH - m * 2);
+  originX = m + Math.random() * (width  - m * 2);
+  originY = m + Math.random() * (height - m * 2);
+  // Ángulo aleatorio completo
   rotation = Math.random() * TWO_PI;
 }
 

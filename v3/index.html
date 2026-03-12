@@ -226,50 +226,7 @@ kbd {
   line-height: 1.4;
 }
 
-/* Bbox inputs */
-.bbox-row {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-bottom: 6px;
-}
-.bbox-row input[type="number"] {
-  width: 62px;
-  background: #222;
-  border: 1px solid #444;
-  color: #eee;
-  padding: 5px 6px;
-  font-family: monospace;
-  font-size: 11px;
-  outline: none;
-  text-align: right;
-  -moz-appearance: textfield;
-}
-.bbox-row input[type="number"]::-webkit-inner-spin-button { display: none; }
-.bbox-row input[type="number"]:focus { border-color: #888; }
-.bbox-x    { font-size: 11px; color: #666; flex-shrink: 0; }
-.bbox-unit { font-size: 10px; color: #555; flex-shrink: 0; }
-
-/* Presets formato */
-.bbox-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-button.preset {
-  background: #252525;
-  color: #999;
-  border: 1px solid #333;
-  font-family: monospace;
-  font-size: 8px;
-  padding: 3px 7px;
-  cursor: pointer;
-  letter-spacing: 0.5px;
-  transition: color .1s, border-color .1s, background .1s;
-}
-button.preset:hover { background: #2e2e2e; color: #eee; border-color: #666; }
-
-#canvas-parent { flex-grow: 1; background: #333; }
+#canvas-parent { flex-grow: 1; background: #fff; }
 </style>
 </head>
 <body>
@@ -393,30 +350,6 @@ button.preset:hover { background: #2e2e2e; color: #eee; border-color: #666; }
     <label for="checkFlip">Invertir orden letras</label>
   </div>
 
-  <!-- FORMATO / BBOX -->
-  <hr>
-  <div class="sec">Formato</div>
-
-  <div class="grp">
-    <label>Área de dibujo</label>
-    <div class="bbox-row">
-      <input type="number" id="inBbW" value="800" min="100" max="4000" step="1"
-             onchange="applyBBox()" title="Ancho en px">
-      <span class="bbox-x">×</span>
-      <input type="number" id="inBbH" value="600" min="100" max="4000" step="1"
-             onchange="applyBBox()" title="Alto en px">
-      <span class="bbox-unit">px</span>
-    </div>
-    <div class="bbox-presets">
-      <button class="preset" onclick="setBBox(210,297,'A4 V')">A4 V</button>
-      <button class="preset" onclick="setBBox(297,210,'A4 H')">A4 H</button>
-      <button class="preset" onclick="setBBox(148,210,'A5 V')">A5 V</button>
-      <button class="preset" onclick="setBBox(1080,1080,'1:1')">1:1</button>
-      <button class="preset" onclick="setBBox(1080,1920,'9:16')">9:16</button>
-      <button class="preset" onclick="setBBox(1920,1080,'16:9')">16:9</button>
-    </div>
-  </div>
-
   <!-- COLOR GLOBAL -->
   <hr>
   <div class="sec">Color global</div>
@@ -496,12 +429,6 @@ function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
     el.value = (prefix || '') + val + (suffix || '');
   }
 }
-function setBBox(w, h, label) {
-  document.getElementById('inBbW').value = w;
-  document.getElementById('inBbH').value = h;
-  if (typeof applyBBox === 'function') applyBBox();
-}
-
 function syncFromVal(inputEl) {
   let raw = parseFloat(inputEl.value);
   if (isNaN(raw)) return;
