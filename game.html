@@ -168,6 +168,7 @@ kbd { display: inline-block; font-size: 7px; color: #777; background: #181818; b
 
   <hr class="phr"><div class="psec">Moléculas</div>
   <div class="ptog"><input type="checkbox" id="checkBalls" checked><label for="checkBalls">Mostrar bolitas</label></div>
+  <div class="ptog"><input type="checkbox" id="checkStampLines"><label for="checkStampLines">Conservar líneas al soltar</label></div>
   <div class="ptog"><input type="checkbox" id="checkBallStroke" checked><label for="checkBallStroke">Trazo en bola</label></div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Diámetro bola</label><input class="pval" id="vBall" value="53 px" onchange="syncFromVal(this)"></div>
@@ -379,7 +380,8 @@ function getP() {
     ballSize  : parseInt(document.getElementById('inBallSize').value),
     fontSize  : parseInt(document.getElementById('inFontSize').value),
     linePad   : parseInt(document.getElementById('inLinePad').value),
-    ballStroke: document.getElementById('checkBallStroke').checked,
+    ballStroke : document.getElementById('checkBallStroke').checked,
+    stampLines : document.getElementById('checkStampLines').checked,
     colorBg   : document.getElementById('inColorBg').value,
     colorFg   : document.getElementById('inColorFg').value,
     colorBall : document.getElementById('inColorBall').value,
@@ -627,21 +629,23 @@ function stampSpray(p) {
   let tyo = typoOffset(p.fontSize);
 
   rays.forEach(r => {
-    // Línea
-    buf.push();
-    buf.translate(r.ox, r.oy);
-    buf.rotate(r.fa);
-    buf.stroke(p.colorFg); buf.strokeWeight(p.weight); buf.noFill();
-    if (p.dash > 0) {
-      let len = r.rLine - r.rIn;
-      let off = len > 0 ? (len % (p.dash * 2)) / 2 : 0;
-      buf.drawingContext.setLineDash([p.dash, p.dash]);
-      buf.drawingContext.lineDashOffset = -off;
+    // Línea — sólo si el toggle lo permite
+    if (p.stampLines) {
+      buf.push();
+      buf.translate(r.ox, r.oy);
+      buf.rotate(r.fa);
+      buf.stroke(p.colorFg); buf.strokeWeight(p.weight); buf.noFill();
+      if (p.dash > 0) {
+        let len = r.rLine - r.rIn;
+        let off = len > 0 ? (len % (p.dash * 2)) / 2 : 0;
+        buf.drawingContext.setLineDash([p.dash, p.dash]);
+        buf.drawingContext.lineDashOffset = -off;
+      }
+      buf.line(r.rIn, 0, r.rLine, 0);
+      buf.drawingContext.setLineDash([]);
+      buf.drawingContext.lineDashOffset = 0;
+      buf.pop();
     }
-    buf.line(r.rIn, 0, r.rLine, 0);
-    buf.drawingContext.setLineDash([]);
-    buf.drawingContext.lineDashOffset = 0;
-    buf.pop();
 
     // Bola + letra
     buf.push();
@@ -692,10 +696,12 @@ function windowResized() {
   stamps.forEach(s => {
     let p = s.p, tyo = typoOffset(p.fontSize);
     s.rays.forEach(r => {
-      buf.push(); buf.translate(r.ox, r.oy); buf.rotate(r.fa);
-      buf.stroke(p.colorFg); buf.strokeWeight(p.weight); buf.noFill();
-      buf.line(r.rIn, 0, r.rLine, 0);
-      buf.pop();
+      if (p.stampLines) {
+        buf.push(); buf.translate(r.ox, r.oy); buf.rotate(r.fa);
+        buf.stroke(p.colorFg); buf.strokeWeight(p.weight); buf.noFill();
+        buf.line(r.rIn, 0, r.rLine, 0);
+        buf.pop();
+      }
       buf.push(); buf.translate(r.lx, r.ly);
       if (p.showBalls) {
         buf.fill(p.colorBall);
