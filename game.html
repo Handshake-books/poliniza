@@ -15,7 +15,6 @@ body {
   cursor: none;
 }
 
-/* HUD — esquina superior izquierda */
 #hud {
   position: fixed;
   top: 20px;
@@ -23,417 +22,186 @@ body {
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   pointer-events: none;
   user-select: none;
 }
+#hud-title  { font-size: 9px; letter-spacing: 4px; color: rgba(255,255,255,0.2); text-transform: uppercase; }
+#hud-status { font-size: 11px; letter-spacing: 2px; color: rgba(255,255,255,0.4); transition: color .15s; }
+#hud-status.firing { color: #fff; text-shadow: 0 0 14px rgba(255,255,255,0.5); }
+#hud-shots  { font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.2); margin-top: 2px; }
 
-#hud-title {
-  font-size: 9px;
-  letter-spacing: 4px;
-  color: rgba(255,255,255,0.25);
-  text-transform: uppercase;
-}
-
-#hud-status {
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: rgba(255,255,255,0.5);
-  transition: color .15s;
-}
-#hud-status.firing {
-  color: #fff;
-  text-shadow: 0 0 12px rgba(255,255,255,0.6);
-}
-
-/* Panel lateral derecho — controles */
 #panel {
   position: fixed;
-  top: 0;
-  right: 0;
+  top: 0; right: 0;
   width: 220px;
   height: 100vh;
-  background: rgba(12,12,12,0.92);
-  border-left: 1px solid #1e1e1e;
-  padding: 22px 16px 28px;
+  background: rgba(10,10,10,0.95);
+  border-left: 1px solid #1c1c1c;
+  padding: 20px 15px 28px;
   display: flex;
   flex-direction: column;
-  gap: 0;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #2a2a2a transparent;
+  scrollbar-color: #222 transparent;
   z-index: 10;
-  backdrop-filter: blur(4px);
 }
-
-#panel h1 {
-  font-size: 8px;
-  letter-spacing: 3.5px;
-  color: #3a3a3a;
-  text-transform: uppercase;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #1c1c1c;
-  margin-bottom: 14px;
-}
-
-.psec {
-  font-size: 7px;
-  letter-spacing: 2.5px;
-  color: #3a3a3a;
-  text-transform: uppercase;
-  margin: 14px 0 8px;
-}
-
-.pgrp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+#panel h1 { font-size: 8px; letter-spacing: 3px; color: #333; text-transform: uppercase; padding-bottom: 9px; border-bottom: 1px solid #1a1a1a; margin-bottom: 13px; }
+.psec { font-size: 7px; letter-spacing: 2px; color: #333; text-transform: uppercase; margin: 12px 0 7px; }
+.pgrp { display: flex; flex-direction: column; gap: 3px; margin-bottom: 7px; }
 .plrow { display: flex; justify-content: space-between; align-items: baseline; }
-
-.plabel {
-  font-size: 9px;
-  color: #888;
-  user-select: none;
-}
-
+.plabel { font-size: 9px; color: #777; user-select: none; }
 .pval {
-  font-size: 9px;
-  color: #bbb;
-  min-width: 40px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid transparent;
-  outline: none;
-  font-family: monospace;
-  cursor: text;
+  font-size: 9px; color: #aaa; min-width: 40px; text-align: right;
+  font-variant-numeric: tabular-nums; background: transparent; border: none;
+  border-bottom: 1px solid transparent; outline: none; font-family: monospace; cursor: text;
 }
-.pval:focus { border-bottom-color: #555; color: #eee; }
+.pval:focus { border-bottom-color: #444; color: #eee; }
+input[type="range"]  { width: 100%; accent-color: #444; cursor: pointer; height: 2px; }
+input[type="text"]   { background: #111; border: 1px solid #252525; color: #ccc; padding: 6px 7px; font-family: monospace; font-size: 11px; letter-spacing: 2px; width: 100%; outline: none; }
+input[type="text"]:focus { border-color: #444; }
+select { background: #111; border: 1px solid #252525; color: #aaa; padding: 5px 7px; font-family: monospace; font-size: 9px; width: 100%; outline: none; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23444'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 7px center; }
+.ptog { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; padding: 1px 0; }
+input[type="checkbox"] { accent-color: #555; width: 11px; height: 11px; cursor: pointer; }
+.ptog label { font-size: 9px; color: #777; cursor: pointer; }
+.color-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+input[type="color"] { width: 28px; height: 19px; border: 1px solid #252525; border-radius: 2px; background: none; cursor: pointer; padding: 1px; }
+.phr { border: 0; border-top: 1px solid #161616; margin: 4px 0 8px; }
+.pbtn { background: transparent; color: #444; border: 1px solid #1e1e1e; font-family: monospace; font-size: 8px; letter-spacing: 1px; padding: 7px; cursor: pointer; width: 100%; text-transform: uppercase; margin-bottom: 5px; transition: color .1s, border-color .1s; }
+.pbtn:hover { color: #bbb; border-color: #444; }
+.pbtn.danger { color: #4a1a1a; border-color: #2a1010; }
+.pbtn.danger:hover { color: #ff5555; border-color: #772222; }
 
-input[type="range"] {
-  width: 100%;
-  accent-color: #555;
-  cursor: pointer;
-  height: 2px;
-}
-
-input[type="text"] {
-  background: #111;
-  border: 1px solid #2a2a2a;
-  color: #ddd;
-  padding: 6px 7px;
-  font-family: monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  width: 100%;
-  outline: none;
-}
-input[type="text"]:focus { border-color: #555; }
-
-select {
-  background: #111;
-  border: 1px solid #2a2a2a;
-  color: #bbb;
-  padding: 5px 7px;
-  font-family: monospace;
-  font-size: 9px;
-  width: 100%;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23555'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 7px center;
-}
-
-.ptog {
-  display: flex; align-items: center; gap: 7px;
-  margin-bottom: 6px; padding: 1px 0;
-}
-input[type="checkbox"] {
-  accent-color: #666;
-  width: 11px; height: 11px;
-  cursor: pointer;
-}
-.ptog label { font-size: 9px; color: #888; cursor: pointer; }
-
-.color-row {
-  display: flex; align-items: center;
-  justify-content: space-between; margin-bottom: 7px;
-}
-.color-row .plabel { font-size: 9px; color: #888; }
-input[type="color"] {
-  width: 28px; height: 20px;
-  border: 1px solid #2a2a2a;
-  border-radius: 2px;
-  background: none;
-  cursor: pointer;
-  padding: 1px;
-}
-
-.phr { border: 0; border-top: 1px solid #181818; margin: 4px 0 8px; }
-
-/* Botones panel */
-.pbtn {
-  background: transparent;
-  color: #555;
-  border: 1px solid #222;
-  font-family: monospace;
-  font-size: 8px;
-  letter-spacing: 1px;
-  padding: 7px;
-  cursor: pointer;
-  width: 100%;
-  text-transform: uppercase;
-  margin-bottom: 5px;
-  transition: color .1s, border-color .1s;
-}
-.pbtn:hover { color: #ccc; border-color: #555; }
-.pbtn.danger { color: #663333; border-color: #331a1a; }
-.pbtn.danger:hover { color: #ff6666; border-color: #993333; }
-
-/* Atajos */
-.shortcuts {
-  margin-top: 14px;
-  border-top: 1px solid #181818;
-  padding-top: 12px;
-}
-.sc-title {
-  font-size: 7px; letter-spacing: 2px;
-  color: #2e2e2e; text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.sc-row {
-  display: flex; align-items: center; gap: 7px;
-  padding: 3px 0;
-  border-bottom: 1px solid #141414;
-}
+.shortcuts { margin-top: 14px; border-top: 1px solid #161616; padding-top: 12px; }
+.sc-title { font-size: 7px; letter-spacing: 2px; color: #2a2a2a; text-transform: uppercase; margin-bottom: 8px; }
+.sc-row { display: flex; align-items: center; gap: 7px; padding: 3px 0; border-bottom: 1px solid #121212; }
 .sc-row:last-child { border: none; }
-kbd {
-  display: inline-block;
-  font-size: 7px;
-  color: #888;
-  background: #1a1a1a;
-  border: 1px solid #2e2e2e;
-  border-bottom: 2px solid #333;
-  border-radius: 2px;
-  padding: 1px 4px;
-  white-space: nowrap;
-  min-width: 38px;
-  text-align: center;
-  flex-shrink: 0;
-  font-family: monospace;
-}
-.sc-desc { font-size: 8px; color: #3a3a3a; }
+kbd { display: inline-block; font-size: 7px; color: #777; background: #181818; border: 1px solid #2a2a2a; border-bottom: 2px solid #2e2e2e; border-radius: 2px; padding: 1px 4px; white-space: nowrap; min-width: 38px; text-align: center; flex-shrink: 0; font-family: monospace; }
+.sc-desc { font-size: 8px; color: #333; }
 
-/* Cursor personalizado */
-#cursor {
-  position: fixed;
-  pointer-events: none;
-  z-index: 100;
-  transform: translate(-50%, -50%);
-}
-
-/* Crosshair SVG */
+/* Crosshair del ratón */
 #crosshair {
-  position: fixed;
-  pointer-events: none;
-  z-index: 100;
+  position: fixed; pointer-events: none; z-index: 100;
   transform: translate(-50%, -50%);
-  transition: opacity .2s;
 }
 
-/* Link volver */
-#back-link {
-  position: fixed;
-  bottom: 18px;
-  left: 22px;
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: #2a2a2a;
-  text-decoration: none;
-  text-transform: uppercase;
-  z-index: 10;
-  transition: color .15s;
-}
-#back-link:hover { color: #888; }
-
-/* Indicador ESPACIO — barra inferior */
 #spacebar-hint {
-  position: fixed;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 8px;
-  letter-spacing: 3px;
-  color: rgba(255,255,255,0.1);
-  text-transform: uppercase;
-  pointer-events: none;
-  z-index: 10;
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+  font-size: 8px; letter-spacing: 3px; color: rgba(255,255,255,0.08);
+  text-transform: uppercase; pointer-events: none; z-index: 10;
   transition: color .2s, text-shadow .2s;
 }
-#spacebar-hint.active {
-  color: rgba(255,255,255,0.7);
-  text-shadow: 0 0 20px rgba(255,255,255,0.4);
-}
+#spacebar-hint.active { color: rgba(255,255,255,0.6); text-shadow: 0 0 20px rgba(255,255,255,0.3); }
 
-/* Flash de disparo */
-#fire-flash {
-  position: fixed;
-  inset: 0;
-  background: rgba(255,255,255,0);
-  pointer-events: none;
-  z-index: 5;
-  transition: background .05s;
-}
-#fire-flash.flash { background: rgba(255,255,255,0.03); }
-
+#back-link { position: fixed; bottom: 18px; left: 22px; font-size: 8px; letter-spacing: 2px; color: #222; text-decoration: none; text-transform: uppercase; z-index: 10; transition: color .15s; }
+#back-link:hover { color: #777; }
 </style>
 </head>
 <body>
 
-<!-- HUD -->
 <div id="hud">
   <div id="hud-title">Polinizador — modo spray</div>
   <div id="hud-status">EN ESPERA</div>
+  <div id="hud-shots">disparos: 0</div>
 </div>
 
-<!-- Crosshair -->
-<svg id="crosshair" width="28" height="28" viewBox="0 0 28 28" style="opacity:0.6">
-  <circle cx="14" cy="14" r="6" fill="none" stroke="white" stroke-width="0.8" opacity="0.5"/>
-  <line x1="14" y1="0"  x2="14" y2="9"  stroke="white" stroke-width="0.8" opacity="0.4"/>
-  <line x1="14" y1="19" x2="14" y2="28" stroke="white" stroke-width="0.8" opacity="0.4"/>
-  <line x1="0"  y1="14" x2="9"  y2="14" stroke="white" stroke-width="0.8" opacity="0.4"/>
-  <line x1="19" y1="14" x2="28" y2="14" stroke="white" stroke-width="0.8" opacity="0.4"/>
+<!-- Crosshair ratón -->
+<svg id="crosshair" width="24" height="24" viewBox="0 0 24 24">
+  <circle cx="12" cy="12" r="5"  fill="none" stroke="white" stroke-width="0.7" opacity="0.4"/>
+  <line x1="12" y1="0"  x2="12" y2="6"  stroke="white" stroke-width="0.7" opacity="0.35"/>
+  <line x1="12" y1="18" x2="12" y2="24" stroke="white" stroke-width="0.7" opacity="0.35"/>
+  <line x1="0"  y1="12" x2="6"  y2="12" stroke="white" stroke-width="0.7" opacity="0.35"/>
+  <line x1="18" y1="12" x2="24" y2="12" stroke="white" stroke-width="0.7" opacity="0.35"/>
 </svg>
 
-<div id="fire-flash"></div>
 <div id="spacebar-hint">[ espacio ] para disparar</div>
+<a id="back-link" href="index.html">← volver</a>
 
-<!-- PANEL LATERAL -->
+<!-- PANEL -->
 <div id="panel">
   <h1>Parámetros</h1>
 
   <div class="pgrp">
     <label class="plabel">Palabra</label>
-    <input type="text" id="inText" value="POLINIZADOS"
-           oninput="this.value=this.value.toUpperCase()">
+    <input type="text" id="inText" value="POLINIZADOS" oninput="this.value=this.value.toUpperCase()">
   </div>
-
   <div class="pgrp">
     <label class="plabel">Fuente</label>
     <select id="fontSelect"><option>cargando…</option></select>
   </div>
 
-  <hr class="phr">
-  <div class="psec">Haz</div>
-
+  <hr class="phr"><div class="psec">Haz</div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Apertura</label><input class="pval" id="vAngle" value="87°" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inAngle" min="1" max="360" value="87"
-           oninput="syncSlider('inAngle','vAngle',this.value,'°')">
+    <input type="range" id="inAngle" min="1" max="360" value="87" oninput="syncSlider('inAngle','vAngle',this.value,'°')">
   </div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Hueco central</label><input class="pval" id="vRin" value="40 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inRin" min="0" max="300" value="40"
-           oninput="syncSlider('inRin','vRin',this.value,' px')">
+    <input type="range" id="inRin" min="0" max="300" value="40" oninput="syncSlider('inRin','vRin',this.value,' px')">
   </div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Largo</label><input class="pval" id="vRout" value="291 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inRout" min="10" max="1200" value="291"
-           oninput="syncSlider('inRout','vRout',this.value,' px')">
+    <input type="range" id="inRout" min="10" max="1200" value="291" oninput="syncSlider('inRout','vRout',this.value,' px')">
   </div>
 
-  <hr class="phr">
-  <div class="psec">Jitter</div>
-
+  <hr class="phr"><div class="psec">Jitter</div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Amplitud</label><input class="pval" id="vJitter" value="83 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inJitter" min="0" max="400" value="83"
-           oninput="syncSlider('inJitter','vJitter',this.value,' px')">
+    <input type="range" id="inJitter" min="0" max="400" value="83" oninput="syncSlider('inJitter','vJitter',this.value,' px')">
   </div>
 
-  <hr class="phr">
-  <div class="psec">Línea</div>
-
+  <hr class="phr"><div class="psec">Línea</div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Grosor</label><input class="pval" id="vWeight" value="2 pt" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="2"
-           oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="2" oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
   </div>
   <div class="pgrp">
-    <div class="plrow"><label class="plabel">Punteado</label><input class="pval" id="vDash" value="0" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inDash" min="0" max="40" value="0"
-           oninput="syncSlider('inDash','vDash',this.value,this.value>0?' px':'','',true)">
+    <div class="plrow"><label class="plabel">Punteado</label><input class="pval" id="vDash" value="off" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inDash" min="0" max="40" value="0" oninput="syncSlider('inDash','vDash',this.value,this.value>0?' px':'','',true)">
   </div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Sep. línea→bola</label><input class="pval" id="vPad" value="15 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inLinePad" min="0" max="120" value="15"
-           oninput="syncSlider('inLinePad','vPad',this.value,' px')">
+    <input type="range" id="inLinePad" min="0" max="120" value="15" oninput="syncSlider('inLinePad','vPad',this.value,' px')">
   </div>
 
-  <hr class="phr">
-  <div class="psec">Moléculas</div>
-
-  <div class="ptog">
-    <input type="checkbox" id="checkBalls" checked>
-    <label for="checkBalls">Mostrar bolitas</label>
-  </div>
-  <div class="ptog">
-    <input type="checkbox" id="checkBallStroke" checked>
-    <label for="checkBallStroke">Trazo en bola</label>
-  </div>
+  <hr class="phr"><div class="psec">Moléculas</div>
+  <div class="ptog"><input type="checkbox" id="checkBalls" checked><label for="checkBalls">Mostrar bolitas</label></div>
+  <div class="ptog"><input type="checkbox" id="checkBallStroke" checked><label for="checkBallStroke">Trazo en bola</label></div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Diámetro bola</label><input class="pval" id="vBall" value="53 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inBallSize" min="10" max="180" value="53"
-           oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+    <input type="range" id="inBallSize" min="10" max="180" value="53" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
   </div>
-  <div class="color-row">
-    <span class="plabel">Color bola</span>
-    <input type="color" id="inColorBall" value="#ffffff">
-  </div>
+  <div class="color-row"><span class="plabel">Color bola</span><input type="color" id="inColorBall" value="#ffffff"></div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Tamaño letra</label><input class="pval" id="vFontSize" value="36 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inFontSize" min="4" max="160" value="36"
-           oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
+    <input type="range" id="inFontSize" min="4" max="160" value="36" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
   </div>
-  <div class="color-row">
-    <span class="plabel">Color letra</span>
-    <input type="color" id="inColorText" value="#000000">
-  </div>
+  <div class="color-row"><span class="plabel">Color letra</span><input type="color" id="inColorText" value="#000000"></div>
 
-  <hr class="phr">
-  <div class="psec">Color</div>
-  <div class="color-row">
-    <span class="plabel">Fondo</span>
-    <input type="color" id="inColorBg" value="#ffffff">
-  </div>
-  <div class="color-row">
-    <span class="plabel">Líneas + bola</span>
-    <input type="color" id="inColorFg" value="#000000">
-  </div>
+  <hr class="phr"><div class="psec">Color</div>
+  <div class="color-row"><span class="plabel">Fondo</span><input type="color" id="inColorBg" value="#ffffff"></div>
+  <div class="color-row"><span class="plabel">Líneas + trazo</span><input type="color" id="inColorFg" value="#000000"></div>
 
-  <hr class="phr">
-  <div class="psec">Físicas</div>
+  <hr class="phr"><div class="psec">Físicas</div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Velocidad</label><input class="pval" id="vSpeed" value="6" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inSpeed" min="1" max="20" step="0.5" value="6"
-           oninput="syncSlider('inSpeed','vSpeed',this.value,'')">
+    <input type="range" id="inSpeed" min="1" max="20" step="0.5" value="6" oninput="syncSlider('inSpeed','vSpeed',this.value,'')">
   </div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Fricción</label><input class="pval" id="vFriction" value="0.88" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inFriction" min="0.5" max="0.99" step="0.01" value="0.88"
-           oninput="syncSlider('inFriction','vFriction',this.value,'')">
+    <input type="range" id="inFriction" min="0.5" max="0.99" step="0.01" value="0.88" oninput="syncSlider('inFriction','vFriction',this.value,'')">
   </div>
   <div class="pgrp">
     <div class="plrow"><label class="plabel">Suavizado mira</label><input class="pval" id="vAimLerp" value="0.10" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inAimLerp" min="0.02" max="0.5" step="0.01" value="0.10"
-           oninput="syncSlider('inAimLerp','vAimLerp',this.value,'')">
+    <input type="range" id="inAimLerp" min="0.02" max="0.5" step="0.01" value="0.10" oninput="syncSlider('inAimLerp','vAimLerp',this.value,'')">
   </div>
 
   <hr class="phr">
   <button class="pbtn" onclick="clearStamps()">Limpiar canvas</button>
   <button class="pbtn danger" onclick="clearStamps(true)">Reset completo</button>
 
-  <!-- Atajos -->
   <div class="shortcuts">
     <div class="sc-title">Controles</div>
     <div class="sc-row"><kbd>WASD</kbd><span class="sc-desc">Mover origen</span></div>
@@ -445,12 +213,8 @@ kbd {
   </div>
 </div>
 
-<a id="back-link" href="index.html">← volver</a>
-
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-// SYNC HELPERS (igual que index.html)
-// ─────────────────────────────────────────────────────────────────────────────
+// ── SYNC HELPERS ──────────────────────────────────────────────────────────────
 function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
   let el = document.getElementById(valId);
   if (isDash) el.value = parseFloat(val) > 0 ? val + ' px' : 'off';
@@ -459,7 +223,7 @@ function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
 function syncFromVal(inputEl) {
   let raw = parseFloat(inputEl.value);
   if (isNaN(raw)) return;
-  let grp = inputEl.closest('.pgrp') || inputEl.closest('.plrow').parentElement;
+  let grp    = inputEl.closest('.pgrp') || inputEl.closest('.plrow').parentElement;
   let slider = grp ? grp.querySelector('input[type="range"]') : null;
   if (!slider) return;
   raw = Math.min(Math.max(raw, parseFloat(slider.min)), parseFloat(slider.max));
@@ -469,37 +233,69 @@ function syncFromVal(inputEl) {
 </script>
 
 <script>
-// ─────────────────────────────────────────────────────────────────────────────
-// SKETCH — p5.js
-// ─────────────────────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// ESTADO GLOBAL — fuera de p5 para que los listeners nativos accedan
+// ═════════════════════════════════════════════════════════════════════════════
+const KEYS    = {};   // teclas pulsadas ahora mismo
+let spaceDown = false;
+let shotCount = 0;
 
-// ── Fuentes
+// Registrar teclas con listener nativo — fiable independientemente del foco
+window.addEventListener('keydown', e => {
+  // No interferir si el foco está en un input del panel
+  if (document.activeElement.tagName === 'INPUT' ||
+      document.activeElement.tagName === 'SELECT') return;
+
+  KEYS[e.code] = true;
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    spaceDown = true;
+  }
+  // Atajos
+  if (e.code === 'KeyJ') jitterSeed = Math.floor(Math.random() * 99999);
+  if (e.code === 'KeyC') centerOrigin();
+  if (e.code === 'KeyX') clearStamps();
+});
+
+window.addEventListener('keyup', e => {
+  KEYS[e.code] = false;
+  if (e.code === 'Space') spaceDown = false;
+});
+
+// Mover crosshair con el ratón
+document.addEventListener('mousemove', e => {
+  let ch = document.getElementById('crosshair');
+  ch.style.left = e.clientX + 'px';
+  ch.style.top  = e.clientY + 'px';
+});
+</script>
+
+<script>
+// ═════════════════════════════════════════════════════════════════════════════
+// p5.js SKETCH
+// ═════════════════════════════════════════════════════════════════════════════
+
+const PANEL_W = 220;
+
+// Fuentes
 let FONTS = [], currentFontIdx = 0, p5Font = null, otFont = null;
 let fontLoadPromises = [];
 let _tyCache = {};
 
-// ── Estado físico del spray
-let posX, posY;          // posición actual del origen
-let velX = 0, velY = 0; // velocidad
-let rotation  = 0;      // ángulo actual (suavizado)
-let aimAngle  = 0;      // ángulo objetivo (hacia el ratón)
+// Estado físico
+let posX, posY;
+let velX = 0, velY = 0;
+let rotation = 0;    // ángulo actual (suavizado)
+let aimAngle = 0;    // ángulo objetivo (hacia el ratón)
 let jitterSeed = 42;
 
-// ── Input
-const keys = {};
-let   spaceDown = false;
-let   wasFiring = false; // para detectar borde de bajada (stamp)
+// Buffer permanente de stamps
+let buf;             // p5.Graphics
+let stamps = [];     // historial para windowResized
 
-// ── Stamps — disparos congelados
-// Cada stamp = { rays, p, originX, originY } snapshot completo
-let stamps = [];
-
-// ── Animación de moléculas al disparar
-// Cada molécula tiene un offset de escala que arranca en 0 y crece a 1
-let moleculeScales = []; // array paralelo a calcRays, va de 0→1 con easing
-
-// ── Buffer de fondo (se dibuja primero, acumula stamps)
-let bufferGraphics; // p5.Graphics
+// Disparo anterior (para detectar borde bajada)
+let wasFiring = false;
 
 function preload() {}
 
@@ -511,34 +307,28 @@ function setup() {
   cnv.style('left', '0');
   cnv.style('z-index', '1');
 
-  posX = width  / 2 - 110; // offset por el panel
+  posX = (width - PANEL_W) / 2;
   posY = height / 2;
   aimAngle = 0;
 
-  bufferGraphics = createGraphics(width, height);
-  bufferGraphics.clear();
+  buf = createGraphics(width, height);
+  buf.clear();
 
   initFonts();
-
-  // Mover crosshair con el ratón
-  document.addEventListener('mousemove', e => {
-    let ch = document.getElementById('crosshair');
-    ch.style.left = e.clientX + 'px';
-    ch.style.top  = e.clientY + 'px';
-  });
+  frameRate(60);
 }
 
-// ── FUENTES (misma lógica que sketch.js principal)
+// ── FUENTES ──────────────────────────────────────────────────────────────────
 async function initFonts() {
   let sel = document.getElementById('fontSelect');
   try {
     let res   = await fetch('fonts/index.json');
     let files = await res.json();
-    if (!Array.isArray(files) || files.length === 0) throw new Error('empty');
+    if (!Array.isArray(files) || files.length === 0) throw '';
     FONTS = files.map(f => ({
-      label  : f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
-      file   : 'fonts/' + f,
-      family : f.replace(/\.[^.]+$/, ''),
+      label : f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+      file  : 'fonts/' + f,
+      family: f.replace(/\.[^.]+$/, ''),
     }));
   } catch {
     FONTS = [{ label: 'sans-serif', file: null, family: 'sans-serif' }];
@@ -571,36 +361,46 @@ async function initFonts() {
   });
 }
 
-function fontFamily(idx) {
+function fontFam(idx) {
   return (FONTS.length && FONTS[idx]) ? FONTS[idx].family : 'sans-serif';
 }
 
-// ── LEER PARÁMETROS
+// ── PARÁMETROS ───────────────────────────────────────────────────────────────
 function getP() {
   return {
-    txt        : document.getElementById('inText').value.toUpperCase() || 'A',
-    angle      : radians(parseFloat(document.getElementById('inAngle').value)),
-    rIn        : parseInt(document.getElementById('inRin').value),
-    rOutBase   : parseInt(document.getElementById('inRout').value),
-    jitter     : parseInt(document.getElementById('inJitter').value),
-    weight     : parseFloat(document.getElementById('inWeight').value),
-    dash       : parseInt(document.getElementById('inDash').value),
-    showBalls  : document.getElementById('checkBalls').checked,
-    ballSize   : parseInt(document.getElementById('inBallSize').value),
-    fontSize   : parseInt(document.getElementById('inFontSize').value),
-    linePad    : parseInt(document.getElementById('inLinePad').value),
-    ballStroke : document.getElementById('checkBallStroke').checked,
-    colorBg    : document.getElementById('inColorBg').value,
-    colorFg    : document.getElementById('inColorFg').value,
-    colorBall  : document.getElementById('inColorBall').value,
-    colorText  : document.getElementById('inColorText').value,
-    speed      : parseFloat(document.getElementById('inSpeed').value),
-    friction   : parseFloat(document.getElementById('inFriction').value),
-    aimLerp    : parseFloat(document.getElementById('inAimLerp').value),
+    txt       : (document.getElementById('inText').value || 'A').toUpperCase(),
+    angle     : radians(parseFloat(document.getElementById('inAngle').value)),
+    rIn       : parseInt(document.getElementById('inRin').value),
+    rOutBase  : parseInt(document.getElementById('inRout').value),
+    jitter    : parseInt(document.getElementById('inJitter').value),
+    weight    : parseFloat(document.getElementById('inWeight').value),
+    dash      : parseInt(document.getElementById('inDash').value),
+    showBalls : document.getElementById('checkBalls').checked,
+    ballSize  : parseInt(document.getElementById('inBallSize').value),
+    fontSize  : parseInt(document.getElementById('inFontSize').value),
+    linePad   : parseInt(document.getElementById('inLinePad').value),
+    ballStroke: document.getElementById('checkBallStroke').checked,
+    colorBg   : document.getElementById('inColorBg').value,
+    colorFg   : document.getElementById('inColorFg').value,
+    colorBall : document.getElementById('inColorBall').value,
+    colorText : document.getElementById('inColorText').value,
+    speed     : parseFloat(document.getElementById('inSpeed').value),
+    friction  : parseFloat(document.getElementById('inFriction').value),
+    aimLerp   : parseFloat(document.getElementById('inAimLerp').value),
   };
 }
 
-// ── CALCULAR RAYOS (igual que sketch.js, sin bbox — usa canvas completo)
+// ── COLISIÓN (usa área sin panel) ─────────────────────────────────────────────
+function calcCollision(a, margin, ox, oy) {
+  let dx = cos(a), dy = sin(a), t = Infinity;
+  if (dx > 0) t = min(t, (width - PANEL_W - margin - ox) / dx);
+  if (dx < 0) t = min(t, (margin - ox) / dx);
+  if (dy > 0) t = min(t, (height - margin - oy) / dy);
+  if (dy < 0) t = min(t, (margin - oy) / dy);
+  return max(0, t);
+}
+
+// ── RAYOS ────────────────────────────────────────────────────────────────────
 function calcRays(p, ox, oy, rot) {
   let steps = p.txt.length;
   if (steps === 0) return [];
@@ -610,154 +410,183 @@ function calcRays(p, ox, oy, rot) {
   randomSeed(jitterSeed);
   let jv = Array.from({length: steps}, () => random(-p.jitter, p.jitter));
   return jv.map((jit, i) => {
-    let theta = steps > 1 ? map(i, 0, steps-1, -p.angle/2, p.angle/2) : 0;
+    let theta = steps > 1 ? map(i, 0, steps - 1, -p.angle / 2, p.angle / 2) : 0;
     let fa    = theta + rot;
     let rMax  = calcCollision(fa, margin, ox, oy);
     let rLine = min(p.rOutBase + jit, rMax);
-    let rBMax = calcCollision(fa, p.showBalls ? p.ballSize/2 + p.weight : p.weight + 4, ox, oy);
+    let rBMax = calcCollision(fa, p.showBalls ? p.ballSize / 2 + p.weight : p.weight + 4, ox, oy);
     let rBall = min(rLine + p.linePad, rBMax);
     return {
       fa, rIn: p.rIn, rLine, rBall,
       lx: ox + cos(fa) * rBall,
       ly: oy + sin(fa) * rBall,
       letter: p.txt[i],
+      ox, oy,
     };
   });
 }
 
-function calcCollision(a, margin, ox, oy) {
-  let panelW = 220;
-  let dx = cos(a), dy = sin(a), t = Infinity;
-  if (dx > 0) t = min(t, (width - panelW - margin - ox) / dx);
-  if (dx < 0) t = min(t, (margin - ox) / dx);
-  if (dy > 0) t = min(t, (height - margin - oy) / dy);
-  if (dy < 0) t = min(t, (margin - oy) / dy);
-  return max(0, t);
-}
-
-function getTypoOffset(fontSize) {
+// ── OFFSET TIPOGRÁFICO ───────────────────────────────────────────────────────
+function typoOffset(fontSize) {
   if (!FONTS.length) return fontSize * 0.18;
-  let key = currentFontIdx + '_' + fontSize.toFixed(1);
+  let key = currentFontIdx + '_' + fontSize;
   if (_tyCache[key] !== undefined) return _tyCache[key];
   let oc = document.createElement('canvas');
   oc.width = oc.height = Math.ceil(fontSize * 2);
   let ctx = oc.getContext('2d');
-  ctx.font = `${fontSize}px "${fontFamily(currentFontIdx)}"`;
+  ctx.font = `${fontSize}px "${fontFam(currentFontIdx)}"`;
   let cap = ctx.measureText('H').actualBoundingBoxAscent || fontSize * 0.7;
   _tyCache[key] = cap / 2;
   return cap / 2;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
 // DRAW
-// ─────────────────────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
 function draw() {
   let p = getP();
 
-  // ── 1. FÍSICA DEL MOVIMIENTO ──
-  let panelW = 220;
-  let accel  = p.speed * 0.4;
+  // ── 1. FÍSICA ──
+  let accel  = p.speed * 0.45;
+  let maxSpd = p.speed * 3.5;
 
-  if (keys['w'] || keys['arrowup'])    velY -= accel;
-  if (keys['s'] || keys['arrowdown'])  velY += accel;
-  if (keys['a'] || keys['arrowleft'])  velX -= accel;
-  if (keys['d'] || keys['arrowright']) velX += accel;
+  if (KEYS['KeyW'] || KEYS['ArrowUp'])    velY -= accel;
+  if (KEYS['KeyS'] || KEYS['ArrowDown'])  velY += accel;
+  if (KEYS['KeyA'] || KEYS['ArrowLeft'])  velX -= accel;
+  if (KEYS['KeyD'] || KEYS['ArrowRight']) velX += accel;
 
-  // Fricción
   velX *= p.friction;
   velY *= p.friction;
 
-  // Limitar velocidad máxima
-  let spd = sqrt(velX*velX + velY*velY);
-  let maxSpd = p.speed * 3;
-  if (spd > maxSpd) { velX = velX/spd*maxSpd; velY = velY/spd*maxSpd; }
+  let spd = sqrt(velX * velX + velY * velY);
+  if (spd > maxSpd) { velX = velX / spd * maxSpd; velY = velY / spd * maxSpd; }
 
-  posX = constrain(posX + velX, 10, width - panelW - 10);
-  posY = constrain(posY + velY, 10, height - 10);
+  posX = constrain(posX + velX, 12, width - PANEL_W - 12);
+  posY = constrain(posY + velY, 12, height - 12);
 
-  // ── 2. APUNTADO — lerp angular hacia el ratón ──
+  // ── 2. APUNTADO (lerp angular hacia el ratón) ──
   let targetAngle = atan2(mouseY - posY, mouseX - posX);
-  // Interpolación angular correcta (evita el salto en ±PI)
   let diff = targetAngle - aimAngle;
   while (diff >  PI) diff -= TWO_PI;
   while (diff < -PI) diff += TWO_PI;
-  aimAngle += diff * p.aimLerp;
-  rotation  = aimAngle;
+  aimAngle  += diff * p.aimLerp;
+  rotation   = aimAngle;
 
-  // ── 3. DISPARO ──
+  // ── 3. ESTADO DISPARO ──
   let isFiring = spaceDown && p5Font;
-  let status   = document.getElementById('hud-status');
-  let hint     = document.getElementById('spacebar-hint');
-  let flash    = document.getElementById('fire-flash');
 
+  // Jitter vivo mientras dispara
+  if (isFiring && frameCount % 3 === 0) {
+    jitterSeed = Math.floor(Math.random() * 99999);
+  }
+
+  // Borde de bajada → stamp
+  if (wasFiring && !isFiring && p5Font) {
+    stampSpray(p);
+  }
+  wasFiring = isFiring;
+
+  // ── HUD ──
+  let status = document.getElementById('hud-status');
+  let hint   = document.getElementById('spacebar-hint');
   if (isFiring) {
     status.textContent = '● DISPARANDO';
     status.classList.add('firing');
     hint.classList.add('active');
-    flash.classList.add('flash');
-    // Regenerar jitter mientras se dispara (sensación de spray vivo)
-    if (frameCount % 4 === 0) jitterSeed = Math.floor(Math.random() * 99999);
   } else {
     status.textContent = 'EN ESPERA';
     status.classList.remove('firing');
     hint.classList.remove('active');
-    flash.classList.remove('flash');
   }
-
-  // Borde de bajada del espacio → stamp
-  if (wasFiring && !isFiring && p5Font) {
-    stampCurrentSpray(p);
-  }
-  wasFiring = isFiring;
 
   // ── 4. RENDER ──
-  // Fondo del canvas
   background(p.colorBg);
+  image(buf, 0, 0);  // stamps permanentes
 
-  // Pintar stamps acumulados desde el buffer
-  image(bufferGraphics, 0, 0);
-
-  // Spray activo (sólo si disparando)
+  // Spray activo
   if (isFiring) {
     let rays = calcRays(p, posX, posY, rotation);
-    let fs   = p.fontSize;
-    let tyo  = getTypoOffset(fs);
-    rays.forEach((r, idx) => {
-      drawRay(r, p, fs, tyo, this, 1.0);
-    });
+    let tyo  = typoOffset(p.fontSize);
+    rays.forEach(r => drawMolecule(r, p, tyo));
   }
 
-  // ── 5. INDICADOR DE POSICIÓN (siempre visible, sutil) ──
+  // ── 5. MARCADOR DEL JUGADOR (siempre visible) ──
+  drawPlayer(isFiring, p);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MARCADOR DEL JUGADOR
+// Un símbolo tipo "nave" que apunta hacia aimAngle, siempre visible.
+// Cuando dispara: brillante y con halo. En espera: sutil.
+// ─────────────────────────────────────────────────────────────────────────────
+function drawPlayer(isFiring, p) {
   push();
-  let alive = isFiring ? 255 : 120;
-  noFill();
-  stroke(255, 255, 255, alive * 0.3);
-  strokeWeight(0.8);
-  drawingContext.setLineDash([2, 4]);
-  ellipse(posX, posY, 10, 10);
-  drawingContext.setLineDash([]);
-  // Línea hacia el ratón cuando apunta
+  translate(posX, posY);
+  rotate(aimAngle);
+
+  let speed = sqrt(velX * velX + velY * velY);
+  let t     = isFiring ? 1.0 : 0.45;
+
+  // Halo de disparo
   if (isFiring) {
-    stroke(255, 255, 255, 30);
-    strokeWeight(0.5);
-    line(posX, posY, mouseX, mouseY);
+    noFill();
+    stroke(255, 255, 255, 18);
+    strokeWeight(8);
+    ellipse(0, 0, 28, 28);
+    stroke(255, 255, 255, 10);
+    strokeWeight(16);
+    ellipse(0, 0, 36, 36);
   }
+
+  // Cuerpo de la nave — triángulo apuntando hacia aimAngle
+  let col = isFiring ? color(255, 255, 255) : color(200, 200, 200);
+  fill(red(col), green(col), blue(col), isFiring ? 230 : 140);
+  stroke(255, 255, 255, isFiring ? 255 : 160);
+  strokeWeight(0.8);
+  beginShape();
+    vertex( 9,  0);   // punta
+    vertex(-6,  5);   // ala izquierda
+    vertex(-3,  0);   // cola centro
+    vertex(-6, -5);   // ala derecha
+  endShape(CLOSE);
+
+  // Punto central
+  noStroke();
+  fill(255, 255, 255, isFiring ? 255 : 180);
+  ellipse(0, 0, 2.5, 2.5);
+
+  // Línea de apuntado (sutil, hacia el ratón)
+  if (!isFiring) {
+    let dist_ = dist(posX, posY, mouseX, mouseY);
+    stroke(255, 255, 255, 25);
+    strokeWeight(0.5);
+    drawingContext.setLineDash([3, 6]);
+    line(10, 0, min(dist_, 80), 0);
+    drawingContext.setLineDash([]);
+  }
+
+  // Estela de velocidad
+  if (speed > 1.5) {
+    let trailLen = map(speed, 0, 20, 0, 18);
+    stroke(255, 255, 255, map(speed, 0, 20, 0, 60));
+    strokeWeight(0.8);
+    drawingContext.setLineDash([2, 3]);
+    line(-6, 0, -6 - trailLen, 0);
+    drawingContext.setLineDash([]);
+  }
+
   pop();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DIBUJAR UN RAYO (línea + bola + letra)
-// g = contexto gráfico (null = canvas principal, o bufferGraphics)
+// DIBUJAR UNA MOLÉCULA (línea + bola + letra) sobre el canvas principal
 // ─────────────────────────────────────────────────────────────────────────────
-function drawRay(r, p, fs, tyo, ctx, scl) {
-  // — Línea
+function drawMolecule(r, p, tyo) {
+  // Línea
   push();
-  translate(r.ox !== undefined ? r.ox : posX,
-            r.oy !== undefined ? r.oy : posY);
+  translate(r.ox, r.oy);
   rotate(r.fa);
-  stroke(p.colorFg);
-  strokeWeight(p.weight);
-  noFill();
+  stroke(p.colorFg); strokeWeight(p.weight); noFill();
   if (p.dash > 0) {
     let len = r.rLine - r.rIn;
     let off = len > 0 ? (len % (p.dash * 2)) / 2 : 0;
@@ -772,153 +601,117 @@ function drawRay(r, p, fs, tyo, ctx, scl) {
   drawingContext.lineDashOffset = 0;
   pop();
 
-  // — Bola + letra
+  // Bola + letra
   push();
   translate(r.lx, r.ly);
-  if (scl !== 1.0) scale(scl);
   if (p.showBalls) {
     fill(p.colorBall);
-    if (p.ballStroke) { stroke(p.colorFg); strokeWeight(p.weight); }
-    else noStroke();
+    if (p.ballStroke) { stroke(p.colorFg); strokeWeight(p.weight); } else noStroke();
     ellipse(0, 0, p.ballSize, p.ballSize);
   }
   noStroke();
-  drawingContext.font = `${fs}px "${p5Font || 'sans-serif'}"`;
-  drawingContext.textAlign    = 'center';
-  drawingContext.textBaseline = 'alphabetic';
-  drawingContext.fillStyle    = p.colorText;
+  drawingContext.font           = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+  drawingContext.textAlign      = 'center';
+  drawingContext.textBaseline   = 'alphabetic';
+  drawingContext.fillStyle      = p.colorText;
   drawingContext.fillText(r.letter, 0, tyo);
   pop();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STAMP — congela el spray actual en el buffer con animación de entrada
+// STAMP — escribe el spray actual en el buffer permanente
 // ─────────────────────────────────────────────────────────────────────────────
-function stampCurrentSpray(p) {
+function stampSpray(p) {
   let rays = calcRays(p, posX, posY, rotation);
-  if (rays.length === 0) return;
+  if (!rays.length) return;
+  let tyo = typoOffset(p.fontSize);
 
-  let fs  = p.fontSize;
-  let tyo = getTypoOffset(fs);
-
-  // Guardar oxigen en cada rayo para el buffer
-  rays.forEach(r => { r.ox = posX; r.oy = posY; });
-
-  // Dibujar directamente sobre el buffer (permanente)
-  bufferGraphics.push();
   rays.forEach(r => {
-    // Línea en buffer
-    bufferGraphics.push();
-    bufferGraphics.translate(r.ox, r.oy);
-    bufferGraphics.rotate(r.fa);
-    bufferGraphics.stroke(p.colorFg);
-    bufferGraphics.strokeWeight(p.weight);
-    bufferGraphics.noFill();
+    // Línea
+    buf.push();
+    buf.translate(r.ox, r.oy);
+    buf.rotate(r.fa);
+    buf.stroke(p.colorFg); buf.strokeWeight(p.weight); buf.noFill();
     if (p.dash > 0) {
       let len = r.rLine - r.rIn;
       let off = len > 0 ? (len % (p.dash * 2)) / 2 : 0;
-      bufferGraphics.drawingContext.setLineDash([p.dash, p.dash]);
-      bufferGraphics.drawingContext.lineDashOffset = -off;
+      buf.drawingContext.setLineDash([p.dash, p.dash]);
+      buf.drawingContext.lineDashOffset = -off;
     }
-    bufferGraphics.line(r.rIn, 0, r.rLine, 0);
-    bufferGraphics.drawingContext.setLineDash([]);
-    bufferGraphics.drawingContext.lineDashOffset = 0;
-    bufferGraphics.pop();
+    buf.line(r.rIn, 0, r.rLine, 0);
+    buf.drawingContext.setLineDash([]);
+    buf.drawingContext.lineDashOffset = 0;
+    buf.pop();
 
-    // Bola en buffer
-    bufferGraphics.push();
-    bufferGraphics.translate(r.lx, r.ly);
+    // Bola + letra
+    buf.push();
+    buf.translate(r.lx, r.ly);
     if (p.showBalls) {
-      bufferGraphics.fill(p.colorBall);
-      if (p.ballStroke) { bufferGraphics.stroke(p.colorFg); bufferGraphics.strokeWeight(p.weight); }
-      else bufferGraphics.noStroke();
-      bufferGraphics.ellipse(0, 0, p.ballSize, p.ballSize);
+      buf.fill(p.colorBall);
+      if (p.ballStroke) { buf.stroke(p.colorFg); buf.strokeWeight(p.weight); } else buf.noStroke();
+      buf.ellipse(0, 0, p.ballSize, p.ballSize);
     }
-    bufferGraphics.noStroke();
-    bufferGraphics.drawingContext.font = `${fs}px "${p5Font || 'sans-serif'}"`;
-    bufferGraphics.drawingContext.textAlign    = 'center';
-    bufferGraphics.drawingContext.textBaseline = 'alphabetic';
-    bufferGraphics.drawingContext.fillStyle    = p.colorText;
-    bufferGraphics.drawingContext.fillText(r.letter, 0, tyo);
-    bufferGraphics.pop();
+    buf.noStroke();
+    buf.drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+    buf.drawingContext.textAlign    = 'center';
+    buf.drawingContext.textBaseline = 'alphabetic';
+    buf.drawingContext.fillStyle    = p.colorText;
+    buf.drawingContext.fillText(r.letter, 0, tyo);
+    buf.pop();
   });
-  bufferGraphics.pop();
 
-  // Guardar stamp (para futuro export SVG si se añade)
-  stamps.push({ rays: rays.map(r => ({...r})), p: {...p}, t: frameCount });
+  stamps.push({ rays: rays.map(r => ({...r})), p: {...p} });
+  shotCount++;
+  document.getElementById('hud-shots').textContent = 'disparos: ' + shotCount;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONTROLES
+// HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
-function clearStamps(resetPos) {
-  stamps = [];
-  bufferGraphics.clear();
-  if (resetPos) {
-    posX = width / 2 - 110;
-    posY = height / 2;
-    velX = velY = 0;
-    rotation = aimAngle = 0;
-    jitterSeed = 42;
+function clearStamps(reset) {
+  stamps = []; shotCount = 0;
+  buf.clear();
+  document.getElementById('hud-shots').textContent = 'disparos: 0';
+  if (reset) {
+    posX = (width - PANEL_W) / 2; posY = height / 2;
+    velX = velY = 0; rotation = aimAngle = 0; jitterSeed = 42;
   }
 }
 
-// Teclado — p5
-function keyPressed() {
-  keys[key.toLowerCase()] = true;
-  if (key === ' ') { spaceDown = true; return false; }
+function centerOrigin() {
+  posX = (width - PANEL_W) / 2; posY = height / 2;
+  velX = velY = 0;
 }
-function keyReleased() {
-  keys[key.toLowerCase()] = false;
-  if (key === ' ') spaceDown = false;
-}
-
-// Atajos extra
-window.addEventListener('keydown', e => {
-  let tag = document.activeElement.tagName;
-  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
-  if (e.key === 'j' || e.key === 'J') jitterSeed = Math.floor(Math.random() * 99999);
-  if (e.key === 'c' || e.key === 'C') { posX = width/2 - 110; posY = height/2; velX = velY = 0; }
-  if (e.key === 'x' || e.key === 'X') clearStamps(false);
-});
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  // Recrear buffer con el nuevo tamaño
-  let prevBuffer = bufferGraphics;
-  bufferGraphics = createGraphics(width, height);
-  bufferGraphics.clear();
-  // Redibujar stamps guardados en el nuevo buffer
+  let old = buf;
+  buf = createGraphics(width, height);
+  buf.clear();
+  // Redibujar stamps guardados
   stamps.forEach(s => {
+    let p = s.p, tyo = typoOffset(p.fontSize);
     s.rays.forEach(r => {
-      let p  = s.p;
-      let fs = p.fontSize;
-      bufferGraphics.push();
-      bufferGraphics.translate(r.ox, r.oy);
-      bufferGraphics.rotate(r.fa);
-      bufferGraphics.stroke(p.colorFg);
-      bufferGraphics.strokeWeight(p.weight);
-      bufferGraphics.noFill();
-      bufferGraphics.line(r.rIn, 0, r.rLine, 0);
-      bufferGraphics.pop();
-      bufferGraphics.push();
-      bufferGraphics.translate(r.lx, r.ly);
+      buf.push(); buf.translate(r.ox, r.oy); buf.rotate(r.fa);
+      buf.stroke(p.colorFg); buf.strokeWeight(p.weight); buf.noFill();
+      buf.line(r.rIn, 0, r.rLine, 0);
+      buf.pop();
+      buf.push(); buf.translate(r.lx, r.ly);
       if (p.showBalls) {
-        bufferGraphics.fill(p.colorBall);
-        if (p.ballStroke) { bufferGraphics.stroke(p.colorFg); bufferGraphics.strokeWeight(p.weight); }
-        else bufferGraphics.noStroke();
-        bufferGraphics.ellipse(0, 0, p.ballSize, p.ballSize);
+        buf.fill(p.colorBall);
+        if (p.ballStroke) { buf.stroke(p.colorFg); buf.strokeWeight(p.weight); } else buf.noStroke();
+        buf.ellipse(0, 0, p.ballSize, p.ballSize);
       }
-      bufferGraphics.noStroke();
-      bufferGraphics.drawingContext.font = `${fs}px "${p5Font || 'sans-serif'}"`;
-      bufferGraphics.drawingContext.textAlign    = 'center';
-      bufferGraphics.drawingContext.textBaseline = 'alphabetic';
-      bufferGraphics.drawingContext.fillStyle    = p.colorText;
-      bufferGraphics.drawingContext.fillText(r.letter, 0, fs * 0.18);
-      bufferGraphics.pop();
+      buf.noStroke();
+      buf.drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+      buf.drawingContext.textAlign    = 'center';
+      buf.drawingContext.textBaseline = 'alphabetic';
+      buf.drawingContext.fillStyle    = p.colorText;
+      buf.drawingContext.fillText(r.letter, 0, tyo);
+      buf.pop();
     });
   });
-  prevBuffer.remove();
+  old.remove();
 }
 </script>
 </body>
