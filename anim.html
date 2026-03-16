@@ -189,16 +189,39 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
   </div>
   <div id="kf-list"></div>
 
-  <!-- Panel de ángulo del nodo seleccionado -->
+  <!-- Panel del nodo seleccionado -->
   <div id="kf-angle-panel" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;padding:8px 10px;margin-bottom:8px;border-radius:2px">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
-      <span style="font-size:9px;color:#888">Ángulo — <span id="kf-angle-label" style="color:#aaa">A</span></span>
-      <input id="kf-angle-val" style="font-size:9px;color:#ddd;width:40px;text-align:right;background:transparent;border:none;border-bottom:1px solid #444;outline:none;font-family:monospace" value="0°"
-             onchange="setSelectedAngleFromInput(this)">
+    <div style="font-size:8px;color:#555;margin-bottom:7px;letter-spacing:1px">
+      KEYFRAME <span id="kf-angle-label" style="color:#aaa;font-weight:bold">A</span>
     </div>
-    <input type="range" id="kf-angle-slider" min="-180" max="180" step="1" value="0"
-           style="width:100%;accent-color:#888;height:2px"
-           oninput="setSelectedAngle(this.value)">
+
+    <!-- Ángulo -->
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
+      <span style="font-size:9px;color:#777">Ángulo</span>
+      <input id="kf-angle-val" style="font-size:9px;color:#ddd;width:44px;text-align:right;background:transparent;border:none;border-bottom:1px solid #333;outline:none;font-family:monospace" value="0°" onchange="setSelectedAngleFromInput(this)">
+    </div>
+    <input type="range" id="kf-angle-slider" min="-180" max="180" step="1" value="0" style="width:100%;accent-color:#888;height:2px;margin-bottom:8px" oninput="setSelectedAngle(this.value)">
+
+    <!-- Apertura -->
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
+      <span style="font-size:9px;color:#777">Apertura</span>
+      <input id="kf-apertura-val" style="font-size:9px;color:#ddd;width:44px;text-align:right;background:transparent;border:none;border-bottom:1px solid #333;outline:none;font-family:monospace" value="—" onchange="setKfParam('apertura',parseFloat(this.value))">
+    </div>
+    <input type="range" id="kf-apertura-slider" min="1" max="360" step="1" value="87" style="width:100%;accent-color:#888;height:2px;margin-bottom:8px" oninput="setKfParam('apertura',parseFloat(this.value)); document.getElementById('kf-apertura-val').value=this.value+'°'">
+
+    <!-- Largo spray -->
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
+      <span style="font-size:9px;color:#777">Largo spray</span>
+      <input id="kf-rout-val" style="font-size:9px;color:#ddd;width:44px;text-align:right;background:transparent;border:none;border-bottom:1px solid #333;outline:none;font-family:monospace" value="—" onchange="setKfParam('rOut',parseFloat(this.value))">
+    </div>
+    <input type="range" id="kf-rout-slider" min="10" max="3000" step="1" value="291" style="width:100%;accent-color:#888;height:2px;margin-bottom:8px" oninput="setKfParam('rOut',parseFloat(this.value)); document.getElementById('kf-rout-val').value=this.value+' px'">
+
+    <!-- Jitter amplitud -->
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
+      <span style="font-size:9px;color:#777">Jitter</span>
+      <input id="kf-jitter-val" style="font-size:9px;color:#ddd;width:44px;text-align:right;background:transparent;border:none;border-bottom:1px solid #333;outline:none;font-family:monospace" value="—" onchange="setKfParam('jitter',parseFloat(this.value))">
+    </div>
+    <input type="range" id="kf-jitter-slider" min="0" max="400" step="1" value="83" style="width:100%;accent-color:#888;height:2px" oninput="setKfParam('jitter',parseFloat(this.value)); document.getElementById('kf-jitter-val').value=this.value+' px'">
   </div>
 
   <div style="display:flex;gap:5px;margin-bottom:8px">
@@ -216,6 +239,14 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     <div class="lrow"><label>FPS export</label><input class="val" id="vFps" value="30" onchange="syncFromVal(this)"></div>
     <input type="range" id="inFps" min="12" max="60" step="1" value="30" oninput="syncSlider('inFps','vFps',this.value,'')">
   </div>
+  <div class="tog" style="margin-top:4px">
+    <input type="checkbox" id="checkLiveJitter">
+    <label for="checkLiveJitter">Jitter vivo (orgánico)</label>
+  </div>
+  <div class="grp" id="liveJitterRow" style="opacity:0.3;pointer-events:none">
+    <div class="lrow"><label>Velocidad jitter</label><input class="val" id="vJitterSpeed" value="8" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inJitterSpeed" min="1" max="30" step="1" value="8" oninput="syncSlider('inJitterSpeed','vJitterSpeed',this.value,'')">
+  </div>
 
   <!-- PREVIEW -->
   <div id="progress-wrap">
@@ -229,8 +260,10 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
 
   <!-- EXPORTAR -->
   <hr>
-  <button class="primary" id="btnWebM" onclick="exportWebM()">Exportar WebM</button>
-  <button class="primary" id="btnZip"  onclick="exportZip()" style="background:#ccc">Exportar ZIP SVGs</button>
+  <button class="primary" id="btnMp4"  onclick="exportMp4()">Exportar MP4 H.264</button>
+  <button class="primary" id="btnWebM" onclick="exportWebM()" style="background:#ccc">Exportar WebM VP9</button>
+  <button class="primary" id="btnPng"  onclick="exportPngZip()" style="background:#bbb">Exportar ZIP PNGs</button>
+  <button class="primary" id="btnZip"  onclick="exportZip()" style="background:#aaa">Exportar ZIP SVGs</button>
   <div id="export-status"></div>
 
   <!-- TIPS -->
@@ -256,6 +289,14 @@ function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
   if (isDash) el.value = parseFloat(val) > 0 ? val + ' px' : 'off';
   else el.value = (prefix || '') + val + (suffix || '');
 }
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('checkLiveJitter').addEventListener('change', function() {
+    let row = document.getElementById('liveJitterRow');
+    row.style.opacity       = this.checked ? '1'    : '0.3';
+    row.style.pointerEvents = this.checked ? 'auto' : 'none';
+  });
+});
+
 function syncFromVal(inputEl) {
   let raw = parseFloat(inputEl.value);
   if (isNaN(raw)) return;
@@ -388,8 +429,10 @@ function getP() {
     colorFg   : document.getElementById('inColorFg').value,
     colorBall : document.getElementById('inColorBall').value,
     colorText : document.getElementById('inColorText').value,
-    dur       : parseFloat(document.getElementById('inDur').value),
-    fps       : parseInt(document.getElementById('inFps').value),
+    dur        : parseFloat(document.getElementById('inDur').value),
+    fps        : parseInt(document.getElementById('inFps').value),
+    liveJitter : document.getElementById('checkLiveJitter').checked,
+    jitterSpeed: parseFloat(document.getElementById('inJitterSpeed').value),
   };
 }
 
@@ -419,6 +462,25 @@ function catmullRom(pts, t) {
   let x = 0.5 * ((2*p1.x) + (-p0.x+p2.x)*u + (2*p0.x-5*p1.x+4*p2.x-p3.x)*u2 + (-p0.x+3*p1.x-3*p2.x+p3.x)*u3);
   let y = 0.5 * ((2*p1.y) + (-p0.y+p2.y)*u + (2*p0.y-5*p1.y+4*p2.y-p3.y)*u2 + (-p0.y+3*p1.y-3*p2.y+p3.y)*u3);
   return { x, y };
+}
+
+// Interpolación escalar suave entre keyframes con ease in-out
+// field: nombre del campo en el keyframe; fallback: valor por defecto del slider global
+function interpScalar(pts, t, field, fallback) {
+  let n = pts.length;
+  if (n === 0) return fallback;
+  // Si ningún kf tiene el campo definido, usar fallback global
+  let anyDefined = pts.some(k => k[field] !== undefined);
+  if (!anyDefined) return fallback;
+  if (n === 1) return pts[0][field] !== undefined ? pts[0][field] : fallback;
+  let seg = t * n;
+  let i   = Math.floor(seg) % n;
+  let u   = seg - Math.floor(seg);
+  // Ease in-out cúbico
+  u = u < 0.5 ? 4*u*u*u : 1 - Math.pow(-2*u+2,3)/2;
+  let v0 = pts[i][field]           !== undefined ? pts[i][field]           : fallback;
+  let v1 = pts[(i+1) % n][field]   !== undefined ? pts[(i+1) % n][field]   : fallback;
+  return v0 + (v1 - v0) * u;
 }
 
 // Interpolación angular suave entre keyframes (wrap correcto ±π)
@@ -505,9 +567,25 @@ function draw() {
     lastMillis = millis();
   }
 
-  // Posición e ángulo del origen según la curva
+  // Posición, ángulo y parámetros animados según la curva
   let pos = keyframes.length >= 2 ? catmullRom(keyframes, animT) : (keyframes[0] || { x: width/2, y: height/2 });
   rotation = keyframes.length >= 2 ? interpAngle(keyframes, animT) : (keyframes[0]?.rotation || 0);
+
+  // Parámetros animables: si el kf tiene valor propio lo interpola, si no usa el slider global
+  if (keyframes.length >= 2) {
+    let ga = radians(parseFloat(document.getElementById('inAngle').value));
+    let gr = parseInt(document.getElementById('inRout').value);
+    let gj = parseInt(document.getElementById('inJitter').value);
+    p.angle    = interpScalar(keyframes, animT, 'apertura', degrees(ga)) * Math.PI / 180;
+    p.rOutBase = interpScalar(keyframes, animT, 'rOut', gr);
+    p.jitter   = interpScalar(keyframes, animT, 'jitter', gj);
+  }
+
+  // Jitter vivo orgánico — fluctúa basado en ruido de tiempo
+  if (p.liveJitter) {
+    let speed = p.jitterSpeed || 8;
+    jitterSeed = Math.floor(noise(animT * speed * 10) * 99999);
+  }
 
   // ── RENDER ──
   background(40);  // zona fuera del bbox
@@ -746,24 +824,48 @@ function removeKf(i) {
   renderKfList();
 }
 
-// Actualiza el panel de ángulo según el nodo seleccionado
+// Actualiza el panel del nodo seleccionado
 function updateAnglePanel() {
-  let panel = document.getElementById('kf-angle-panel');
-  let slider = document.getElementById('kf-angle-slider');
-  let valEl  = document.getElementById('kf-angle-val');
-  let lblEl  = document.getElementById('kf-angle-label');
-
+  let panel  = document.getElementById('kf-angle-panel');
   if (selectedIdx < 0 || selectedIdx >= keyframes.length) {
-    panel.style.display = 'none';
-    return;
+    panel.style.display = 'none'; return;
   }
   panel.style.display = 'block';
-  let deg = Math.round((keyframes[selectedIdx].rotation || 0) * 180 / Math.PI);
-  slider.value  = deg;
-  valEl.value   = deg + '°';
-  lblEl.textContent = String.fromCharCode(65 + selectedIdx);
-  // Color del borde según el nodo
-  panel.style.borderColor = NODE_COLORS[selectedIdx % NODE_COLORS.length] + '66';
+  let kf  = keyframes[selectedIdx];
+  let col = NODE_COLORS[selectedIdx % NODE_COLORS.length];
+  panel.style.borderColor = col + '66';
+
+  document.getElementById('kf-angle-label').textContent = String.fromCharCode(65 + selectedIdx);
+
+  // Ángulo
+  let deg = Math.round((kf.rotation || 0) * 180 / Math.PI);
+  document.getElementById('kf-angle-slider').value = deg;
+  document.getElementById('kf-angle-val').value    = deg + '°';
+
+  // Apertura — si no tiene valor propio, mostrar el global
+  let globalAngle = parseFloat(document.getElementById('inAngle').value);
+  let apertura = kf.apertura !== undefined ? kf.apertura : globalAngle;
+  document.getElementById('kf-apertura-slider').value = apertura;
+  document.getElementById('kf-apertura-val').value    = Math.round(apertura) + '°';
+
+  // Largo
+  let globalRout = parseInt(document.getElementById('inRout').value);
+  let rOut = kf.rOut !== undefined ? kf.rOut : globalRout;
+  document.getElementById('kf-rout-slider').value = rOut;
+  document.getElementById('kf-rout-val').value    = Math.round(rOut) + ' px';
+
+  // Jitter
+  let globalJitter = parseInt(document.getElementById('inJitter').value);
+  let jitter = kf.jitter !== undefined ? kf.jitter : globalJitter;
+  document.getElementById('kf-jitter-slider').value = jitter;
+  document.getElementById('kf-jitter-val').value    = Math.round(jitter) + ' px';
+}
+
+// Setter genérico para parámetros por keyframe
+function setKfParam(field, value) {
+  if (selectedIdx < 0 || selectedIdx >= keyframes.length) return;
+  keyframes[selectedIdx][field] = value;
+  renderKfList();
 }
 
 function setSelectedAngle(deg) {
@@ -818,7 +920,27 @@ function updateProgressUI(t, p) {
 // ═══════════════════════════════════════════════════════════════════════════
 // EXPORT WebM — graba un loop completo con MediaRecorder
 // ═══════════════════════════════════════════════════════════════════════════
+// EXPORT MP4 H.264 — usa el codec más compatible disponible en el navegador
+// ═══════════════════════════════════════════════════════════════════════════
+async function exportMp4() {
+  // Intentar H.264 (Chrome/Edge soportan avc1 en algunos sistemas)
+  // Si no está disponible, usar VP9 con extensión .mp4 (Canva lo acepta)
+  let mimeOptions = [
+    { mime: 'video/mp4;codecs=avc1.42E01E', ext: 'mp4' },
+    { mime: 'video/mp4',                    ext: 'mp4' },
+    { mime: 'video/webm;codecs=vp9',        ext: 'webm' },
+    { mime: 'video/webm',                   ext: 'webm' },
+  ];
+  let chosen = mimeOptions.find(o => MediaRecorder.isTypeSupported(o.mime));
+  if (!chosen) { setStatus('Codec no disponible en este navegador', 'error'); return; }
+  await _doExportVideo(chosen.mime, chosen.ext, 'polinizador_anim.' + chosen.ext);
+}
+
 async function exportWebM() {
+  await _doExportVideo('video/webm;codecs=vp9', 'webm', 'polinizador_anim.webm');
+}
+
+async function _doExportVideo(mimeType, ext, filename) {
   if (keyframes.length < 2) { setStatus('Necesitas al menos 2 keyframes', 'error'); return; }
 
   let p        = getP();
@@ -829,7 +951,7 @@ async function exportWebM() {
   animT = 0;
   document.getElementById('btnPlay').textContent = '▶ Preview';
 
-  setStatus('Grabando…', 'active');
+  setStatus(`Grabando ${ext.toUpperCase()}…`, 'active');
   setBtnsDisabled(true);
 
   // Canvas offscreen del tamaño exacto del bbox — lo que se graba es solo esto
@@ -839,16 +961,16 @@ async function exportWebM() {
   let offCtx = offCnv.getContext('2d');
 
   let stream   = offCnv.captureStream(p.fps);
-  let recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8_000_000 });
+  let recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
   let chunks   = [];
 
   recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
   recorder.onstop = () => {
     let blob = new Blob(chunks, { type: 'video/webm' });
     let url  = URL.createObjectURL(blob);
-    Object.assign(document.createElement('a'), { href: url, download: 'polinizador_anim.webm' }).click();
+    Object.assign(document.createElement('a'), { href: url, download: filename }).click();
     URL.revokeObjectURL(url);
-    setStatus('WebM descargado ✓', 'done');
+    setStatus(filename + ' descargado ✓', 'done');
     setBtnsDisabled(false);
     cancelAnimationFrame(rafId);
   };
@@ -863,9 +985,16 @@ async function exportWebM() {
     let elapsed = performance.now() - startT;
     let t = (elapsed / duration) % 1;
 
-    // Interpolación de posición y ángulo
+    // Interpolación de posición, ángulo y parámetros animados
     let pos = catmullRom(keyframes, t);
     let rot = interpAngle(keyframes, t);
+    let ga2     = radians(parseFloat(document.getElementById('inAngle').value));
+    let gr2     = parseInt(document.getElementById('inRout').value);
+    let gj2     = parseInt(document.getElementById('inJitter').value);
+    p.angle    = interpScalar(keyframes, t, 'apertura', degrees(ga2)) * Math.PI / 180;
+    p.rOutBase = interpScalar(keyframes, t, 'rOut', gr2);
+    p.jitter   = interpScalar(keyframes, t, 'jitter', gj2);
+    if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * (p.jitterSpeed||8) * 63.7) * 0.5 + 0.5) * 99999);
 
     // Dibujar frame en el offscreen canvas (sin overlay ni borde)
     offCtx.fillStyle = p.colorBg;
@@ -964,6 +1093,69 @@ function drawFrameToCtx(ctx, p, ox, oy) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// EXPORT ZIP PNGs — frames PNG con fondo transparente (sRGB, sin pérdida)
+// ═══════════════════════════════════════════════════════════════════════════
+async function exportPngZip() {
+  if (keyframes.length < 2) { setStatus('Necesitas al menos 2 keyframes', 'error'); return; }
+
+  let p           = getP();
+  let totalFrames = Math.round(p.dur * p.fps);
+  let zip         = new JSZip();
+
+  setStatus('Generando PNGs…', 'active');
+  setBtnsDisabled(true);
+
+  let offCnv = document.createElement('canvas');
+  offCnv.width  = bbW;
+  offCnv.height = bbH;
+  let offCtx = offCnv.getContext('2d');
+
+  for (let f = 0; f < totalFrames; f++) {
+    let t = f / totalFrames;
+
+    // Interpolar params
+    let pos = catmullRom(keyframes, t);
+    let savedRot = rotation;
+    rotation = interpAngle(keyframes, t);
+    let ga = radians(parseFloat(document.getElementById('inAngle').value));
+    let gr = parseInt(document.getElementById('inRout').value);
+    let gj = parseInt(document.getElementById('inJitter').value);
+    p.angle    = interpScalar(keyframes, t, 'apertura', degrees(ga)) * Math.PI / 180;
+    p.rOutBase = interpScalar(keyframes, t, 'rOut', gr);
+    p.jitter   = interpScalar(keyframes, t, 'jitter', gj);
+    if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * (p.jitterSpeed||8) * 63.7) * 0.5 + 0.5) * 99999);
+
+    // Fondo transparente
+    offCtx.clearRect(0, 0, bbW, bbH);
+
+    if (p5Font) {
+      let ox = pos.x - bbX();
+      let oy = pos.y - bbY();
+      drawFrameToCtx(offCtx, p, ox, oy);
+    }
+
+    rotation = savedRot;
+
+    // PNG como blob
+    let dataUrl = offCnv.toDataURL('image/png');
+    let base64  = dataUrl.split(',')[1];
+    zip.file(`frame_${String(f).padStart(4,'0')}.png`, base64, { base64: true });
+
+    if (f % 5 === 0) {
+      setStatus(`PNG ${f+1}/${totalFrames}…`, 'active');
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
+  let blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  let url  = URL.createObjectURL(blob);
+  Object.assign(document.createElement('a'), { href: url, download: 'polinizador_png.zip' }).click();
+  URL.revokeObjectURL(url);
+  setStatus(`ZIP PNG listo: ${totalFrames} frames ✓`, 'done');
+  setBtnsDisabled(false);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // EXPORT ZIP SVGs — genera un SVG por frame y lo empaqueta
 // ═══════════════════════════════════════════════════════════════════════════
 async function exportZip() {
@@ -991,8 +1183,15 @@ async function exportZip() {
     let ox  = pos.x - bbX();  // coords relativas al bbox
     let oy  = pos.y - bbY();
 
-    // Aplicar ángulo interpolado para este frame
-    rotation = interpAngle(keyframes, t);
+    // Aplicar ángulo y parámetros animados para este frame
+    rotation   = interpAngle(keyframes, t);
+    let ga     = radians(parseFloat(document.getElementById('inAngle').value));
+    let gr     = parseInt(document.getElementById('inRout').value);
+    let gj     = parseInt(document.getElementById('inJitter').value);
+    p.angle    = interpScalar(keyframes, t, 'apertura', degrees(ga)) * Math.PI / 180;
+    p.rOutBase = interpScalar(keyframes, t, 'rOut', gr);
+    p.jitter   = interpScalar(keyframes, t, 'jitter', gj);
+    if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * p.jitterSpeed * 63.7) * 0.5 + 0.5) * 99999);
 
     let rays = calcRays(p, pos.x, pos.y);
     let svg  = buildSVG(p, rays, ox, oy, scale, hCapY);
@@ -1080,9 +1279,10 @@ function setStatus(msg, cls) {
 }
 
 function setBtnsDisabled(v) {
-  document.getElementById('btnWebM').disabled = v;
-  document.getElementById('btnZip').disabled  = v;
-  document.getElementById('btnPlay').disabled = v;
+  ['btnMp4','btnWebM','btnPng','btnZip','btnPlay'].forEach(id => {
+    let el = document.getElementById(id);
+    if (el) el.disabled = v;
+  });
 }
 
 function applyBBox() {
