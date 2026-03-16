@@ -158,11 +158,34 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
   <div class="color-row"><label>Fondo</label><input type="color" id="inColorBg" value="#ffffff"></div>
   <div class="color-row"><label>Líneas + trazo</label><input type="color" id="inColorFg" value="#000000"></div>
 
+  <!-- FORMATO -->
+  <hr><div class="sec">Formato</div>
+  <div class="grp">
+    <label>Área de dibujo</label>
+    <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+      <input type="number" id="inBbW" value="800" min="100" max="4000" step="1"
+             onchange="applyBBox()" title="Ancho px"
+             style="width:58px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
+      <span style="font-size:11px;color:#555">×</span>
+      <input type="number" id="inBbH" value="600" min="100" max="4000" step="1"
+             onchange="applyBBox()" title="Alto px"
+             style="width:58px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
+      <span style="font-size:10px;color:#444">px</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(210,297)">A4 V</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(297,210)">A4 H</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(1080,1080)">1:1</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(1080,1920)">9:16</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(1920,1080)">16:9</button>
+    </div>
+  </div>
+
   <!-- KEYFRAMES -->
   <hr>
   <div class="sec">Recorrido — keyframes</div>
   <div style="font-size:9px;color:#555;margin-bottom:8px;line-height:1.5">
-    Clic en el canvas para añadir puntos.<br>La curva pasa por todos ellos en bucle.
+    Clic → añadir punto. Drag → mover.<br>Click derecho en nodo → editar ángulo.
   </div>
   <div id="kf-list"></div>
   <div style="display:flex;gap:5px;margin-bottom:8px">
@@ -248,12 +271,13 @@ let keyframes = [];
 let dragIdx   = -1;   // índice del nodo que se está arrastrando
 
 // Estado de animación
-let animT       = 0;    // tiempo normalizado 0–1 dentro del loop
-let animPlaying = false;
-let lastMillis  = 0;
+let animT        = 0;    // tiempo normalizado 0–1 dentro del loop
+let animPlaying  = false;
+let lastMillis   = 0;
+let isExporting  = false; // suprime overlay durante grabación/render
 
 // Parámetros visuales
-let rotation  = 0;
+let rotation   = 0;  // ángulo actual interpolado en cada frame
 let jitterSeed = 42;
 
 // BBox fija igual que en index (referencia visual)
@@ -382,6 +406,24 @@ function catmullRom(pts, t) {
   return { x, y };
 }
 
+// Interpolación angular suave entre keyframes (wrap correcto ±π)
+function interpAngle(pts, t) {
+  let n = pts.length;
+  if (n === 0) return 0;
+  if (n === 1) return pts[0].rotation || 0;
+  let seg = t * n;
+  let i   = Math.floor(seg) % n;
+  let u   = seg - Math.floor(seg);
+  // Ease in-out cúbico
+  u = u < 0.5 ? 4*u*u*u : 1 - Math.pow(-2*u+2,3)/2;
+  let a0 = pts[i].rotation || 0;
+  let a1 = pts[(i+1) % n].rotation || 0;
+  let d  = a1 - a0;
+  while (d >  Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  return a0 + d * u;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // CALCULAR RAYOS (con originX/Y dinámicos)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -448,8 +490,9 @@ function draw() {
     lastMillis = millis();
   }
 
-  // Posición del origen según la curva
+  // Posición e ángulo del origen según la curva
   let pos = keyframes.length >= 2 ? catmullRom(keyframes, animT) : (keyframes[0] || { x: width/2, y: height/2 });
+  rotation = keyframes.length >= 2 ? interpAngle(keyframes, animT) : (keyframes[0]?.rotation || 0);
 
   // ── RENDER ──
   background(40);  // zona fuera del bbox
@@ -475,14 +518,14 @@ function draw() {
 
   drawingContext.restore();
 
-  // Borde bbox
-  noFill(); stroke(70); strokeWeight(1);
-  drawingContext.setLineDash([4, 4]);
-  rect(bbX(), bbY(), bbW, bbH);
-  drawingContext.setLineDash([]);
-
-  // ── CURVA Y NODOS ──
-  drawCurveOverlay();
+  // Borde bbox y overlay — solo en modo edición, nunca durante export
+  if (!isExporting) {
+    noFill(); stroke(70); strokeWeight(1);
+    drawingContext.setLineDash([4, 4]);
+    rect(bbX(), bbY(), bbW, bbH);
+    drawingContext.setLineDash([]);
+    drawCurveOverlay();
+  }
 }
 
 // ── Dibuja la curva Catmull-Rom y los nodos encima del bbox ──
@@ -522,7 +565,14 @@ function drawCurveOverlay() {
 function drawNode(kf, i) {
   let col = NODE_COLORS[i % NODE_COLORS.length];
   let r   = dragIdx === i ? NODE_R * 1.3 : NODE_R;
+  let rot = kf.rotation || 0;
   push();
+  // Línea de dirección del haz
+  let dirLen = 28;
+  stroke(col); strokeWeight(1); noFill();
+  drawingContext.setLineDash([3, 3]);
+  line(kf.x, kf.y, kf.x + cos(rot) * dirLen, kf.y + sin(rot) * dirLen);
+  drawingContext.setLineDash([]);
   // Sombra
   fill(0, 0, 0, 60); noStroke();
   ellipse(kf.x + 1, kf.y + 1, r*2+2, r*2+2);
@@ -530,8 +580,6 @@ function drawNode(kf, i) {
   fill(col); noStroke();
   ellipse(kf.x, kf.y, r*2, r*2);
   // Label
-  fill(255); noStroke();
-  textSize(7); textAlign(CENTER, CENTER);
   drawingContext.font = '700 8px monospace';
   drawingContext.fillStyle = '#000';
   drawingContext.textAlign = 'center';
@@ -591,18 +639,31 @@ function mousePressed() {
   // ¿Clic sobre un nodo existente?
   for (let i = 0; i < keyframes.length; i++) {
     if (dist(mouseX, mouseY, keyframes[i].x, keyframes[i].y) < NODE_R + 4) {
+      if (mouseButton === RIGHT) {
+        // Click derecho → editar ángulo
+        let cur = Math.round((keyframes[i].rotation || 0) * 180 / Math.PI);
+        let val = prompt(`Ángulo del haz en ${String.fromCharCode(65+i)} (grados):`, cur);
+        if (val !== null && !isNaN(parseFloat(val))) {
+          keyframes[i].rotation = parseFloat(val) * Math.PI / 180;
+          renderKfList();
+        }
+        return;
+      }
       dragIdx = i;
       return;
     }
   }
 
-  // Clic en canvas → nuevo keyframe (solo dentro del bbox, con margen)
+  // Clic izquierdo en canvas → nuevo keyframe con ángulo actual
   let bx = bbX(), by = bbY();
   let x  = constrain(mouseX, bx + 10, bx + bbW - 10);
   let y  = constrain(mouseY, by + 10, by + bbH - 10);
-  keyframes.push({ x, y });
+  keyframes.push({ x, y, rotation: rotation });
   renderKfList();
 }
+
+// Evitar menú contextual en el canvas
+document.addEventListener('contextmenu', e => { if (e.target.tagName === 'CANVAS') e.preventDefault(); });
 
 function mouseDragged() {
   if (dragIdx < 0) return;
@@ -624,10 +685,11 @@ function renderKfList() {
     let col  = NODE_COLORS[i % NODE_COLORS.length];
     let item = document.createElement('div');
     item.className = 'kf-item';
+    let angleDeg = Math.round((kf.rotation || 0) * 180 / Math.PI);
     item.innerHTML = `
       <div class="kf-dot" style="background:${col}"></div>
       <span class="kf-label">${String.fromCharCode(65+i)}</span>
-      <span class="kf-coords">${Math.round(kf.x - bbX())}, ${Math.round(kf.y - bbY())}</span>
+      <span class="kf-coords">${Math.round(kf.x - bbX())},${Math.round(kf.y - bbY())} · ${angleDeg}°</span>
       <span class="kf-del" onclick="removeKf(${i})">✕</span>`;
     el.appendChild(item);
   });
@@ -705,6 +767,7 @@ async function exportWebM() {
     setBtnsDisabled(false);
   };
 
+  isExporting = true;
   recorder.start();
   animPlaying = true;
   animT       = 0;
@@ -713,6 +776,7 @@ async function exportWebM() {
   // Grabar exactamente un loop
   setTimeout(() => {
     animPlaying = false;
+    isExporting = false;
     recorder.stop();
   }, duration + 100);
 }
@@ -744,6 +808,9 @@ async function exportZip() {
     let pos = catmullRom(keyframes, t);
     let ox  = pos.x - bbX();  // coords relativas al bbox
     let oy  = pos.y - bbY();
+
+    // Aplicar ángulo interpolado para este frame
+    rotation = interpAngle(keyframes, t);
 
     let rays = calcRays(p, pos.x, pos.y);
     let svg  = buildSVG(p, rays, ox, oy, scale, hCapY);
@@ -834,6 +901,18 @@ function setBtnsDisabled(v) {
   document.getElementById('btnWebM').disabled = v;
   document.getElementById('btnZip').disabled  = v;
   document.getElementById('btnPlay').disabled = v;
+}
+
+function applyBBox() {
+  let w = parseInt(document.getElementById('inBbW').value) || 800;
+  let h = parseInt(document.getElementById('inBbH').value) || 600;
+  bbW = Math.max(100, Math.min(w, 4000));
+  bbH = Math.max(100, Math.min(h, 4000));
+}
+function setBBox(w, h) {
+  document.getElementById('inBbW').value = w;
+  document.getElementById('inBbH').value = h;
+  applyBBox();
 }
 
 function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }
