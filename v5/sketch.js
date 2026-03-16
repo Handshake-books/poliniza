@@ -1,9 +1,9 @@
 // POLINIZADOR v3.7
 // Un solo spray. Fuentes desde fonts/index.json. Color picker bg/fg.
-// Arrastrar • rojo → mueve origen. Arrastrar canvas → rotass.
+// Arrastrar • rojo → mueve origen. Arrastrar canvas → rota.
 
 const SIDEBAR_W  = 268;
-const HIDE_AFTER = 80; 
+const HIDE_AFTER = 80;
 
 // ── Fuentes ───────────────────────────────────────────────────────────────────
 let FONTS          = [];
@@ -148,13 +148,11 @@ function calcRays(p) {
     let rLine = min(p.rOutBase + jit, rMax);
     let rBMax = calcCollision(fa, p.showBalls ? p.ballSize/2 + p.weight : p.weight + 4);
     let rBall = min(rLine + p.linePad, rBMax);
-    let isSpace = txt[i] === ' ';
     return {
       fa, rIn: p.rIn, rLine, rBall,
       lx: originX + cos(fa) * rBall,
       ly: originY + sin(fa) * rBall,
       letter: txt[i],
-      skip: isSpace,
     };
   });
 }
@@ -221,10 +219,10 @@ function draw() {
       let fs  = p.fontSize;
       let tyo = getTypoOffset(fs);
       if (p.linesBack) {
-        rays.forEach(r => { if (!r.skip) doLine(r, p); });
-        rays.forEach((r, i) => { if (!r.skip) doBall(r, p, fs, tyo, i); });
+        rays.forEach(r => doLine(r, p));
+        rays.forEach((r, i) => doBall(r, p, fs, tyo, i));
       } else {
-        rays.forEach((r, i) => { if (!r.skip) { doLine(r, p); doBall(r, p, fs, tyo, i); } });
+        rays.forEach((r, i) => { doLine(r, p); doBall(r, p, fs, tyo, i); });
       }
     }
   }
@@ -384,7 +382,6 @@ function saveSVG() {
   // Cada molécula = un <g> propio con línea → bola → letra en orden de pintado
   // Las coordenadas del canvas se compensan restando el offset del bbox (ox, oy)
   rays.forEach((r, i) => {
-    if (r.skip) return;  // espacio — hueco angular sin dibujo
     svg.push(`  <g id="molecula-${i}">`);
 
     // — Línea (coordenadas relativas al bbox)

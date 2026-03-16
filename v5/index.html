@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>POLINIZADOR v3.8</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  display: flex;
+  background: #111;
+  font-family: monospace;
+  height: 100vh;
+  overflow: hidden;
+  color: #d0d0d0;
+}
+
+#sidebar {
+  width: 268px;
+  min-width: 268px;
+  background: #161616;
+  border-right: 1px solid #2a2a2a;
+  padding: 14px 14px 32px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #383838 transparent;
+  gap: 0;
+}
+
+h1 {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #555;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #252525;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.sec {
+  font-size: 8px;
+  letter-spacing: 2.5px;
+  color: #555;
+  text-transform: uppercase;
+  margin: 14px 0 8px;
+}
+
+.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 9px; }
+.lrow { display: flex; justify-content: space-between; align-items: baseline; }
+
+label {
+  font-size: 10px;
+  color: #bbb;
+  cursor: default;
+  user-select: none;
+}
+
+.val {
+  font-size: 10px;
+  color: #eee;
+  min-width: 48px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  outline: none;
+  font-family: monospace;
+  cursor: text;
+  transition: border-color .12s;
+}
+.val:focus { border-bottom-color: #777; color: #fff; }
+
+input[type="text"] {
+  background: #222;
+  border: 1px solid #444;
+  color: #fff;
+  padding: 7px 8px;
+  font-family: monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  width: 100%;
+  outline: none;
+  transition: border-color .12s;
+}
+input[type="text"]:focus { border-color: #888; }
+
+select {
+  background: #222;
+  border: 1px solid #444;
+  color: #eee;
+  padding: 6px 8px;
+  font-family: monospace;
+  font-size: 10px;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+select:focus { border-color: #888; }
+
+input[type="range"] {
+  width: 100%;
+  accent-color: #ccc;
+  cursor: pointer;
+  height: 3px;
+}
+
+.tog {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  margin-bottom: 7px;
+}
+input[type="checkbox"] {
+  accent-color: #ccc;
+  width: 12px; height: 12px;
+  cursor: pointer; flex-shrink: 0;
+}
+.tog label { font-size: 10px; color: #bbb; cursor: pointer; }
+
+hr { border: 0; border-top: 1px solid #222; margin: 4px 0 8px; }
+
+.color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.color-row label { font-size: 10px; color: #bbb; }
+input[type="color"] {
+  width: 36px;
+  height: 24px;
+  border: 1px solid #444;
+  border-radius: 2px;
+  background: none;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.inline-row { display: flex; align-items: center; gap: 6px; }
+.inline-row input[type="range"] { flex: 1; }
+
+.btns { display: flex; gap: 5px; margin-top: 10px; }
+
+button.primary {
+  flex: 1;
+  background: #e8e8e8;
+  color: #111;
+  border: none;
+  padding: 9px 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: monospace;
+  transition: background .12s;
+}
+button.primary:hover { background: #fff; }
+
+button.ghost {
+  background: transparent;
+  color: #888;
+  border: 1px solid #333;
+  font-size: 13px;
+  padding: 5px 9px;
+  font-family: monospace;
+  cursor: pointer;
+  flex: none;
+  transition: color .12s, border-color .12s;
+}
+button.ghost:hover { color: #eee; border-color: #888; }
+
+/* Instrucciones con estilo de tecla */
+.instructions {
+  margin-top: 18px;
+  border-top: 1px solid #1e1e1e;
+  padding-top: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.instr-title {
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #555;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.instr-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid #1c1c1c;
+  gap: 8px;
+}
+.instr-row:last-child { border-bottom: none; }
+
+kbd {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 8px;
+  color: #ddd;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-bottom: 2px solid #555;
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  min-width: 52px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.instr-desc {
+  font-size: 9px;
+  color: #777;
+  line-height: 1.4;
+}
+
+/* Bbox inputs */
+.bbox-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+.bbox-row input[type="number"] {
+  width: 62px;
+  background: #222;
+  border: 1px solid #444;
+  color: #eee;
+  padding: 5px 6px;
+  font-family: monospace;
+  font-size: 11px;
+  outline: none;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+.bbox-row input[type="number"]::-webkit-inner-spin-button { display: none; }
+.bbox-row input[type="number"]:focus { border-color: #888; }
+.bbox-x    { font-size: 11px; color: #666; flex-shrink: 0; }
+.bbox-unit { font-size: 10px; color: #555; flex-shrink: 0; }
+
+/* Presets formato */
+.bbox-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+button.preset {
+  background: #252525;
+  color: #999;
+  border: 1px solid #333;
+  font-family: monospace;
+  font-size: 8px;
+  padding: 3px 7px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: color .1s, border-color .1s, background .1s;
+}
+button.preset:hover { background: #2e2e2e; color: #eee; border-color: #666; }
+
+#canvas-parent { flex-grow: 1; background: #333; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>Polinizador v3.8</h1>
+
+  <!-- TEXTO -->
+  <div class="grp">
+    <label>Palabra</label>
+    <input type="text" id="inText" value="POLINIZADOS"
+           oninput="this.value=this.value.toUpperCase()">
+  </div>
+
+  <!-- FUENTE -->
+  <div class="grp">
+    <label>Fuente</label>
+    <select id="fontSelect"><option>cargando…</option></select>
+  </div>
+
+  <!-- HAZ -->
+  <hr>
+  <div class="sec">Haz</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="87°" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inAngle" min="1" max="360" value="87"
+           oninput="syncSlider('inAngle','vAngle',this.value,'°')">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Hueco central</label><input class="val" id="vRin" value="40 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRin" min="0" max="300" value="40"
+           oninput="syncSlider('inRin','vRin',this.value,' px')">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Largo spray</label><input class="val" id="vRout" value="291 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRout" min="10" max="3000" value="291"
+           oninput="syncSlider('inRout','vRout',this.value,' px')">
+  </div>
+
+  <!-- JITTER -->
+  <hr>
+  <div class="sec">Jitter</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Amplitud</label><input class="val" id="vJitter" value="83 px" onchange="syncFromVal(this)"></div>
+    <div class="inline-row">
+      <input type="range" id="inJitter" min="0" max="400" value="83"
+             oninput="syncSlider('inJitter','vJitter',this.value,' px')">
+      <button class="ghost" onclick="newJitter()" title="[J] Nueva semilla de jitter">↻</button>
+    </div>
+  </div>
+
+  <!-- LÍNEA -->
+  <hr>
+  <div class="sec">Línea</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="2 pt" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="2"
+           oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Punteado</label><input class="val" id="vDash" value="4 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inDash" min="0" max="40" value="4"
+           oninput="syncSlider('inDash','vDash',this.value,this.value>0?' px':'','',true)">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Sep. línea → bola</label><input class="val" id="vPad" value="15 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inLinePad" min="0" max="120" value="15"
+           oninput="syncSlider('inLinePad','vPad',this.value,' px')">
+  </div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkLinesBack">
+    <label for="checkLinesBack">Líneas detrás de bolas</label>
+  </div>
+
+  <!-- MOLÉCULAS -->
+  <hr>
+  <div class="sec">Moléculas</div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkBalls" checked>
+    <label for="checkBalls">Mostrar bolitas</label>
+  </div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkBallStroke" checked>
+    <label for="checkBallStroke">Trazo en bola</label>
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="53 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inBallSize" min="10" max="180" value="53"
+           oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+  </div>
+
+  <div class="color-row">
+    <label>Color bola A</label>
+    <input type="color" id="inColorBall" value="#ffffff">
+  </div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkAltBall">
+    <label for="checkAltBall">Alternar color bola (A/B)</label>
+  </div>
+
+  <div class="color-row" id="rowColorBallB" style="opacity:0.35;pointer-events:none">
+    <label>Color bola B</label>
+    <input type="color" id="inColorBallB" value="#000000">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="36 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inFontSize" min="4" max="160" value="36"
+           oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
+  </div>
+
+  <div class="color-row">
+    <label>Color letra</label>
+    <input type="color" id="inColorText" value="#000000">
+  </div>
+
+  <div class="tog">
+    <input type="checkbox" id="checkFlip">
+    <label for="checkFlip">Invertir orden letras</label>
+  </div>
+
+  <!-- FORMATO / BBOX -->
+  <hr>
+  <div class="sec">Formato</div>
+
+  <div class="grp">
+    <label>Área de dibujo</label>
+    <div class="bbox-row">
+      <input type="number" id="inBbW" value="800" min="100" max="4000" step="1"
+             onchange="applyBBox()" title="Ancho en px">
+      <span class="bbox-x">×</span>
+      <input type="number" id="inBbH" value="600" min="100" max="4000" step="1"
+             onchange="applyBBox()" title="Alto en px">
+      <span class="bbox-unit">px</span>
+    </div>
+    <div class="bbox-presets">
+      <button class="preset" onclick="setBBox(210,297,'A4 V')">A4 V</button>
+      <button class="preset" onclick="setBBox(297,210,'A4 H')">A4 H</button>
+      <button class="preset" onclick="setBBox(148,210,'A5 V')">A5 V</button>
+      <button class="preset" onclick="setBBox(1080,1080,'1:1')">1:1</button>
+      <button class="preset" onclick="setBBox(1080,1920,'9:16')">9:16</button>
+      <button class="preset" onclick="setBBox(1920,1080,'16:9')">16:9</button>
+    </div>
+  </div>
+
+  <div class="grp" style="margin-top:8px">
+    <div class="lrow">
+      <label>Zoom</label>
+      <input class="val" id="vZoom" value="100%" onchange="setZoomFromVal(this)">
+    </div>
+    <div class="inline-row">
+      <input type="range" id="inZoom" min="0.1" max="4" step="0.05" value="1"
+             oninput="setZoom(this.value)">
+      <button class="ghost" onclick="setZoom(1)" title="[Z] Reset zoom">1:1</button>
+    </div>
+  </div>
+
+  <!-- COLOR GLOBAL -->
+  <hr>
+  <div class="sec">Color global</div>
+
+  <div class="color-row">
+    <label>Fondo</label>
+    <input type="color" id="inColorBg" value="#ffffff">
+  </div>
+  <div class="color-row">
+    <label>Líneas + trazo bola</label>
+    <input type="color" id="inColorFg" value="#000000">
+  </div>
+
+  <!-- ACCIONES -->
+  <hr>
+  <div class="btns">
+    <button class="primary" onclick="saveSVG()" title="[S] Exportar SVG">Exportar SVG</button>
+    <button class="ghost" onclick="randomOrigin()" title="[R] Posición y ángulo aleatorio">⚄</button>
+    <button class="ghost" onclick="resetOrigin()" title="[C] Centrar origen">⌖</button>
+  </div>
+
+  <!-- ATAJOS Y TIPS -->
+  <div class="instructions">
+    <div class="instr-title">Atajos y controles</div>
+    <div class="instr-row">
+      <kbd>drag •</kbd>
+      <span class="instr-desc">Mueve el origen</span>
+    </div>
+    <div class="instr-row">
+      <kbd>drag canvas</kbd>
+      <span class="instr-desc">Rota el haz</span>
+    </div>
+    <div class="instr-row">
+      <kbd>← →</kbd>
+      <span class="instr-desc">Rotar 1° izq / der</span>
+    </div>
+    <div class="instr-row">
+      <kbd>↑ ↓</kbd>
+      <span class="instr-desc">Largo spray ±10px</span>
+    </div>
+    <div class="instr-row">
+      <kbd>J</kbd>
+      <span class="instr-desc">Nueva semilla de jitter</span>
+    </div>
+    <div class="instr-row">
+      <kbd>R</kbd>
+      <span class="instr-desc">Origen y ángulo aleatorio</span>
+    </div>
+    <div class="instr-row">
+      <kbd>C</kbd>
+      <span class="instr-desc">Centrar origen</span>
+    </div>
+    <div class="instr-row">
+      <kbd>I</kbd>
+      <span class="instr-desc">Toggle invertir letras</span>
+    </div>
+    <div class="instr-row">
+      <kbd>S</kbd>
+      <span class="instr-desc">Exportar SVG</span>
+    </div>
+    <div class="instr-row">
+      <kbd>+ / −</kbd>
+      <span class="instr-desc">Zoom entrada / salida</span>
+    </div>
+    <div class="instr-row">
+      <kbd>scroll</kbd>
+      <span class="instr-desc">Zoom con rueda</span>
+    </div>
+    <div class="instr-row">
+      <kbd>Z</kbd>
+      <span class="instr-desc">Reset zoom 100%</span>
+    </div>
+    <div class="instr-row">
+      <kbd>SVG</kbd>
+      <span class="instr-desc">Letras exportadas como paths vectoriales, sin fuente instalada</span>
+    </div>
+  </div>
+
+</div>
+
+<div id="canvas-parent"></div>
+
+<script>
+function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
+  let el = document.getElementById(valId);
+  if (isDash) {
+    el.value = parseFloat(val) > 0 ? val + ' px' : 'off';
+  } else {
+    el.value = (prefix || '') + val + (suffix || '');
+  }
+}
+function setZoomFromVal(el) {
+  let v = parseFloat(el.value) / 100;
+  if (!isNaN(v) && typeof setZoom === 'function') setZoom(v);
+}
+
+function setBBox(w, h, label) {
+  document.getElementById('inBbW').value = w;
+  document.getElementById('inBbH').value = h;
+  if (typeof applyBBox === 'function') applyBBox();
+}
+
+// Activar/desactivar fila color B según el toggle
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('checkAltBall').addEventListener('change', function() {
+    let row = document.getElementById('rowColorBallB');
+    row.style.opacity       = this.checked ? '1'    : '0.35';
+    row.style.pointerEvents = this.checked ? 'auto' : 'none';
+  });
+});
+
+function syncFromVal(inputEl) {
+  let raw = parseFloat(inputEl.value);
+  if (isNaN(raw)) return;
+  let grp = inputEl.closest('.grp') || inputEl.closest('.lrow').parentElement;
+  let slider = grp ? grp.querySelector('input[type="range"]') : null;
+  if (!slider) return;
+  raw = Math.min(Math.max(raw, parseFloat(slider.min)), parseFloat(slider.max));
+  slider.value = raw;
+  slider.dispatchEvent(new Event('input'));
+}
+</script>
+<script src="sketch.js"></script>
+</body>
+</html>
