@@ -823,9 +823,8 @@ async function exportWebM() {
 
   let p        = getP();
   let duration = p.dur * 1000; // ms
-  let cnv      = document.querySelector('#canvas-parent canvas');
 
-  // Detener preview si está activo
+  // Detener preview si estaba activo
   animPlaying = false;
   animT = 0;
   document.getElementById('btnPlay').textContent = '▶ Preview';
@@ -833,12 +832,17 @@ async function exportWebM() {
   setStatus('Grabando…', 'active');
   setBtnsDisabled(true);
 
-  let stream   = cnv.captureStream(p.fps);
+  // Canvas offscreen del tamaño exacto del bbox — lo que se graba es solo esto
+  let offCnv = document.createElement('canvas');
+  offCnv.width  = bbW;
+  offCnv.height = bbH;
+  let offCtx = offCnv.getContext('2d');
+
+  let stream   = offCnv.captureStream(p.fps);
   let recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8_000_000 });
   let chunks   = [];
 
   recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-
   recorder.onstop = () => {
     let blob = new Blob(chunks, { type: 'video/webm' });
     let url  = URL.createObjectURL(blob);
@@ -846,20 +850,117 @@ async function exportWebM() {
     URL.revokeObjectURL(url);
     setStatus('WebM descargado ✓', 'done');
     setBtnsDisabled(false);
+    cancelAnimationFrame(rafId);
   };
 
-  isExporting = true;
   recorder.start();
-  animPlaying = true;
-  animT       = 0;
-  lastMillis  = millis();
 
-  // Grabar exactamente un loop
-  setTimeout(() => {
-    animPlaying = false;
-    isExporting = false;
-    recorder.stop();
-  }, duration + 100);
+  let startT  = performance.now();
+  let rafId;
+
+  // Bucle de render al offscreen canvas — independiente del draw() de p5
+  function renderFrame() {
+    let elapsed = performance.now() - startT;
+    let t = (elapsed / duration) % 1;
+
+    // Interpolación de posición y ángulo
+    let pos = catmullRom(keyframes, t);
+    let rot = interpAngle(keyframes, t);
+
+    // Dibujar frame en el offscreen canvas (sin overlay ni borde)
+    offCtx.fillStyle = p.colorBg;
+    offCtx.fillRect(0, 0, bbW, bbH);
+
+    if (p5Font) {
+      // Guardar estado global y usar coordenadas relativas al bbox
+      let savedRot = rotation;
+      rotation = rot;
+      // Offset: el origen en el offscreen canvas es pos - bbX()/bbY()
+      let ox = pos.x - bbX();
+      let oy = pos.y - bbY();
+      drawFrameToCtx(offCtx, p, ox, oy);
+      rotation = savedRot;
+    }
+
+    if (elapsed < duration + 50) {
+      rafId = requestAnimationFrame(renderFrame);
+    } else {
+      recorder.stop();
+    }
+  }
+
+  rafId = requestAnimationFrame(renderFrame);
+}
+
+// Dibuja un frame de spray al contexto 2D dado (offscreen o export)
+function drawFrameToCtx(ctx, p, ox, oy) {
+  // Calcular rayos con origen relativo al bbox
+  let steps  = p.txt.length;
+  if (steps === 0) return;
+  let margin = p.showBalls ? (p.ballSize/2 + p.weight + p.linePad) : (p.weight*2 + 10 + p.linePad);
+
+  // Para calcRays necesitamos coords absolutas del canvas p5 — usar ox+bbX(), oy+bbY()
+  let absX = ox + bbX();
+  let absY = oy + bbY();
+  let rays  = calcRays(p, absX, absY);
+  let tyo   = typoOffset(p.fontSize);
+
+  rays.forEach((r, i) => {
+    if (r.skip) return;
+
+    // Línea — en coordenadas relativas al bbox (ox/oy)
+    let rox = r.lx - cos(r.fa)*r.rBall;
+    let roy = r.ly - sin(r.fa)*r.rBall;
+    // Transformar a coords bbox
+    let lx1 = (rox - bbX()) + cos(r.fa)*r.rIn;
+    let ly1 = (roy - bbY()) + sin(r.fa)*r.rIn;
+    let lx2 = (rox - bbX()) + cos(r.fa)*r.rLine;
+    let ly2 = (roy - bbY()) + sin(r.fa)*r.rLine;
+
+    ctx.save();
+    ctx.strokeStyle = p.colorFg;
+    ctx.lineWidth   = p.weight;
+    ctx.fillStyle   = 'none';
+    if (p.dash > 0) {
+      let len = r.rLine - r.rIn, off = len > 0 ? (len % (p.dash*2))/2 : 0;
+      ctx.setLineDash([p.dash, p.dash]);
+      ctx.lineDashOffset = -off;
+    } else {
+      ctx.setLineDash([]);
+    }
+    ctx.beginPath();
+    ctx.moveTo(lx1, ly1);
+    ctx.lineTo(lx2, ly2);
+    ctx.stroke();
+    ctx.restore();
+
+    // Bola
+    let bx2 = r.lx - bbX();
+    let by2 = r.ly - bbY();
+    if (p.showBalls) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(bx2, by2, p.ballSize/2, 0, Math.PI*2);
+      ctx.fillStyle = p.colorBall;
+      ctx.fill();
+      if (p.ballStroke) {
+        ctx.strokeStyle = p.colorFg;
+        ctx.lineWidth   = p.weight;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // Letra
+    ctx.save();
+    ctx.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle    = p.colorText;
+    ctx.setLineDash([]);
+    ctx.fillText(r.letter, bx2, by2 + tyo);
+    ctx.restore();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
