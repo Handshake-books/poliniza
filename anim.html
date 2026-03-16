@@ -188,6 +188,19 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     Clic → añadir punto. Drag → mover.<br>Click derecho en nodo → editar ángulo.
   </div>
   <div id="kf-list"></div>
+
+  <!-- Panel de ángulo del nodo seleccionado -->
+  <div id="kf-angle-panel" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;padding:8px 10px;margin-bottom:8px;border-radius:2px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+      <span style="font-size:9px;color:#888">Ángulo — <span id="kf-angle-label" style="color:#aaa">A</span></span>
+      <input id="kf-angle-val" style="font-size:9px;color:#ddd;width:40px;text-align:right;background:transparent;border:none;border-bottom:1px solid #444;outline:none;font-family:monospace" value="0°"
+             onchange="setSelectedAngleFromInput(this)">
+    </div>
+    <input type="range" id="kf-angle-slider" min="-180" max="180" step="1" value="0"
+           style="width:100%;accent-color:#888;height:2px"
+           oninput="setSelectedAngle(this.value)">
+  </div>
+
   <div style="display:flex;gap:5px;margin-bottom:8px">
     <button class="ghost" style="flex:1;font-size:9px;padding:6px" onclick="clearKeyframes()">Borrar todos</button>
     <button class="ghost" style="flex:1;font-size:9px;padding:6px" onclick="addCurrentOrigin()">+ Origen actual</button>
@@ -225,7 +238,8 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     <div class="tips-title">Controles</div>
     <div class="tip-row"><kbd>clic canvas</kbd><span class="tip-desc">Añadir keyframe</span></div>
     <div class="tip-row"><kbd>drag nodo</kbd><span class="tip-desc">Mover keyframe</span></div>
-    <div class="tip-row"><kbd>Del nodo</kbd><span class="tip-desc">Eliminar keyframe</span></div>
+    <div class="tip-row"><kbd>doble clic</kbd><span class="tip-desc">Eliminar keyframe</span></div>
+    <div class="tip-row"><kbd>clic nodo</kbd><span class="tip-desc">Seleccionar → editar ángulo</span></div>
     <div class="tip-row"><kbd>▶ Preview</kbd><span class="tip-desc">Reproducir en bucle</span></div>
     <div class="tip-row"><kbd>WebM</kbd><span class="tip-desc">Vídeo para web/RRSS</span></div>
     <div class="tip-row"><kbd>ZIP SVGs</kbd><span class="tip-desc">Frames para After Effects</span></div>
@@ -268,7 +282,8 @@ let fontLoadPromises = [], _tyCache = {};
 
 // Keyframes: array de {x, y} en coordenadas de canvas (sin zoom)
 let keyframes = [];
-let dragIdx   = -1;   // índice del nodo que se está arrastrando
+let dragIdx      = -1;  // índice del nodo que se está arrastrando
+let selectedIdx  = -1;  // nodo seleccionado (muestra slider de ángulo)
 
 // Estado de animación
 let animT        = 0;    // tiempo normalizado 0–1 dentro del loop
@@ -563,24 +578,39 @@ function drawCurveOverlay() {
 }
 
 function drawNode(kf, i) {
-  let col = NODE_COLORS[i % NODE_COLORS.length];
-  let r   = dragIdx === i ? NODE_R * 1.3 : NODE_R;
-  let rot = kf.rotation || 0;
+  let col      = NODE_COLORS[i % NODE_COLORS.length];
+  let isActive = i === selectedIdx;
+  let r        = (dragIdx === i || isActive) ? NODE_R * 1.4 : NODE_R;
+  let rot      = kf.rotation || 0;
   push();
-  // Línea de dirección del haz
-  let dirLen = 28;
-  stroke(col); strokeWeight(1); noFill();
-  drawingContext.setLineDash([3, 3]);
+
+  // Línea de dirección del haz — más larga y sólida si está seleccionado
+  let dirLen = isActive ? 48 : 28;
+  stroke(col); strokeWeight(isActive ? 1.5 : 1); noFill();
+  if (!isActive) drawingContext.setLineDash([3, 3]);
   line(kf.x, kf.y, kf.x + cos(rot) * dirLen, kf.y + sin(rot) * dirLen);
+  // Punta de flecha
+  let ax = kf.x + cos(rot) * dirLen;
+  let ay = kf.y + sin(rot) * dirLen;
+  let aw = isActive ? 5 : 3;
+  line(ax, ay, ax + cos(rot + 2.4) * aw, ay + sin(rot + 2.4) * aw);
+  line(ax, ay, ax + cos(rot - 2.4) * aw, ay + sin(rot - 2.4) * aw);
   drawingContext.setLineDash([]);
+
+  // Anillo de selección
+  if (isActive) {
+    noFill(); stroke(col); strokeWeight(1.5);
+    ellipse(kf.x, kf.y, r*2 + 8, r*2 + 8);
+  }
+
   // Sombra
-  fill(0, 0, 0, 60); noStroke();
+  fill(0, 0, 0, 70); noStroke();
   ellipse(kf.x + 1, kf.y + 1, r*2+2, r*2+2);
   // Relleno
   fill(col); noStroke();
   ellipse(kf.x, kf.y, r*2, r*2);
   // Label
-  drawingContext.font = '700 8px monospace';
+  drawingContext.font = `700 ${isActive ? 9 : 8}px monospace`;
   drawingContext.fillStyle = '#000';
   drawingContext.textAlign = 'center';
   drawingContext.textBaseline = 'middle';
@@ -633,32 +663,45 @@ function drawBall(r, p, tyo, idx) {
 // ═══════════════════════════════════════════════════════════════════════════
 // RATÓN — añadir / mover nodos
 // ═══════════════════════════════════════════════════════════════════════════
+let lastClickTime = 0;
+let lastClickIdx  = -1;
+
 function mousePressed() {
   if (mouseX < SIDEBAR_W) return;
 
   // ¿Clic sobre un nodo existente?
   for (let i = 0; i < keyframes.length; i++) {
     if (dist(mouseX, mouseY, keyframes[i].x, keyframes[i].y) < NODE_R + 4) {
-      if (mouseButton === RIGHT) {
-        // Click derecho → editar ángulo
-        let cur = Math.round((keyframes[i].rotation || 0) * 180 / Math.PI);
-        let val = prompt(`Ángulo del haz en ${String.fromCharCode(65+i)} (grados):`, cur);
-        if (val !== null && !isNaN(parseFloat(val))) {
-          keyframes[i].rotation = parseFloat(val) * Math.PI / 180;
-          renderKfList();
-        }
+      let now = millis();
+      // Doble clic → borrar
+      if (lastClickIdx === i && now - lastClickTime < 400) {
+        removeKf(i);
+        selectedIdx = -1;
+        updateAnglePanel();
+        lastClickIdx = -1;
         return;
       }
+      lastClickTime = now;
+      lastClickIdx  = i;
+      // Seleccionar nodo → mostrar slider de ángulo
+      selectedIdx = i;
+      updateAnglePanel();
       dragIdx = i;
       return;
     }
   }
 
-  // Clic izquierdo en canvas → nuevo keyframe con ángulo actual
+  // Clic en canvas vacío → deseleccionar + nuevo keyframe
+  selectedIdx  = -1;
+  lastClickIdx = -1;
+  updateAnglePanel();
+
   let bx = bbX(), by = bbY();
   let x  = constrain(mouseX, bx + 10, bx + bbW - 10);
   let y  = constrain(mouseY, by + 10, by + bbH - 10);
   keyframes.push({ x, y, rotation: rotation });
+  selectedIdx = keyframes.length - 1;
+  updateAnglePanel();
   renderKfList();
 }
 
@@ -684,20 +727,58 @@ function renderKfList() {
   keyframes.forEach((kf, i) => {
     let col  = NODE_COLORS[i % NODE_COLORS.length];
     let item = document.createElement('div');
-    item.className = 'kf-item';
+    item.className = 'kf-item' + (i === selectedIdx ? ' active' : '');
     let angleDeg = Math.round((kf.rotation || 0) * 180 / Math.PI);
     item.innerHTML = `
       <div class="kf-dot" style="background:${col}"></div>
       <span class="kf-label">${String.fromCharCode(65+i)}</span>
       <span class="kf-coords">${Math.round(kf.x - bbX())},${Math.round(kf.y - bbY())} · ${angleDeg}°</span>
       <span class="kf-del" onclick="removeKf(${i})">✕</span>`;
+    item.addEventListener('click', () => { selectedIdx = i; updateAnglePanel(); renderKfList(); });
     el.appendChild(item);
   });
 }
 
 function removeKf(i) {
   keyframes.splice(i, 1);
+  if (selectedIdx >= keyframes.length) selectedIdx = keyframes.length - 1;
+  updateAnglePanel();
   renderKfList();
+}
+
+// Actualiza el panel de ángulo según el nodo seleccionado
+function updateAnglePanel() {
+  let panel = document.getElementById('kf-angle-panel');
+  let slider = document.getElementById('kf-angle-slider');
+  let valEl  = document.getElementById('kf-angle-val');
+  let lblEl  = document.getElementById('kf-angle-label');
+
+  if (selectedIdx < 0 || selectedIdx >= keyframes.length) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  let deg = Math.round((keyframes[selectedIdx].rotation || 0) * 180 / Math.PI);
+  slider.value  = deg;
+  valEl.value   = deg + '°';
+  lblEl.textContent = String.fromCharCode(65 + selectedIdx);
+  // Color del borde según el nodo
+  panel.style.borderColor = NODE_COLORS[selectedIdx % NODE_COLORS.length] + '66';
+}
+
+function setSelectedAngle(deg) {
+  if (selectedIdx < 0 || selectedIdx >= keyframes.length) return;
+  keyframes[selectedIdx].rotation = parseFloat(deg) * Math.PI / 180;
+  document.getElementById('kf-angle-val').value = Math.round(deg) + '°';
+  renderKfList();
+}
+
+function setSelectedAngleFromInput(el) {
+  let deg = parseFloat(el.value);
+  if (isNaN(deg)) return;
+  deg = Math.max(-180, Math.min(180, deg));
+  setSelectedAngle(deg);
+  document.getElementById('kf-angle-slider').value = deg;
 }
 
 function clearKeyframes() {
