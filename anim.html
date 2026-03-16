@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>POLINIZADOR — ANIMACIÓN</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #111; font-family: monospace; overflow: hidden; color: #ccc; display: flex; height: 100vh; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: 260px; min-width: 260px;
+  background: #161616;
+  border-right: 1px solid #222;
+  padding: 14px 14px 32px;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: #333 transparent;
+}
+h1 { font-size: 9px; letter-spacing: 3px; color: #444; text-transform: uppercase; padding-bottom: 9px; border-bottom: 1px solid #222; margin-bottom: 14px; }
+.sec { font-size: 7px; letter-spacing: 2.5px; color: #444; text-transform: uppercase; margin: 13px 0 8px; }
+.grp { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.lrow { display: flex; justify-content: space-between; align-items: baseline; }
+label { font-size: 10px; color: #aaa; user-select: none; }
+.val { font-size: 10px; color: #ddd; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; background: transparent; border: none; border-bottom: 1px solid transparent; outline: none; font-family: monospace; cursor: text; }
+.val:focus { border-bottom-color: #666; color: #fff; }
+input[type="text"] { background: #1e1e1e; border: 1px solid #333; color: #eee; padding: 6px 8px; font-family: monospace; font-size: 12px; letter-spacing: 2px; width: 100%; outline: none; }
+input[type="text"]:focus { border-color: #666; }
+select { background: #1e1e1e; border: 1px solid #333; color: #ddd; padding: 5px 7px; font-family: monospace; font-size: 9px; width: 100%; outline: none; cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 7px center; }
+input[type="range"] { width: 100%; accent-color: #888; cursor: pointer; height: 2px; }
+.tog { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+input[type="checkbox"] { accent-color: #888; width: 11px; height: 11px; cursor: pointer; }
+.tog label { font-size: 10px; color: #aaa; cursor: pointer; }
+hr { border: 0; border-top: 1px solid #1e1e1e; margin: 4px 0 8px; }
+.color-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.color-row label { font-size: 10px; color: #aaa; }
+input[type="color"] { width: 32px; height: 22px; border: 1px solid #333; border-radius: 2px; background: none; cursor: pointer; padding: 1px; }
+.inline-row { display: flex; align-items: center; gap: 6px; }
+.inline-row input[type="range"] { flex: 1; }
+
+/* Botones */
+button.primary { background: #ddd; color: #111; border: none; padding: 9px 6px; cursor: pointer; font-weight: bold; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; font-family: monospace; transition: background .12s; width: 100%; margin-bottom: 5px; }
+button.primary:hover { background: #fff; }
+button.primary:disabled { background: #333; color: #666; cursor: default; }
+button.ghost { background: transparent; color: #666; border: 1px solid #2a2a2a; font-size: 11px; padding: 5px 9px; font-family: monospace; cursor: pointer; transition: color .12s, border-color .12s; }
+button.ghost:hover { color: #ddd; border-color: #777; }
+button.ghost.active { color: #fff; border-color: #fff; background: #222; }
+button.danger { background: transparent; color: #662222; border: 1px solid #331111; font-family: monospace; font-size: 9px; letter-spacing: 1px; padding: 7px; cursor: pointer; width: 100%; text-transform: uppercase; margin-bottom: 5px; transition: color .1s, border-color .1s; }
+button.danger:hover { color: #ff5555; border-color: #882222; }
+
+/* ── KEYFRAME LIST ── */
+#kf-list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; max-height: 180px; overflow-y: auto; }
+.kf-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 6px; background: #1a1a1a; border: 1px solid #252525;
+  border-radius: 2px; font-size: 9px; cursor: pointer; transition: background .1s;
+}
+.kf-item:hover { background: #222; }
+.kf-item.active { border-color: #666; background: #252525; }
+.kf-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.kf-label { color: #aaa; flex: 1; }
+.kf-coords { color: #555; font-size: 8px; }
+.kf-del { color: #442222; cursor: pointer; padding: 0 2px; font-size: 11px; transition: color .1s; }
+.kf-del:hover { color: #ff4444; }
+
+/* ── PROGRESS BAR ── */
+#progress-wrap { margin: 8px 0; }
+#progress-bar-bg { width: 100%; height: 3px; background: #222; border-radius: 2px; position: relative; cursor: pointer; }
+#progress-bar-fill { height: 100%; background: #888; border-radius: 2px; width: 0%; transition: width .05s linear; pointer-events: none; }
+#progress-label { font-size: 8px; color: #555; text-align: right; margin-top: 3px; }
+
+/* ── EXPORT STATUS ── */
+#export-status { font-size: 8px; color: #666; margin-top: 6px; min-height: 14px; text-align: center; }
+#export-status.active { color: #aaa; }
+#export-status.done   { color: #88cc88; }
+#export-status.error  { color: #cc6666; }
+
+/* ── TIPS ── */
+.tips { margin-top: 16px; border-top: 1px solid #1a1a1a; padding-top: 12px; display: flex; flex-direction: column; gap: 0; }
+.tips-title { font-size: 7px; letter-spacing: 2px; color: #333; text-transform: uppercase; margin-bottom: 7px; }
+.tip-row { display: flex; align-items: center; gap: 7px; padding: 3px 0; border-bottom: 1px solid #1a1a1a; }
+.tip-row:last-child { border: none; }
+kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; border: 1px solid #2a2a2a; border-bottom: 2px solid #333; border-radius: 2px; padding: 1px 4px; white-space: nowrap; min-width: 42px; text-align: center; font-family: monospace; }
+.tip-desc { font-size: 8px; color: #444; }
+
+#canvas-parent { flex-grow: 1; position: relative; }
+#back-link { position: fixed; bottom: 16px; left: 14px; font-size: 8px; letter-spacing: 2px; color: #2a2a2a; text-decoration: none; text-transform: uppercase; z-index: 10; transition: color .15s; }
+#back-link:hover { color: #888; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>Polinizador — Anim</h1>
+
+  <!-- TEXTO -->
+  <div class="grp">
+    <label>Palabra</label>
+    <input type="text" id="inText" value="POLINIZADOS" oninput="this.value=this.value.toUpperCase()">
+  </div>
+  <div class="grp">
+    <label>Fuente</label>
+    <select id="fontSelect"><option>cargando…</option></select>
+  </div>
+
+  <hr><div class="sec">Haz</div>
+  <div class="grp">
+    <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="87°" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inAngle" min="1" max="360" value="87" oninput="syncSlider('inAngle','vAngle',this.value,'°')">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Hueco central</label><input class="val" id="vRin" value="40 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRin" min="0" max="300" value="40" oninput="syncSlider('inRin','vRin',this.value,' px')">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Largo spray</label><input class="val" id="vRout" value="291 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRout" min="10" max="3000" value="291" oninput="syncSlider('inRout','vRout',this.value,' px')">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Jitter</label><input class="val" id="vJitter" value="83 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inJitter" min="0" max="400" value="83" oninput="syncSlider('inJitter','vJitter',this.value,' px')">
+  </div>
+
+  <hr><div class="sec">Línea</div>
+  <div class="grp">
+    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="2 pt" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="2" oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Punteado</label><input class="val" id="vDash" value="off" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inDash" min="0" max="40" value="0" oninput="syncSlider('inDash','vDash',this.value,this.value>0?' px':'','',true)">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Sep. línea→bola</label><input class="val" id="vPad" value="15 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inLinePad" min="0" max="120" value="15" oninput="syncSlider('inLinePad','vPad',this.value,' px')">
+  </div>
+
+  <hr><div class="sec">Moléculas</div>
+  <div class="tog"><input type="checkbox" id="checkBalls" checked><label for="checkBalls">Mostrar bolitas</label></div>
+  <div class="tog"><input type="checkbox" id="checkBallStroke" checked><label for="checkBallStroke">Trazo en bola</label></div>
+  <div class="grp">
+    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="53 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inBallSize" min="10" max="180" value="53" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+  </div>
+  <div class="color-row"><label>Color bola</label><input type="color" id="inColorBall" value="#ffffff"></div>
+  <div class="grp">
+    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="36 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inFontSize" min="4" max="160" value="36" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
+  </div>
+  <div class="color-row"><label>Color letra</label><input type="color" id="inColorText" value="#000000"></div>
+
+  <hr><div class="sec">Color</div>
+  <div class="color-row"><label>Fondo</label><input type="color" id="inColorBg" value="#ffffff"></div>
+  <div class="color-row"><label>Líneas + trazo</label><input type="color" id="inColorFg" value="#000000"></div>
+
+  <!-- KEYFRAMES -->
+  <hr>
+  <div class="sec">Recorrido — keyframes</div>
+  <div style="font-size:9px;color:#555;margin-bottom:8px;line-height:1.5">
+    Clic en el canvas para añadir puntos.<br>La curva pasa por todos ellos en bucle.
+  </div>
+  <div id="kf-list"></div>
+  <div style="display:flex;gap:5px;margin-bottom:8px">
+    <button class="ghost" style="flex:1;font-size:9px;padding:6px" onclick="clearKeyframes()">Borrar todos</button>
+    <button class="ghost" style="flex:1;font-size:9px;padding:6px" onclick="addCurrentOrigin()">+ Origen actual</button>
+  </div>
+
+  <!-- ANIMACIÓN -->
+  <hr><div class="sec">Animación</div>
+  <div class="grp">
+    <div class="lrow"><label>Duración (s)</label><input class="val" id="vDur" value="4" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inDur" min="1" max="30" step="0.5" value="4" oninput="syncSlider('inDur','vDur',this.value,'')">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>FPS export</label><input class="val" id="vFps" value="30" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inFps" min="12" max="60" step="1" value="30" oninput="syncSlider('inFps','vFps',this.value,'')">
+  </div>
+
+  <!-- PREVIEW -->
+  <div id="progress-wrap">
+    <div id="progress-bar-bg"><div id="progress-bar-fill"></div></div>
+    <div id="progress-label">—</div>
+  </div>
+
+  <div style="display:flex;gap:5px;margin-bottom:5px">
+    <button class="ghost active" id="btnPlay" style="flex:1;font-size:9px;padding:7px" onclick="togglePreview()">▶ Preview</button>
+  </div>
+
+  <!-- EXPORTAR -->
+  <hr>
+  <button class="primary" id="btnWebM" onclick="exportWebM()">Exportar WebM</button>
+  <button class="primary" id="btnZip"  onclick="exportZip()" style="background:#ccc">Exportar ZIP SVGs</button>
+  <div id="export-status"></div>
+
+  <!-- TIPS -->
+  <div class="tips">
+    <div class="tips-title">Controles</div>
+    <div class="tip-row"><kbd>clic canvas</kbd><span class="tip-desc">Añadir keyframe</span></div>
+    <div class="tip-row"><kbd>drag nodo</kbd><span class="tip-desc">Mover keyframe</span></div>
+    <div class="tip-row"><kbd>Del nodo</kbd><span class="tip-desc">Eliminar keyframe</span></div>
+    <div class="tip-row"><kbd>▶ Preview</kbd><span class="tip-desc">Reproducir en bucle</span></div>
+    <div class="tip-row"><kbd>WebM</kbd><span class="tip-desc">Vídeo para web/RRSS</span></div>
+    <div class="tip-row"><kbd>ZIP SVGs</kbd><span class="tip-desc">Frames para After Effects</span></div>
+  </div>
+</div>
+
+<div id="canvas-parent"></div>
+<a id="back-link" href="index.html">← volver</a>
+
+<!-- SYNC HELPERS -->
+<script>
+function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
+  let el = document.getElementById(valId);
+  if (isDash) el.value = parseFloat(val) > 0 ? val + ' px' : 'off';
+  else el.value = (prefix || '') + val + (suffix || '');
+}
+function syncFromVal(inputEl) {
+  let raw = parseFloat(inputEl.value);
+  if (isNaN(raw)) return;
+  let grp = inputEl.closest('.grp') || inputEl.closest('.lrow').parentElement;
+  let slider = grp ? grp.querySelector('input[type="range"]') : null;
+  if (!slider) return;
+  raw = Math.min(Math.max(raw, parseFloat(slider.min)), parseFloat(slider.max));
+  slider.value = raw;
+  slider.dispatchEvent(new Event('input'));
+}
+</script>
+
+<!-- MAIN SKETCH -->
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════════════════════════
+const SIDEBAR_W = 260;
+const NODE_R    = 8;   // radio de los nodos en pantalla
+
+// Fuentes
+let FONTS = [], currentFontIdx = 0, p5Font = null, otFont = null;
+let fontLoadPromises = [], _tyCache = {};
+
+// Keyframes: array de {x, y} en coordenadas de canvas (sin zoom)
+let keyframes = [];
+let dragIdx   = -1;   // índice del nodo que se está arrastrando
+
+// Estado de animación
+let animT       = 0;    // tiempo normalizado 0–1 dentro del loop
+let animPlaying = false;
+let lastMillis  = 0;
+
+// Parámetros visuales
+let rotation  = 0;
+let jitterSeed = 42;
+
+// BBox fija igual que en index (referencia visual)
+let bbW = 800, bbH = 600;
+function bbX() { return (width  - bbW) / 2; }
+function bbY() { return (height - bbH) / 2; }
+
+// Colores de los nodos (paleta fija)
+const NODE_COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4ecdc4','#a78bfa','#f97316','#e879f9'];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// p5 SETUP
+// ═══════════════════════════════════════════════════════════════════════════
+function preload() {}
+
+function setup() {
+  let cnv = createCanvas(windowWidth - SIDEBAR_W, windowHeight);
+  cnv.parent('canvas-parent');
+  initFonts();
+  // Keyframes por defecto: 4 puntos en las esquinas interiores del bbox
+  setTimeout(() => {
+    let bx = bbX(), by = bbY();
+    keyframes = [
+      { x: bx + bbW * 0.25, y: by + bbH * 0.5  },
+      { x: bx + bbW * 0.5,  y: by + bbH * 0.25 },
+      { x: bx + bbW * 0.75, y: by + bbH * 0.5  },
+      { x: bx + bbW * 0.5,  y: by + bbH * 0.75 },
+    ];
+    renderKfList();
+  }, 100);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FUENTES (misma lógica que sketch.js)
+// ═══════════════════════════════════════════════════════════════════════════
+async function initFonts() {
+  let sel = document.getElementById('fontSelect');
+  try {
+    let res = await fetch('fonts/index.json');
+    let files = await res.json();
+    if (!Array.isArray(files) || !files.length) throw '';
+    FONTS = files.map(f => ({
+      label: f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+      file:  'fonts/' + f,
+      family: f.replace(/\.[^.]+$/, ''),
+    }));
+  } catch {
+    FONTS = [{ label: 'sans-serif', file: null, family: 'sans-serif' }];
+  }
+  fontLoadPromises = FONTS.map(f => {
+    if (!f.file) return Promise.resolve();
+    let ff  = new FontFace(f.family, `url(${f.file})`);
+    let css = ff.load().then(l => { document.fonts.add(l); }).catch(() => {});
+    let ot  = opentype.load(f.file).then(font => { f.otFont = font; }).catch(() => {});
+    return Promise.all([css, ot]);
+  });
+  await fontLoadPromises[0];
+  p5Font = FONTS[0].family;
+  otFont = FONTS[0].otFont || null;
+  sel.innerHTML = '';
+  FONTS.forEach((f, i) => {
+    let o = document.createElement('option');
+    o.value = i; o.textContent = f.label; sel.appendChild(o);
+  });
+  sel.addEventListener('change', async () => {
+    let i = parseInt(sel.value);
+    await fontLoadPromises[i];
+    currentFontIdx = i; _tyCache = {};
+    p5Font = FONTS[i].family;
+    otFont = FONTS[i].otFont || null;
+  });
+}
+function fontFam(idx) { return FONTS[idx]?.family || 'sans-serif'; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PARÁMETROS
+// ═══════════════════════════════════════════════════════════════════════════
+function getP() {
+  return {
+    txt       : (document.getElementById('inText').value || 'A').toUpperCase(),
+    angle     : radians(parseFloat(document.getElementById('inAngle').value)),
+    rIn       : parseInt(document.getElementById('inRin').value),
+    rOutBase  : parseInt(document.getElementById('inRout').value),
+    jitter    : parseInt(document.getElementById('inJitter').value),
+    weight    : parseFloat(document.getElementById('inWeight').value),
+    dash      : parseInt(document.getElementById('inDash').value),
+    showBalls : document.getElementById('checkBalls').checked,
+    ballSize  : parseInt(document.getElementById('inBallSize').value),
+    fontSize  : parseInt(document.getElementById('inFontSize').value),
+    linePad   : parseInt(document.getElementById('inLinePad').value),
+    ballStroke: document.getElementById('checkBallStroke').checked,
+    colorBg   : document.getElementById('inColorBg').value,
+    colorFg   : document.getElementById('inColorFg').value,
+    colorBall : document.getElementById('inColorBall').value,
+    colorText : document.getElementById('inColorText').value,
+    dur       : parseFloat(document.getElementById('inDur').value),
+    fps       : parseInt(document.getElementById('inFps').value),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CATMULL-ROM SPLINE (bucle cerrado)
+// Devuelve la posición interpolada para t ∈ [0,1) recorriendo todos los puntos
+// ═══════════════════════════════════════════════════════════════════════════
+function catmullRom(pts, t) {
+  let n  = pts.length;
+  if (n === 0) return { x: 0, y: 0 };
+  if (n === 1) return { ...pts[0] };
+  if (n === 2) return { x: lerp(pts[0].x, pts[1].x, t), y: lerp(pts[0].y, pts[1].y, t) };
+
+  // t ∈ [0,1) → segmento i entre pts[i] y pts[i+1]
+  let seg = t * n;
+  let i   = Math.floor(seg) % n;
+  let u   = seg - Math.floor(seg);
+
+  // 4 puntos de control con wrap circular
+  let p0 = pts[(i - 1 + n) % n];
+  let p1 = pts[i];
+  let p2 = pts[(i + 1) % n];
+  let p3 = pts[(i + 2) % n];
+
+  // Catmull-Rom estándar (alpha=0.5 → centripetal)
+  let u2 = u * u, u3 = u2 * u;
+  let x = 0.5 * ((2*p1.x) + (-p0.x+p2.x)*u + (2*p0.x-5*p1.x+4*p2.x-p3.x)*u2 + (-p0.x+3*p1.x-3*p2.x+p3.x)*u3);
+  let y = 0.5 * ((2*p1.y) + (-p0.y+p2.y)*u + (2*p0.y-5*p1.y+4*p2.y-p3.y)*u2 + (-p0.y+3*p1.y-3*p2.y+p3.y)*u3);
+  return { x, y };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CALCULAR RAYOS (con originX/Y dinámicos)
+// ═══════════════════════════════════════════════════════════════════════════
+function calcRays(p, ox, oy) {
+  let steps = p.txt.length;
+  if (steps === 0) return [];
+  let txt    = p.txt;
+  let margin = p.showBalls ? (p.ballSize/2 + p.weight + p.linePad) : (p.weight*2 + 10 + p.linePad);
+  randomSeed(jitterSeed);
+  let jv = Array.from({length: steps}, () => random(-p.jitter, p.jitter));
+  return jv.map((jit, i) => {
+    let theta = steps > 1 ? map(i, 0, steps-1, -p.angle/2, p.angle/2) : 0;
+    let fa    = theta + rotation;
+    let rMax  = calcCol(fa, margin, ox, oy);
+    let rLine = min(p.rOutBase + jit, rMax);
+    let rBMax = calcCol(fa, p.showBalls ? p.ballSize/2+p.weight : p.weight+4, ox, oy);
+    let rBall = min(rLine + p.linePad, rBMax);
+    let isSpace = txt[i] === ' ';
+    return {
+      fa, rIn: p.rIn, rLine, rBall,
+      lx: ox + cos(fa)*rBall,
+      ly: oy + sin(fa)*rBall,
+      letter: txt[i], skip: isSpace,
+    };
+  });
+}
+
+function calcCol(a, margin, ox, oy) {
+  let dx = cos(a), dy = sin(a), t = Infinity;
+  let x0 = bbX(), y0 = bbY();
+  if (dx > 0) t = min(t, (x0+bbW-margin-ox)/dx);
+  if (dx < 0) t = min(t, (x0+margin-ox)/dx);
+  if (dy > 0) t = min(t, (y0+bbH-margin-oy)/dy);
+  if (dy < 0) t = min(t, (y0+margin-oy)/dy);
+  return max(0, t);
+}
+
+function typoOffset(fs) {
+  if (!FONTS.length) return fs * 0.18;
+  let key = currentFontIdx + '_' + fs;
+  if (_tyCache[key] !== undefined) return _tyCache[key];
+  let oc = document.createElement('canvas');
+  oc.width = oc.height = Math.ceil(fs*2);
+  let ctx = oc.getContext('2d');
+  ctx.font = `${fs}px "${fontFam(currentFontIdx)}"`;
+  let cap = ctx.measureText('H').actualBoundingBoxAscent || fs*0.7;
+  _tyCache[key] = cap/2; return cap/2;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DRAW
+// ═══════════════════════════════════════════════════════════════════════════
+function draw() {
+  let p = getP();
+
+  // Avanzar tiempo si está reproduciendo
+  if (animPlaying && keyframes.length >= 2) {
+    let now = millis();
+    animT += (now - lastMillis) / (p.dur * 1000);
+    animT  = animT % 1;
+    lastMillis = now;
+    updateProgressUI(animT, p);
+  } else {
+    lastMillis = millis();
+  }
+
+  // Posición del origen según la curva
+  let pos = keyframes.length >= 2 ? catmullRom(keyframes, animT) : (keyframes[0] || { x: width/2, y: height/2 });
+
+  // ── RENDER ──
+  background(40);  // zona fuera del bbox
+
+  // Clip al bbox
+  drawingContext.save();
+  drawingContext.beginPath();
+  drawingContext.rect(bbX(), bbY(), bbW, bbH);
+  drawingContext.clip();
+
+  fill(p.colorBg); noStroke();
+  rect(bbX(), bbY(), bbW, bbH);
+
+  if (p5Font) {
+    let rays = calcRays(p, pos.x, pos.y);
+    let tyo  = typoOffset(p.fontSize);
+    rays.forEach((r, i) => {
+      if (r.skip) return;
+      drawLine(r, p);
+      drawBall(r, p, tyo, i);
+    });
+  }
+
+  drawingContext.restore();
+
+  // Borde bbox
+  noFill(); stroke(70); strokeWeight(1);
+  drawingContext.setLineDash([4, 4]);
+  rect(bbX(), bbY(), bbW, bbH);
+  drawingContext.setLineDash([]);
+
+  // ── CURVA Y NODOS ──
+  drawCurveOverlay();
+}
+
+// ── Dibuja la curva Catmull-Rom y los nodos encima del bbox ──
+function drawCurveOverlay() {
+  if (keyframes.length < 2) {
+    // Solo nodos sin curva
+    keyframes.forEach((kf, i) => drawNode(kf, i));
+    return;
+  }
+
+  // Curva suave: muestrear 200 puntos
+  let prev = catmullRom(keyframes, 0);
+  noFill();
+  stroke(255, 255, 255, 35);
+  strokeWeight(1);
+  drawingContext.setLineDash([4, 6]);
+  beginShape();
+  for (let s = 0; s <= 200; s++) {
+    let pt = catmullRom(keyframes, s / 200);
+    vertex(pt.x, pt.y);
+  }
+  // Cerrar al primer punto
+  let p0 = catmullRom(keyframes, 0);
+  vertex(p0.x, p0.y);
+  endShape();
+  drawingContext.setLineDash([]);
+
+  // Punto actual en la curva
+  let cur = catmullRom(keyframes, animT);
+  fill(255); noStroke();
+  ellipse(cur.x, cur.y, 6, 6);
+
+  // Nodos
+  keyframes.forEach((kf, i) => drawNode(kf, i));
+}
+
+function drawNode(kf, i) {
+  let col = NODE_COLORS[i % NODE_COLORS.length];
+  let r   = dragIdx === i ? NODE_R * 1.3 : NODE_R;
+  push();
+  // Sombra
+  fill(0, 0, 0, 60); noStroke();
+  ellipse(kf.x + 1, kf.y + 1, r*2+2, r*2+2);
+  // Relleno
+  fill(col); noStroke();
+  ellipse(kf.x, kf.y, r*2, r*2);
+  // Label
+  fill(255); noStroke();
+  textSize(7); textAlign(CENTER, CENTER);
+  drawingContext.font = '700 8px monospace';
+  drawingContext.fillStyle = '#000';
+  drawingContext.textAlign = 'center';
+  drawingContext.textBaseline = 'middle';
+  drawingContext.fillText(String.fromCharCode(65 + i), kf.x, kf.y);
+  pop();
+}
+
+// ── Línea de un rayo ──
+function drawLine(r, p) {
+  push();
+  translate(r.lx - cos(r.fa)*r.rBall + cos(r.fa)*r.rIn, r.ly - sin(r.fa)*r.rBall + sin(r.fa)*r.rIn);
+  // Reconstruir desde el origen
+  pop();
+  push();
+  // Calcular ox/oy desde r
+  let ox = r.lx - cos(r.fa)*r.rBall;
+  let oy = r.ly - sin(r.fa)*r.rBall;
+  translate(ox, oy);
+  rotate(r.fa);
+  stroke(p.colorFg); strokeWeight(p.weight); noFill();
+  if (p.dash > 0) {
+    let len = r.rLine - r.rIn, off = len > 0 ? (len % (p.dash*2))/2 : 0;
+    drawingContext.setLineDash([p.dash, p.dash]);
+    drawingContext.lineDashOffset = -off;
+  } else {
+    drawingContext.setLineDash([]); drawingContext.lineDashOffset = 0;
+  }
+  line(r.rIn, 0, r.rLine, 0);
+  drawingContext.setLineDash([]); drawingContext.lineDashOffset = 0;
+  pop();
+}
+
+// ── Bola + letra ──
+function drawBall(r, p, tyo, idx) {
+  push(); translate(r.lx, r.ly);
+  if (p.showBalls) {
+    fill(p.colorBall);
+    if (p.ballStroke) { stroke(p.colorFg); strokeWeight(p.weight); } else noStroke();
+    ellipse(0, 0, p.ballSize, p.ballSize);
+  }
+  noStroke();
+  drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+  drawingContext.textAlign    = 'center';
+  drawingContext.textBaseline = 'alphabetic';
+  drawingContext.fillStyle    = p.colorText;
+  drawingContext.fillText(r.letter, 0, tyo);
+  pop();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RATÓN — añadir / mover nodos
+// ═══════════════════════════════════════════════════════════════════════════
+function mousePressed() {
+  if (mouseX < SIDEBAR_W) return;
+
+  // ¿Clic sobre un nodo existente?
+  for (let i = 0; i < keyframes.length; i++) {
+    if (dist(mouseX, mouseY, keyframes[i].x, keyframes[i].y) < NODE_R + 4) {
+      dragIdx = i;
+      return;
+    }
+  }
+
+  // Clic en canvas → nuevo keyframe (solo dentro del bbox, con margen)
+  let bx = bbX(), by = bbY();
+  let x  = constrain(mouseX, bx + 10, bx + bbW - 10);
+  let y  = constrain(mouseY, by + 10, by + bbH - 10);
+  keyframes.push({ x, y });
+  renderKfList();
+}
+
+function mouseDragged() {
+  if (dragIdx < 0) return;
+  let bx = bbX(), by = bbY();
+  keyframes[dragIdx].x = constrain(mouseX, bx + 10, bx + bbW - 10);
+  keyframes[dragIdx].y = constrain(mouseY, by + 10, by + bbH - 10);
+  renderKfList();
+}
+
+function mouseReleased() { dragIdx = -1; }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// KEYFRAME LIST UI
+// ═══════════════════════════════════════════════════════════════════════════
+function renderKfList() {
+  let el = document.getElementById('kf-list');
+  el.innerHTML = '';
+  keyframes.forEach((kf, i) => {
+    let col  = NODE_COLORS[i % NODE_COLORS.length];
+    let item = document.createElement('div');
+    item.className = 'kf-item';
+    item.innerHTML = `
+      <div class="kf-dot" style="background:${col}"></div>
+      <span class="kf-label">${String.fromCharCode(65+i)}</span>
+      <span class="kf-coords">${Math.round(kf.x - bbX())}, ${Math.round(kf.y - bbY())}</span>
+      <span class="kf-del" onclick="removeKf(${i})">✕</span>`;
+    el.appendChild(item);
+  });
+}
+
+function removeKf(i) {
+  keyframes.splice(i, 1);
+  renderKfList();
+}
+
+function clearKeyframes() {
+  keyframes = [];
+  renderKfList();
+}
+
+function addCurrentOrigin() {
+  // Añade la posición actual del cursor de animación
+  let pos = keyframes.length >= 2
+    ? catmullRom(keyframes, animT)
+    : { x: bbX() + bbW/2, y: bbY() + bbH/2 };
+  keyframes.push({ x: pos.x, y: pos.y });
+  renderKfList();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PREVIEW
+// ═══════════════════════════════════════════════════════════════════════════
+function togglePreview() {
+  if (keyframes.length < 2) {
+    setStatus('Necesitas al menos 2 keyframes', 'error');
+    return;
+  }
+  animPlaying = !animPlaying;
+  lastMillis  = millis();
+  let btn = document.getElementById('btnPlay');
+  btn.textContent = animPlaying ? '■ Stop' : '▶ Preview';
+}
+
+function updateProgressUI(t, p) {
+  document.getElementById('progress-bar-fill').style.width = (t * 100) + '%';
+  document.getElementById('progress-label').textContent =
+    (t * p.dur).toFixed(1) + 's / ' + p.dur.toFixed(1) + 's';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPORT WebM — graba un loop completo con MediaRecorder
+// ═══════════════════════════════════════════════════════════════════════════
+async function exportWebM() {
+  if (keyframes.length < 2) { setStatus('Necesitas al menos 2 keyframes', 'error'); return; }
+
+  let p        = getP();
+  let duration = p.dur * 1000; // ms
+  let cnv      = document.querySelector('#canvas-parent canvas');
+
+  // Detener preview si está activo
+  animPlaying = false;
+  animT = 0;
+  document.getElementById('btnPlay').textContent = '▶ Preview';
+
+  setStatus('Grabando…', 'active');
+  setBtnsDisabled(true);
+
+  let stream   = cnv.captureStream(p.fps);
+  let recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 8_000_000 });
+  let chunks   = [];
+
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+  recorder.onstop = () => {
+    let blob = new Blob(chunks, { type: 'video/webm' });
+    let url  = URL.createObjectURL(blob);
+    Object.assign(document.createElement('a'), { href: url, download: 'polinizador_anim.webm' }).click();
+    URL.revokeObjectURL(url);
+    setStatus('WebM descargado ✓', 'done');
+    setBtnsDisabled(false);
+  };
+
+  recorder.start();
+  animPlaying = true;
+  animT       = 0;
+  lastMillis  = millis();
+
+  // Grabar exactamente un loop
+  setTimeout(() => {
+    animPlaying = false;
+    recorder.stop();
+  }, duration + 100);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPORT ZIP SVGs — genera un SVG por frame y lo empaqueta
+// ═══════════════════════════════════════════════════════════════════════════
+async function exportZip() {
+  if (keyframes.length < 2) { setStatus('Necesitas al menos 2 keyframes', 'error'); return; }
+
+  let p          = getP();
+  let totalFrames = Math.round(p.dur * p.fps);
+  let zip        = new JSZip();
+
+  setStatus('Generando SVGs…', 'active');
+  setBtnsDisabled(true);
+
+  // Precalcular offset tipográfico opentype
+  let upm = otFont ? otFont.unitsPerEm : 1;
+  let scale = p.fontSize / upm;
+  let hCapY = 0;
+  if (otFont) {
+    let hG = otFont.charToGlyph('H'), hB = hG.getBoundingBox();
+    hCapY = (hB.y2 * scale) / 2;
+  }
+
+  for (let f = 0; f < totalFrames; f++) {
+    let t   = f / totalFrames;
+    let pos = catmullRom(keyframes, t);
+    let ox  = pos.x - bbX();  // coords relativas al bbox
+    let oy  = pos.y - bbY();
+
+    let rays = calcRays(p, pos.x, pos.y);
+    let svg  = buildSVG(p, rays, ox, oy, scale, hCapY);
+    let pad  = String(f).padStart(4, '0');
+    zip.file(`frame_${pad}.svg`, svg);
+
+    // Actualizar progreso cada 5 frames
+    if (f % 5 === 0) {
+      setStatus(`Generando frame ${f + 1} / ${totalFrames}…`, 'active');
+      await new Promise(r => setTimeout(r, 0)); // yield para no bloquear UI
+    }
+  }
+
+  let blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  let url  = URL.createObjectURL(blob);
+  Object.assign(document.createElement('a'), { href: url, download: 'polinizador_frames.zip' }).click();
+  URL.revokeObjectURL(url);
+  setStatus(`ZIP listo: ${totalFrames} SVGs ✓`, 'done');
+  setBtnsDisabled(false);
+}
+
+// ── Construye el string SVG de un frame ──
+function buildSVG(p, rays, ox, oy, scale, hCapY) {
+  let W  = bbW, H = bbH;
+  let fg = p.colorFg, bg = p.colorBg;
+  let sw = p.weight;
+  let da = p.dash > 0 ? ` stroke-dasharray="${p.dash} ${p.dash}"` : '';
+  let ballR = (p.ballSize / 2).toFixed(2);
+  let bStroke = p.ballStroke ? `stroke="${fg}" stroke-width="${sw}"` : 'stroke="none"';
+
+  let lines = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`,
+    `  <rect width="${W}" height="${H}" fill="${bg}"/>`,
+  ];
+
+  rays.forEach((r, i) => {
+    if (r.skip) return;
+    lines.push(`  <g id="molecula-${i}">`);
+
+    // Línea
+    let x1  = (ox + cos(r.fa)*r.rIn  ).toFixed(2);
+    let y1  = (oy + sin(r.fa)*r.rIn  ).toFixed(2);
+    let x2  = (ox + cos(r.fa)*r.rLine).toFixed(2);
+    let y2  = (oy + sin(r.fa)*r.rLine).toFixed(2);
+    let dof = p.dash > 0 ? ` stroke-dashoffset="${(-(r.rLine-r.rIn)%(p.dash*2)/2).toFixed(2)}"` : '';
+    lines.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fg}" stroke-width="${sw}" fill="none"${da}${dof}/>`);
+
+    // Bola
+    if (p.showBalls) {
+      let cx = (r.lx - bbX()).toFixed(2);
+      let cy = (r.ly - bbY()).toFixed(2);
+      lines.push(`    <circle cx="${cx}" cy="${cy}" r="${ballR}" fill="${p.colorBall}" ${bStroke}/>`);
+    }
+
+    // Letra
+    if (otFont && r.letter !== ' ') {
+      let glyph   = otFont.charToGlyph(r.letter);
+      let pathD   = glyph.getPath(0, 0, p.fontSize).toPathData(3);
+      let bb      = glyph.getBoundingBox();
+      let glyphW  = (bb.x2 - bb.x1) * scale;
+      let offX    = -glyphW/2 - bb.x1 * scale;
+      let tx      = (r.lx - bbX() + offX).toFixed(2);
+      let ty      = (r.ly - bbY() + hCapY).toFixed(2);
+      lines.push(`    <path fill="${p.colorText}" transform="translate(${tx},${ty})" d="${pathD}"/>`);
+    } else if (r.letter !== ' ') {
+      let fam = fontFam(currentFontIdx);
+      lines.push(`    <text x="${(r.lx-bbX()).toFixed(2)}" y="${(r.ly-bbY()).toFixed(2)}" fill="${p.colorText}" font-size="${p.fontSize}" font-family="${fam}" text-anchor="middle">${r.letter}</text>`);
+    }
+
+    lines.push(`  </g>`);
+  });
+
+  lines.push('</svg>');
+  return lines.join('\n');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+function setStatus(msg, cls) {
+  let el = document.getElementById('export-status');
+  el.textContent = msg;
+  el.className   = cls || '';
+}
+
+function setBtnsDisabled(v) {
+  document.getElementById('btnWebM').disabled = v;
+  document.getElementById('btnZip').disabled  = v;
+  document.getElementById('btnPlay').disabled = v;
+}
+
+function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }
+</script>
+</body>
+</html>
