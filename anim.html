@@ -159,25 +159,75 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
   <div class="color-row"><label>Líneas + trazo</label><input type="color" id="inColorFg" value="#000000"></div>
 
   <!-- FORMATO -->
-  <hr><div class="sec">Formato</div>
+  <hr><div class="sec">Cartel — tamaño total</div>
+
+  <!-- Imagen de fondo -->
   <div class="grp">
-    <label>Área de dibujo</label>
+    <label>Imagen de fondo</label>
+    <div style="display:flex;gap:5px;align-items:center">
+      <label for="inBgImg" style="background:#1e1e1e;border:1px solid #333;color:#888;padding:5px 8px;font-size:9px;cursor:pointer;flex:1;text-align:center">
+        Subir imagen
+      </label>
+      <input type="file" id="inBgImg" accept="image/*" style="display:none" onchange="loadBgImage(this)">
+      <button class="ghost" style="font-size:9px;padding:5px 8px" onclick="clearBgImage()">✕</button>
+    </div>
+    <div id="bgImgName" style="font-size:8px;color:#555;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">sin imagen</div>
+  </div>
+
+  <!-- Tamaño cartel -->
+  <div class="grp">
+    <label>Tamaño cartel (px)</label>
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
-      <input type="number" id="inBbW" value="800" min="100" max="4000" step="1"
-             onchange="applyBBox()" title="Ancho px"
-             style="width:58px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
+      <input type="number" id="inPosterW" value="1080" min="100" max="4000" step="1"
+             onchange="applyPoster()" title="Ancho"
+             style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
       <span style="font-size:11px;color:#555">×</span>
-      <input type="number" id="inBbH" value="600" min="100" max="4000" step="1"
-             onchange="applyBBox()" title="Alto px"
-             style="width:58px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
+      <input type="number" id="inPosterH" value="1920" min="100" max="4000" step="1"
+             onchange="applyPoster()" title="Alto"
+             style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
       <span style="font-size:10px;color:#444">px</span>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:4px">
-      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(210,297)">A4 V</button>
-      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(297,210)">A4 H</button>
-      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(1080,1080)">1:1</button>
-      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(1080,1920)">9:16</button>
-      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setBBox(1920,1080)">16:9</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setPoster(1080,1920)">9:16</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setPoster(1080,1080)">1:1</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setPoster(1920,1080)">16:9</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setPoster(794,1123)">A4 V</button>
+      <button class="ghost" style="font-size:7px;padding:3px 6px" onclick="setPoster(1123,794)">A4 H</button>
+    </div>
+  </div>
+
+  <hr><div class="sec">Zona de animación</div>
+  <div style="font-size:9px;color:#555;margin-bottom:8px;line-height:1.5">
+    Posición y tamaño dentro del cartel.
+  </div>
+
+  <!-- X, Y -->
+  <div class="grp">
+    <label>Posición (X, Y)</label>
+    <div style="display:flex;align-items:center;gap:5px">
+      <input type="number" id="inAnimX" value="0" min="0" max="3900" step="1"
+             onchange="applyAnimZone()"
+             style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
+      <span style="font-size:10px;color:#555">,</span>
+      <input type="number" id="inAnimY" value="0" min="0" max="3900" step="1"
+             onchange="applyAnimZone()"
+             style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
+      <span style="font-size:10px;color:#444">px</span>
+    </div>
+  </div>
+
+  <!-- W, H -->
+  <div class="grp">
+    <label>Tamaño (W × H)</label>
+    <div style="display:flex;align-items:center;gap:5px">
+      <input type="number" id="inBbW" value="800" min="100" max="4000" step="1"
+             onchange="applyAnimZone()" title="Ancho zona animación"
+             style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
+      <span style="font-size:11px;color:#555">×</span>
+      <input type="number" id="inBbH" value="600" min="100" max="4000" step="1"
+             onchange="applyAnimZone()" title="Alto zona animación"
+             style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
+      <span style="font-size:10px;color:#444">px</span>
     </div>
   </div>
 
@@ -336,10 +386,44 @@ let isExporting  = false; // suprime overlay durante grabación/render
 let rotation   = 0;  // ángulo actual interpolado en cada frame
 let jitterSeed = 42;
 
-// BBox fija igual que en index (referencia visual)
-let bbW = 800, bbH = 600;
-function bbX() { return (width  - bbW) / 2; }
-function bbY() { return (height - bbH) / 2; }
+// Cartel total (coordenadas en espacio del cartel, en px del export)
+let posterW = 1080, posterH = 1920;
+
+// Zona de animación dentro del cartel (en px del cartel)
+let animZoneX = 0, animZoneY = 0;
+let bbW = 800, bbH = 600;  // ancho/alto de la zona de animación
+
+// Imagen de fondo del cartel
+let bgImage = null;  // p5.Image o null
+
+// Escala: el cartel se muestra escalado para caber en el canvas de pantalla
+// screenScale = pixels_pantalla / pixels_cartel
+function screenScale() {
+  let sw = width  - 0;  // área útil del canvas
+  let sh = height - 0;
+  return Math.min(sw / posterW, sh / posterH) * 0.92;
+}
+// Offset para centrar el cartel en el canvas de pantalla
+function posterOffX() { return (width  - posterW * screenScale()) / 2; }
+function posterOffY() { return (height - posterH * screenScale()) / 2; }
+
+// Convierte coords de cartel (px export) → coords de pantalla (canvas p5)
+function posterToScreen(px, py) {
+  let s = screenScale();
+  return { x: posterOffX() + px * s, y: posterOffY() + py * s };
+}
+// Convierte coords de pantalla → coords de cartel
+function screenToPoster(sx, sy) {
+  let s = screenScale();
+  return { x: (sx - posterOffX()) / s, y: (sy - posterOffY()) / s };
+}
+
+// bbX/bbY devuelven la esquina superior izquierda de la zona de animación en pantalla
+function bbX() { return posterOffX() + animZoneX * screenScale(); }
+function bbY() { return posterOffY() + animZoneY * screenScale(); }
+// bbW/bbH en pantalla (escalados)
+function bbWs() { return bbW * screenScale(); }
+function bbHs() { return bbH * screenScale(); }
 
 // Colores de los nodos (paleta fija)
 const NODE_COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4ecdc4','#a78bfa','#f97316','#e879f9'];
@@ -355,12 +439,12 @@ function setup() {
   initFonts();
   // Keyframes por defecto: 4 puntos en las esquinas interiores del bbox
   setTimeout(() => {
-    let bx = bbX(), by = bbY();
+    let bx = bbX(), by = bbY(), ws = bbWs(), hs = bbHs();
     keyframes = [
-      { x: bx + bbW * 0.25, y: by + bbH * 0.5  },
-      { x: bx + bbW * 0.5,  y: by + bbH * 0.25 },
-      { x: bx + bbW * 0.75, y: by + bbH * 0.5  },
-      { x: bx + bbW * 0.5,  y: by + bbH * 0.75 },
+      { x: bx + ws * 0.25, y: by + hs * 0.5  },
+      { x: bx + ws * 0.5,  y: by + hs * 0.25 },
+      { x: bx + ws * 0.75, y: by + hs * 0.5  },
+      { x: bx + ws * 0.5,  y: by + hs * 0.75 },
     ];
     renderKfList();
   }, 100);
@@ -530,11 +614,11 @@ function calcRays(p, ox, oy) {
 
 function calcCol(a, margin, ox, oy) {
   let dx = cos(a), dy = sin(a), t = Infinity;
-  let x0 = bbX(), y0 = bbY();
-  if (dx > 0) t = min(t, (x0+bbW-margin-ox)/dx);
-  if (dx < 0) t = min(t, (x0+margin-ox)/dx);
-  if (dy > 0) t = min(t, (y0+bbH-margin-oy)/dy);
-  if (dy < 0) t = min(t, (y0+margin-oy)/dy);
+  let x0 = bbX(), y0 = bbY(), bws = bbWs(), bhs = bbHs();
+  if (dx > 0) t = min(t, (x0 + bws - margin - ox) / dx);
+  if (dx < 0) t = min(t, (x0 + margin - ox) / dx);
+  if (dy > 0) t = min(t, (y0 + bhs - margin - oy) / dy);
+  if (dy < 0) t = min(t, (y0 + margin - oy) / dy);
   return max(0, t);
 }
 
@@ -588,16 +672,28 @@ function draw() {
   }
 
   // ── RENDER ──
-  background(40);  // zona fuera del bbox
+  background(30);  // zona fuera del cartel
 
-  // Clip al bbox
+  let s   = screenScale();
+  let pox = posterOffX(), poy = posterOffY();
+
+  // 1. Cartel base (fondo) — escalado al tamaño del cartel en pantalla
+  if (bgImage) {
+    image(bgImage, pox, poy, posterW * s, posterH * s);
+  } else {
+    // Sin imagen: fondo neutro del cartel
+    fill(50); noStroke();
+    rect(pox, poy, posterW * s, posterH * s);
+  }
+
+  // 2. Zona de animación — clip + fondo de color
   drawingContext.save();
   drawingContext.beginPath();
-  drawingContext.rect(bbX(), bbY(), bbW, bbH);
+  drawingContext.rect(bbX(), bbY(), bbWs(), bbHs());
   drawingContext.clip();
 
   fill(p.colorBg); noStroke();
-  rect(bbX(), bbY(), bbW, bbH);
+  rect(bbX(), bbY(), bbWs(), bbHs());
 
   if (p5Font) {
     let rays = calcRays(p, pos.x, pos.y);
@@ -611,12 +707,18 @@ function draw() {
 
   drawingContext.restore();
 
-  // Borde bbox y overlay — solo en modo edición, nunca durante export
+  // 3. Overlay de edición — solo en modo edición
   if (!isExporting) {
-    noFill(); stroke(70); strokeWeight(1);
+    // Borde del cartel total
+    noFill(); stroke(60); strokeWeight(1);
+    rect(pox, poy, posterW * s, posterH * s);
+
+    // Borde de la zona de animación
+    stroke(100); strokeWeight(1);
     drawingContext.setLineDash([4, 4]);
-    rect(bbX(), bbY(), bbW, bbH);
+    rect(bbX(), bbY(), bbWs(), bbHs());
     drawingContext.setLineDash([]);
+
     drawCurveOverlay();
   }
 }
@@ -775,8 +877,8 @@ function mousePressed() {
   updateAnglePanel();
 
   let bx = bbX(), by = bbY();
-  let x  = constrain(mouseX, bx + 10, bx + bbW - 10);
-  let y  = constrain(mouseY, by + 10, by + bbH - 10);
+  let x  = constrain(mouseX, bx + 10, bx + bbWs() - 10);
+  let y  = constrain(mouseY, by + 10, by + bbHs() - 10);
   keyframes.push({ x, y, rotation: rotation });
   selectedIdx = keyframes.length - 1;
   updateAnglePanel();
@@ -789,8 +891,8 @@ document.addEventListener('contextmenu', e => { if (e.target.tagName === 'CANVAS
 function mouseDragged() {
   if (dragIdx < 0) return;
   let bx = bbX(), by = bbY();
-  keyframes[dragIdx].x = constrain(mouseX, bx + 10, bx + bbW - 10);
-  keyframes[dragIdx].y = constrain(mouseY, by + 10, by + bbH - 10);
+  keyframes[dragIdx].x = constrain(mouseX, bx + 10, bx + bbWs() - 10);
+  keyframes[dragIdx].y = constrain(mouseY, by + 10, by + bbHs() - 10);
   renderKfList();
 }
 
@@ -810,7 +912,7 @@ function renderKfList() {
     item.innerHTML = `
       <div class="kf-dot" style="background:${col}"></div>
       <span class="kf-label">${String.fromCharCode(65+i)}</span>
-      <span class="kf-coords">${Math.round(kf.x - bbX())},${Math.round(kf.y - bbY())} · ${angleDeg}°</span>
+      <span class="kf-coords">${Math.round((kf.x - bbX()) / screenScale())},${Math.round((kf.y - bbY()) / screenScale())} · ${angleDeg}°</span>
       <span class="kf-del" onclick="removeKf(${i})">✕</span>`;
     item.addEventListener('click', () => { selectedIdx = i; updateAnglePanel(); renderKfList(); });
     el.appendChild(item);
@@ -889,11 +991,10 @@ function clearKeyframes() {
 }
 
 function addCurrentOrigin() {
-  // Añade la posición actual del cursor de animación
   let pos = keyframes.length >= 2
     ? catmullRom(keyframes, animT)
-    : { x: bbX() + bbW/2, y: bbY() + bbH/2 };
-  keyframes.push({ x: pos.x, y: pos.y });
+    : { x: bbX() + bbWs()/2, y: bbY() + bbHs()/2 };
+  keyframes.push({ x: pos.x, y: pos.y, rotation });
   renderKfList();
 }
 
@@ -954,11 +1055,13 @@ async function _doExportVideo(mimeType, ext, filename) {
   setStatus(`Grabando ${ext.toUpperCase()}…`, 'active');
   setBtnsDisabled(true);
 
-  // Canvas offscreen del tamaño exacto del bbox — lo que se graba es solo esto
+  // Canvas offscreen del tamaño del CARTEL COMPLETO — graba el poster entero
   let offCnv = document.createElement('canvas');
-  offCnv.width  = bbW;
-  offCnv.height = bbH;
+  offCnv.width  = posterW;
+  offCnv.height = posterH;
   let offCtx = offCnv.getContext('2d');
+  // Colorimetría sRGB explícita
+  offCtx.colorSpace = 'srgb';
 
   let stream   = offCnv.captureStream(p.fps);
   let recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
@@ -996,19 +1099,32 @@ async function _doExportVideo(mimeType, ext, filename) {
     p.jitter   = interpScalar(keyframes, t, 'jitter', gj2);
     if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * (p.jitterSpeed||8) * 63.7) * 0.5 + 0.5) * 99999);
 
-    // Dibujar frame en el offscreen canvas (sin overlay ni borde)
-    offCtx.fillStyle = p.colorBg;
-    offCtx.fillRect(0, 0, bbW, bbH);
+    // 1. Imagen de fondo del cartel (cubre todo el offscreen)
+    if (bgImage) {
+      offCtx.drawImage(bgImage.canvas, 0, 0, posterW, posterH);
+    } else {
+      offCtx.fillStyle = '#323232';
+      offCtx.fillRect(0, 0, posterW, posterH);
+    }
 
+    // 2. Fondo de la zona de animación
+    offCtx.fillStyle = p.colorBg;
+    offCtx.fillRect(animZoneX, animZoneY, bbW, bbH);
+
+    // 3. Clip a la zona de animación y dibujar el spray
     if (p5Font) {
-      // Guardar estado global y usar coordenadas relativas al bbox
+      offCtx.save();
+      offCtx.beginPath();
+      offCtx.rect(animZoneX, animZoneY, bbW, bbH);
+      offCtx.clip();
       let savedRot = rotation;
       rotation = rot;
-      // Offset: el origen en el offscreen canvas es pos - bbX()/bbY()
-      let ox = pos.x - bbX();
-      let oy = pos.y - bbY();
-      drawFrameToCtx(offCtx, p, ox, oy);
+      // ox/oy: origen del spray en coordenadas del cartel
+      let ox = (pos.x - bbX()) / screenScale() + animZoneX;
+      let oy = (pos.y - bbY()) / screenScale() + animZoneY;
+      drawFrameToCtxScaled(offCtx, p, ox, oy, 1.0);
       rotation = savedRot;
+      offCtx.restore();
     }
 
     if (elapsed < duration + 50) {
@@ -1021,76 +1137,61 @@ async function _doExportVideo(mimeType, ext, filename) {
   rafId = requestAnimationFrame(renderFrame);
 }
 
-// Dibuja un frame de spray al contexto 2D dado (offscreen o export)
+// Dibuja un frame de spray a un ctx 2D nativo en coords de cartel (1px = 1px export).
+// ox/oy: origen del spray en coords de cartel
 function drawFrameToCtx(ctx, p, ox, oy) {
-  // Calcular rayos con origen relativo al bbox
-  let steps  = p.txt.length;
-  if (steps === 0) return;
-  let margin = p.showBalls ? (p.ballSize/2 + p.weight + p.linePad) : (p.weight*2 + 10 + p.linePad);
-
-  // Para calcRays necesitamos coords absolutas del canvas p5 — usar ox+bbX(), oy+bbY()
-  let absX = ox + bbX();
-  let absY = oy + bbY();
+  // Convertir ox/oy de cartel a pantalla para calcRays
+  let absX = posterOffX() + ox * screenScale();
+  let absY = posterOffY() + oy * screenScale();
   let rays  = calcRays(p, absX, absY);
   let tyo   = typoOffset(p.fontSize);
+  let s     = screenScale();
 
   rays.forEach((r, i) => {
     if (r.skip) return;
 
-    // Línea — en coordenadas relativas al bbox (ox/oy)
-    let rox = r.lx - cos(r.fa)*r.rBall;
-    let roy = r.ly - sin(r.fa)*r.rBall;
-    // Transformar a coords bbox
-    let lx1 = (rox - bbX()) + cos(r.fa)*r.rIn;
-    let ly1 = (roy - bbY()) + sin(r.fa)*r.rIn;
-    let lx2 = (rox - bbX()) + cos(r.fa)*r.rLine;
-    let ly2 = (roy - bbY()) + sin(r.fa)*r.rLine;
+    // Convertir coords de pantalla → cartel
+    let rox_s = r.lx - cos(r.fa) * r.rBall;
+    let roy_s = r.ly - sin(r.fa) * r.rBall;
+    let rox_c = (rox_s - posterOffX()) / s;
+    let roy_c = (roy_s - posterOffY()) / s;
+    let lx_c  = (r.lx  - posterOffX()) / s;
+    let ly_c  = (r.ly  - posterOffY()) / s;
+
+    let lx1 = rox_c + cos(r.fa) * r.rIn;
+    let ly1 = roy_c + sin(r.fa) * r.rIn;
+    let lx2 = rox_c + cos(r.fa) * r.rLine;
+    let ly2 = roy_c + sin(r.fa) * r.rLine;
 
     ctx.save();
     ctx.strokeStyle = p.colorFg;
     ctx.lineWidth   = p.weight;
-    ctx.fillStyle   = 'none';
     if (p.dash > 0) {
       let len = r.rLine - r.rIn, off = len > 0 ? (len % (p.dash*2))/2 : 0;
-      ctx.setLineDash([p.dash, p.dash]);
-      ctx.lineDashOffset = -off;
-    } else {
-      ctx.setLineDash([]);
-    }
-    ctx.beginPath();
-    ctx.moveTo(lx1, ly1);
-    ctx.lineTo(lx2, ly2);
-    ctx.stroke();
+      ctx.setLineDash([p.dash, p.dash]); ctx.lineDashOffset = -off;
+    } else { ctx.setLineDash([]); }
+    ctx.beginPath(); ctx.moveTo(lx1, ly1); ctx.lineTo(lx2, ly2); ctx.stroke();
     ctx.restore();
 
-    // Bola
-    let bx2 = r.lx - bbX();
-    let by2 = r.ly - bbY();
     if (p.showBalls) {
       ctx.save();
-      ctx.beginPath();
-      ctx.arc(bx2, by2, p.ballSize/2, 0, Math.PI*2);
-      ctx.fillStyle = p.colorBall;
-      ctx.fill();
-      if (p.ballStroke) {
-        ctx.strokeStyle = p.colorFg;
-        ctx.lineWidth   = p.weight;
-        ctx.stroke();
-      }
+      ctx.beginPath(); ctx.arc(lx_c, ly_c, p.ballSize/2, 0, Math.PI*2);
+      ctx.fillStyle = p.colorBall; ctx.fill();
+      if (p.ballStroke) { ctx.strokeStyle = p.colorFg; ctx.lineWidth = p.weight; ctx.stroke(); }
       ctx.restore();
     }
 
-    // Letra
     ctx.save();
-    ctx.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
-    ctx.textAlign    = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle    = p.colorText;
-    ctx.setLineDash([]);
-    ctx.fillText(r.letter, bx2, by2 + tyo);
+    ctx.font = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = p.colorText; ctx.setLineDash([]);
+    ctx.fillText(r.letter, lx_c, ly_c + tyo);
     ctx.restore();
   });
 }
+
+// Alias
+function drawFrameToCtxScaled(ctx, p, ox, oy, scale) { drawFrameToCtx(ctx, p, ox, oy); }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // EXPORT ZIP PNGs — frames PNG con fondo transparente (sRGB, sin pérdida)
@@ -1106,14 +1207,13 @@ async function exportPngZip() {
   setBtnsDisabled(true);
 
   let offCnv = document.createElement('canvas');
-  offCnv.width  = bbW;
-  offCnv.height = bbH;
+  offCnv.width  = posterW;
+  offCnv.height = posterH;
   let offCtx = offCnv.getContext('2d');
 
   for (let f = 0; f < totalFrames; f++) {
     let t = f / totalFrames;
 
-    // Interpolar params
     let pos = catmullRom(keyframes, t);
     let savedRot = rotation;
     rotation = interpAngle(keyframes, t);
@@ -1125,13 +1225,24 @@ async function exportPngZip() {
     p.jitter   = interpScalar(keyframes, t, 'jitter', gj);
     if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * (p.jitterSpeed||8) * 63.7) * 0.5 + 0.5) * 99999);
 
-    // Fondo transparente
-    offCtx.clearRect(0, 0, bbW, bbH);
+    // Fondo: imagen de cartel o transparente
+    if (bgImage) {
+      offCtx.drawImage(bgImage.canvas, 0, 0, posterW, posterH);
+    } else {
+      offCtx.clearRect(0, 0, posterW, posterH);
+    }
+
+    // Fondo zona animación + clip + spray
+    offCtx.fillStyle = p.colorBg;
+    offCtx.fillRect(animZoneX, animZoneY, bbW, bbH);
 
     if (p5Font) {
-      let ox = pos.x - bbX();
-      let oy = pos.y - bbY();
+      offCtx.save();
+      offCtx.beginPath(); offCtx.rect(animZoneX, animZoneY, bbW, bbH); offCtx.clip();
+      let ox = (pos.x - bbX()) / screenScale() + animZoneX;
+      let oy = (pos.y - bbY()) / screenScale() + animZoneY;
       drawFrameToCtx(offCtx, p, ox, oy);
+      offCtx.restore();
     }
 
     rotation = savedRot;
@@ -1215,7 +1326,7 @@ async function exportZip() {
 
 // ── Construye el string SVG de un frame ──
 function buildSVG(p, rays, ox, oy, scale, hCapY) {
-  let W  = bbW, H = bbH;
+  let W  = posterW, H = posterH;
   let fg = p.colorFg, bg = p.colorBg;
   let sw = p.weight;
   let da = p.dash > 0 ? ` stroke-dasharray="${p.dash} ${p.dash}"` : '';
@@ -1285,16 +1396,55 @@ function setBtnsDisabled(v) {
   });
 }
 
-function applyBBox() {
-  let w = parseInt(document.getElementById('inBbW').value) || 800;
-  let h = parseInt(document.getElementById('inBbH').value) || 600;
-  bbW = Math.max(100, Math.min(w, 4000));
-  bbH = Math.max(100, Math.min(h, 4000));
+function applyAnimZone() {
+  bbW      = Math.max(50,  Math.min(parseInt(document.getElementById('inBbW').value)    || 800,  4000));
+  bbH      = Math.max(50,  Math.min(parseInt(document.getElementById('inBbH').value)    || 600,  4000));
+  animZoneX = Math.max(0,  Math.min(parseInt(document.getElementById('inAnimX').value)  || 0,    posterW - 10));
+  animZoneY = Math.max(0,  Math.min(parseInt(document.getElementById('inAnimY').value)  || 0,    posterH - 10));
 }
+
+function applyPoster() {
+  posterW = Math.max(100, Math.min(parseInt(document.getElementById('inPosterW').value) || 1080, 4000));
+  posterH = Math.max(100, Math.min(parseInt(document.getElementById('inPosterH').value) || 1920, 4000));
+}
+
+function setPoster(w, h) {
+  document.getElementById('inPosterW').value = w;
+  document.getElementById('inPosterH').value = h;
+  applyPoster();
+}
+
+// Cargar imagen de fondo desde file input
+function loadBgImage(input) {
+  let file = input.files[0];
+  if (!file) return;
+  document.getElementById('bgImgName').textContent = file.name;
+  let reader = new FileReader();
+  reader.onload = e => {
+    let img = new Image();
+    img.onload = () => {
+      // Crear p5.Image desde el HTMLImageElement
+      let pi = createImage(img.width, img.height);
+      pi.drawingContext.drawImage(img, 0, 0);
+      bgImage = pi;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearBgImage() {
+  bgImage = null;
+  document.getElementById('bgImgName').textContent = 'sin imagen';
+  document.getElementById('inBgImg').value = '';
+}
+
+// Mantener compatibilidad con applyBBox
+function applyBBox() { applyAnimZone(); }
 function setBBox(w, h) {
   document.getElementById('inBbW').value = w;
   document.getElementById('inBbH').value = h;
-  applyBBox();
+  applyAnimZone();
 }
 
 function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }
