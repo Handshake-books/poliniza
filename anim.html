@@ -1137,31 +1137,59 @@ async function _doExportVideo(mimeType, ext, filename) {
   rafId = requestAnimationFrame(renderFrame);
 }
 
+// Calcula rayos directamente en coordenadas del cartel (sin screenScale).
+// ox/oy: origen en coords de cartel (px del export).
+// Clon de calcRays/calcCol pero trabajando en el espacio del cartel.
+function calcRaysExport(p, ox, oy) {
+  let steps  = p.txt.length;
+  if (steps === 0) return [];
+  let txt    = p.txt;
+  let margin = p.showBalls ? (p.ballSize/2 + p.weight + p.linePad) : (p.weight*2 + 10 + p.linePad);
+  randomSeed(jitterSeed);
+  let jv = Array.from({length: steps}, () => random(-p.jitter, p.jitter));
+  return jv.map((jit, i) => {
+    let theta = steps > 1 ? map(i, 0, steps-1, -p.angle/2, p.angle/2) : 0;
+    let fa    = theta + rotation;
+    // calcCol en coords del cartel
+    let rMax  = calcColExport(fa, margin, ox, oy);
+    let rLine = min(p.rOutBase + jit, rMax);
+    let rBMax = calcColExport(fa, p.showBalls ? p.ballSize/2+p.weight : p.weight+4, ox, oy);
+    let rBall = min(rLine + p.linePad, rBMax);
+    let isSpace = txt[i] === ' ';
+    return {
+      fa, rIn: p.rIn, rLine, rBall,
+      lx: ox + cos(fa)*rBall,
+      ly: oy + sin(fa)*rBall,
+      letter: txt[i], skip: isSpace,
+    };
+  });
+}
+
+function calcColExport(a, margin, ox, oy) {
+  // Límites = zona de animación en coords del cartel
+  let x0 = animZoneX, y0 = animZoneY;
+  let dx = cos(a), dy = sin(a), t = Infinity;
+  if (dx > 0) t = min(t, (x0 + bbW - margin - ox) / dx);
+  if (dx < 0) t = min(t, (x0 + margin - ox) / dx);
+  if (dy > 0) t = min(t, (y0 + bbH - margin - oy) / dy);
+  if (dy < 0) t = min(t, (y0 + margin - oy) / dy);
+  return max(0, t);
+}
+
 // Dibuja un frame de spray a un ctx 2D nativo en coords de cartel (1px = 1px export).
-// ox/oy: origen del spray en coords de cartel
+// ox/oy: origen del spray en coords de cartel.
 function drawFrameToCtx(ctx, p, ox, oy) {
-  // Convertir ox/oy de cartel a pantalla para calcRays
-  let absX = posterOffX() + ox * screenScale();
-  let absY = posterOffY() + oy * screenScale();
-  let rays  = calcRays(p, absX, absY);
-  let tyo   = typoOffset(p.fontSize);
-  let s     = screenScale();
+  let rays = calcRaysExport(p, ox, oy);
+  let tyo  = typoOffset(p.fontSize);
 
   rays.forEach((r, i) => {
     if (r.skip) return;
 
-    // Convertir coords de pantalla → cartel
-    let rox_s = r.lx - cos(r.fa) * r.rBall;
-    let roy_s = r.ly - sin(r.fa) * r.rBall;
-    let rox_c = (rox_s - posterOffX()) / s;
-    let roy_c = (roy_s - posterOffY()) / s;
-    let lx_c  = (r.lx  - posterOffX()) / s;
-    let ly_c  = (r.ly  - posterOffY()) / s;
-
-    let lx1 = rox_c + cos(r.fa) * r.rIn;
-    let ly1 = roy_c + sin(r.fa) * r.rIn;
-    let lx2 = rox_c + cos(r.fa) * r.rLine;
-    let ly2 = roy_c + sin(r.fa) * r.rLine;
+    // Línea: origen en coords del cartel
+    let lx1 = r.lx - cos(r.fa)*(r.rBall - r.rIn);
+    let ly1 = r.ly - sin(r.fa)*(r.rBall - r.rIn);
+    let lx2 = r.lx - cos(r.fa)*(r.rBall - r.rLine);
+    let ly2 = r.ly - sin(r.fa)*(r.rBall - r.rLine);
 
     ctx.save();
     ctx.strokeStyle = p.colorFg;
@@ -1173,9 +1201,10 @@ function drawFrameToCtx(ctx, p, ox, oy) {
     ctx.beginPath(); ctx.moveTo(lx1, ly1); ctx.lineTo(lx2, ly2); ctx.stroke();
     ctx.restore();
 
+    // Bola + letra — r.lx/r.ly ya están en coords de cartel
     if (p.showBalls) {
       ctx.save();
-      ctx.beginPath(); ctx.arc(lx_c, ly_c, p.ballSize/2, 0, Math.PI*2);
+      ctx.beginPath(); ctx.arc(r.lx, r.ly, p.ballSize/2, 0, Math.PI*2);
       ctx.fillStyle = p.colorBall; ctx.fill();
       if (p.ballStroke) { ctx.strokeStyle = p.colorFg; ctx.lineWidth = p.weight; ctx.stroke(); }
       ctx.restore();
@@ -1185,7 +1214,7 @@ function drawFrameToCtx(ctx, p, ox, oy) {
     ctx.font = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = p.colorText; ctx.setLineDash([]);
-    ctx.fillText(r.letter, lx_c, ly_c + tyo);
+    ctx.fillText(r.letter, r.lx, r.ly + tyo);
     ctx.restore();
   });
 }
