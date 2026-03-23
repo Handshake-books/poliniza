@@ -103,7 +103,13 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     <label>Palabra</label>
     <input type="text" id="inText" value="POLINIZADOS" oninput="this.value=this.value.toUpperCase()">
   </div>
-<!-- Valores Haz fijados en GFX -->
+  <!-- HAZ -->
+  <hr><div class="sec">Haz</div>
+  <div class="grp">
+    <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="326°" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inAngle" min="1" max="360" value="326" oninput="syncSlider('inAngle','vAngle',this.value,'°')">
+  </div>
+
   <hr><div class="sec">Línea</div>
   <div class="grp">
     <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="8.5 pt" onchange="syncFromVal(this)"></div>
@@ -237,9 +243,9 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     <!-- Jitter amplitud -->
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
       <span style="font-size:9px;color:#777">Jitter</span>
-      <input id="kf-jitter-val" style="font-size:9px;color:#ddd;width:44px;text-align:right;background:transparent;border:none;border-bottom:1px solid #333;outline:none;font-family:monospace" value="—" onchange="setKfParam('jitter',parseFloat(this.value))">
+  
     </div>
-    <input type="range" id="kf-jitter-slider" min="0" max="400" step="1" value="83" style="width:100%;accent-color:#888;height:2px" oninput="setKfParam('jitter',parseFloat(this.value)); document.getElementById('kf-jitter-val').value=this.value+' px'">
+
   </div>
 
   <div style="display:flex;gap:5px;margin-bottom:8px">
@@ -257,13 +263,17 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     <div class="lrow"><label>FPS export</label><input class="val" id="vFps" value="30" onchange="syncFromVal(this)"></div>
     <input type="range" id="inFps" min="12" max="60" step="1" value="30" oninput="syncSlider('inFps','vFps',this.value,'')">
   </div>
-  <div class="tog" style="margin-top:4px">
-    <input type="checkbox" id="checkLiveJitter">
-    <label for="checkLiveJitter">Jitter vivo (orgánico)</label>
-  </div>
-  <div class="grp" id="liveJitterRow" style="opacity:0.3;pointer-events:none">
-    <div class="lrow"><label>Velocidad jitter</label><input class="val" id="vJitterSpeed" value="8" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inJitterSpeed" min="1" max="30" step="1" value="8" oninput="syncSlider('inJitterSpeed','vJitterSpeed',this.value,'')">
+  <!-- Jitter vivo eliminado -->
+
+  <div class="grp" style="margin-top:8px">
+    <div class="lrow">
+      <label>Zoom vista</label>
+      <input class="val" id="vZoom" value="100%" onchange="setZoomFromVal(this)">
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <input type="range" id="inZoom" min="0.1" max="3" step="0.05" value="1" style="flex:1;width:100%;accent-color:#888;height:2px" oninput="setZoomVal(this.value)">
+      <button class="ghost" style="font-size:9px;padding:4px 7px" onclick="setZoomVal(1)">1:1</button>
+    </div>
   </div>
 
   <!-- PREVIEW -->
@@ -307,13 +317,7 @@ function syncSlider(sliderId, valId, val, suffix, prefix, isDash) {
   if (isDash) el.value = parseFloat(val) > 0 ? val + ' px' : 'off';
   else el.value = (prefix || '') + val + (suffix || '');
 }
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('checkLiveJitter').addEventListener('change', function() {
-    let row = document.getElementById('liveJitterRow');
-    row.style.opacity       = this.checked ? '1'    : '0.3';
-    row.style.pointerEvents = this.checked ? 'auto' : 'none';
-  });
-});
+
 
 function syncFromVal(inputEl) {
   let raw = parseFloat(inputEl.value);
@@ -385,9 +389,9 @@ let bgImage = null;  // p5.Image o null
 // Escala: el cartel se muestra escalado para caber en el canvas de pantalla
 // screenScale = pixels_pantalla / pixels_cartel
 function screenScale() {
-  let sw = width  - 0;  // área útil del canvas
+  let sw = width  - 0;
   let sh = height - 0;
-  return Math.min(sw / posterW, sh / posterH) * 0.92;
+  return Math.min(sw / posterW, sh / posterH) * 0.92 * uiZoom;
 }
 // Offset para centrar el cartel en el canvas de pantalla
 function posterOffX() { return (width  - posterW * screenScale()) / 2; }
@@ -441,11 +445,11 @@ function setup() {
 // ═══════════════════════════════════════════════════════════════════════════
 async function initFonts() {
   try {
-    let ff = new FontFace('1nationalpark', 'url(fonts/1nationalpark.otf)');
+    let ff = new FontFace('1nationalpark', 'url(fonts/1nationalpark.ttf)');
     let loaded = await ff.load();
     document.fonts.add(loaded);
     p5Font = '1nationalpark';
-    otFont = await opentype.load('fonts/1nationalpark.otf').catch(() => null);
+    otFont = await opentype.load('fonts/1nationalpark.ttf').catch(() => null);
   } catch(e) {
     p5Font = 'sans-serif';
     otFont = null;
@@ -461,7 +465,7 @@ function fontFam(idx) {
 function getP() {
   return {
     txt       : (document.getElementById('inText').value || 'A').toUpperCase(),
-    angle     : radians(GFX.angle),
+    angle     : radians(parseFloat(document.getElementById('inAngle').value || GFX.angle)),
     rIn       : GFX.rIn,
     rOutBase  : GFX.rOutBase,
     jitter    : GFX.jitter,
@@ -478,8 +482,8 @@ function getP() {
     colorText : GFX.colorText,
     dur        : parseFloat(document.getElementById('inDur').value),
     fps        : parseInt(document.getElementById('inFps').value),
-    liveJitter : document.getElementById('checkLiveJitter').checked,
-    jitterSpeed: parseFloat(document.getElementById('inJitterSpeed').value),
+    liveJitter : false,
+    jitterSpeed: 8,
   };
 }
 
@@ -620,16 +624,12 @@ function draw() {
 
   // Parámetros animables: si el kf tiene valor propio lo interpola, si no usa el slider global
   if (keyframes.length >= 2) {
-    p.angle    = interpScalar(keyframes, animT, 'apertura', GFX.angle) * Math.PI / 180;
+    p.angle    = interpScalar(keyframes, animT, 'apertura', parseFloat(document.getElementById('inAngle').value || GFX.angle)) * Math.PI / 180;
     p.rOutBase = interpScalar(keyframes, animT, 'rOut', GFX.rOutBase);
     p.jitter   = interpScalar(keyframes, animT, 'jitter', GFX.jitter);
   }
 
-  // Jitter vivo orgánico — fluctúa basado en ruido de tiempo
-  if (p.liveJitter) {
-    let speed = p.jitterSpeed || 8;
-    jitterSeed = Math.floor(noise(animT * speed * 10) * 99999);
-  }
+
 
   // ── RENDER ──
   background(30);  // zona fuera del cartel
@@ -657,7 +657,6 @@ function draw() {
 
   if (p5Font) {
     let rays = calcRays(p, pos.x, pos.y);
-    let tyo  = typoOffset(p.fontSize);
     rays.forEach((r, i) => {
       if (r.skip) return;
       drawLine(r, p);
@@ -770,7 +769,7 @@ function drawLine(r, p) {
   let oy = r.ly - sin(r.fa)*r.rBall;
   translate(ox, oy);
   rotate(r.fa);
-  stroke(p.colorFg); strokeWeight(p.weight); noFill();
+  stroke(p.colorFg); strokeWeight(p.weight); strokeCap(ROUND); noFill();
   if (p.dash > 0) {
     let len = r.rLine - r.rIn, off = len > 0 ? (len % (p.dash*2))/2 : 0;
     drawingContext.setLineDash([p.dash, p.dash]);
@@ -794,9 +793,9 @@ function drawBall(r, p, tyo, idx) {
   noStroke();
   drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
   drawingContext.textAlign    = 'center';
-  drawingContext.textBaseline = 'alphabetic';
+  drawingContext.textBaseline = 'middle';
   drawingContext.fillStyle    = p.colorText;
-  drawingContext.fillText(r.letter, 0, tyo);
+  drawingContext.fillText(r.letter, 0, 0);
   pop();
 }
 
@@ -909,15 +908,9 @@ function updateAnglePanel() {
   document.getElementById('kf-apertura-slider').value = apertura;
   document.getElementById('kf-apertura-val').value    = Math.round(apertura) + '°';
 
-  // Largo
-  let rOut = kf.rOut !== undefined ? kf.rOut : GFX.rOutBase;
-  document.getElementById('kf-rout-slider').value = rOut;
-  document.getElementById('kf-rout-val').value    = Math.round(rOut) + ' px';
 
-  // Jitter
-  let jitter = kf.jitter !== undefined ? kf.jitter : GFX.jitter;
-  document.getElementById('kf-jitter-slider').value = jitter;
-  document.getElementById('kf-jitter-val').value    = Math.round(jitter) + ' px';
+
+
 }
 
 // Setter genérico para parámetros por keyframe
@@ -1048,10 +1041,10 @@ async function _doExportVideo(mimeType, ext, filename) {
     // Interpolación de posición, ángulo y parámetros animados
     let pos = catmullRom(keyframes, t);
     let rot = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', GFX.angle) * Math.PI / 180;
+    p.angle    = interpScalar(keyframes, t, 'apertura', parseFloat(document.getElementById('inAngle').value || GFX.angle)) * Math.PI / 180;
     p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
     p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
-    if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * (p.jitterSpeed||8) * 63.7) * 0.5 + 0.5) * 99999);
+
 
     // 1. Imagen de fondo del cartel (cubre todo el offscreen)
     if (bgImage) {
@@ -1134,8 +1127,6 @@ function calcColExport(a, margin, ox, oy) {
 // ox/oy: origen del spray en coords de cartel.
 function drawFrameToCtx(ctx, p, ox, oy) {
   let rays = calcRaysExport(p, ox, oy);
-  let tyo  = typoOffset(p.fontSize);
-
   rays.forEach((r, i) => {
     if (r.skip) return;
 
@@ -1152,6 +1143,7 @@ function drawFrameToCtx(ctx, p, ox, oy) {
       let len = r.rLine - r.rIn, off = len > 0 ? (len % (p.dash*2))/2 : 0;
       ctx.setLineDash([p.dash, p.dash]); ctx.lineDashOffset = -off;
     } else { ctx.setLineDash([]); }
+    ctx.lineCap = "round";
     ctx.beginPath(); ctx.moveTo(lx1, ly1); ctx.lineTo(lx2, ly2); ctx.stroke();
     ctx.restore();
 
@@ -1166,9 +1158,9 @@ function drawFrameToCtx(ctx, p, ox, oy) {
 
     ctx.save();
     ctx.font = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = p.colorText; ctx.setLineDash([]);
-    ctx.fillText(r.letter, r.lx, r.ly + tyo);
+    ctx.fillText(r.letter, r.lx, r.ly);
     ctx.restore();
   });
 }
@@ -1200,10 +1192,10 @@ async function exportPngZip() {
     let pos = catmullRom(keyframes, t);
     let savedRot = rotation;
     rotation = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', GFX.angle) * Math.PI / 180;
+    p.angle    = interpScalar(keyframes, t, 'apertura', parseFloat(document.getElementById('inAngle').value || GFX.angle)) * Math.PI / 180;
     p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
     p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
-    if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * (p.jitterSpeed||8) * 63.7) * 0.5 + 0.5) * 99999);
+
 
     // Fondo: imagen de cartel o transparente
     if (bgImage) {
@@ -1265,7 +1257,7 @@ async function exportZip() {
   let hCapY = 0;
   if (otFont) {
     let hG = otFont.charToGlyph('H'), hB = hG.getBoundingBox();
-    hCapY = (hB.y2 * scale) / 2;
+    hCapY = -((hB.y1 + hB.y2) / 2) * scale;
   }
 
   for (let f = 0; f < totalFrames; f++) {
@@ -1276,10 +1268,10 @@ async function exportZip() {
 
     // Aplicar ángulo y parámetros animados para este frame
     rotation   = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', GFX.angle) * Math.PI / 180;
+    p.angle    = interpScalar(keyframes, t, 'apertura', parseFloat(document.getElementById('inAngle').value || GFX.angle)) * Math.PI / 180;
     p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
     p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
-    if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * p.jitterSpeed * 63.7) * 0.5 + 0.5) * 99999);
+
 
     let rays = calcRays(p, pos.x, pos.y);
     let svg  = buildSVG(p, rays, ox, oy, scale, hCapY);
@@ -1326,7 +1318,7 @@ function buildSVG(p, rays, ox, oy, scale, hCapY) {
     let x2  = (ox + cos(r.fa)*r.rLine).toFixed(2);
     let y2  = (oy + sin(r.fa)*r.rLine).toFixed(2);
     let dof = p.dash > 0 ? ` stroke-dashoffset="${(-(r.rLine-r.rIn)%(p.dash*2)/2).toFixed(2)}"` : '';
-    lines.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fg}" stroke-width="${sw}" fill="none"${da}${dof}/>`);
+    lines.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fg}" stroke-width="${sw}" stroke-linecap="round" fill="none"${da}${dof}/>`);
 
     // Bola
     if (p.showBalls) {
@@ -1347,7 +1339,7 @@ function buildSVG(p, rays, ox, oy, scale, hCapY) {
       lines.push(`    <path fill="${p.colorText}" transform="translate(${tx},${ty})" d="${pathD}"/>`);
     } else if (r.letter !== ' ') {
       let fam = fontFam(currentFontIdx);
-      lines.push(`    <text x="${(r.lx-bbX()).toFixed(2)}" y="${(r.ly-bbY()).toFixed(2)}" fill="${p.colorText}" font-size="${p.fontSize}" font-family="${fam}" text-anchor="middle">${r.letter}</text>`);
+      lines.push(`    <text x="${(r.lx-bbX()).toFixed(2)}" y="${(r.ly-bbY()).toFixed(2)}" fill="${p.colorText}" font-size="${p.fontSize}" font-family="${fam}" text-anchor="middle" dominant-baseline="central">${r.letter}</text>`);
     }
 
     lines.push(`  </g>`);
@@ -1422,6 +1414,19 @@ function setBBox(w, h) {
   document.getElementById('inBbW').value = w;
   document.getElementById('inBbH').value = h;
   applyAnimZone();
+}
+
+let uiZoom = 1.0;
+function setZoomVal(v) {
+  uiZoom = Math.max(0.1, Math.min(3, parseFloat(v) || 1));
+  let sl  = document.getElementById('inZoom');
+  let lbl = document.getElementById('vZoom');
+  if (sl)  sl.value  = uiZoom;
+  if (lbl) lbl.value = Math.round(uiZoom * 100) + '%';
+}
+function setZoomFromVal(el) {
+  let v = parseFloat(el.value) / 100;
+  if (!isNaN(v)) setZoomVal(v);
 }
 
 function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }

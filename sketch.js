@@ -68,7 +68,7 @@ function fontFamily(idx) {
 function getP() {
   return {
     txt       : document.getElementById('inText').value.toUpperCase(),
-    angle     : radians(GFX.angle),
+    angle     : radians(parseFloat(document.getElementById('inAngle').value || GFX.angle)),
     rIn       : GFX.rIn,
     rOutBase  : GFX.rOutBase,
     jitter    : GFX.jitter,
@@ -174,7 +174,7 @@ function draw() {
     let rays = calcRays(p);
     if (rays.length > 0) {
       let fs  = p.fontSize;
-      let tyo = getTypoOffset(fs);
+      let tyo = 0; // baseline=middle, no offset needed
       if (p.linesBack) {
         rays.forEach(r => { if (!r.skip) doLine(r, p); });
         rays.forEach((r, i) => { if (!r.skip) doBall(r, p, fs, tyo, i); });
@@ -220,6 +220,7 @@ function doLine(r, p) {
   rotate(r.fa);
   stroke(p.colorFg);
   strokeWeight(p.weight);
+  strokeCap(ROUND);
   noFill();
   drawingContext.setLineDash([]);
   drawingContext.lineDashOffset = 0;
@@ -240,9 +241,9 @@ function doBall(r, p, fs, tyo, idx) {
   noStroke();
   drawingContext.font = `${fs}px "${p5Font || 'monospace'}"`;
   drawingContext.textAlign = 'center';
-  drawingContext.textBaseline = 'alphabetic';
+  drawingContext.textBaseline = 'middle';
   drawingContext.fillStyle = p.colorText;
-  drawingContext.fillText(r.letter, 0, tyo);
+  drawingContext.fillText(r.letter, 0, 0);
   pop();
 }
 
@@ -310,7 +311,7 @@ function saveSVG() {
   if (otFont) {
     let hGlyph = otFont.charToGlyph('H');
     let hBB    = hGlyph.getBoundingBox();
-    hCapOffsetY = (hBB.y2 * scale) / 2;
+    hCapOffsetY = -((hBB.y1 + hBB.y2) / 2) * scale;
   }
 
   let ballR      = (p.ballSize / 2).toFixed(2);
@@ -329,7 +330,7 @@ function saveSVG() {
     let y1 = (originY - oy + sin(r.fa)*r.rIn  ).toFixed(2);
     let x2 = (originX - ox + cos(r.fa)*r.rLine).toFixed(2);
     let y2 = (originY - oy + sin(r.fa)*r.rLine).toFixed(2);
-    svg.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fg}" stroke-width="${sw}" fill="none"/>`);
+    svg.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fg}" stroke-width="${sw}" stroke-linecap="round" fill="none"/>`);
 
     if (p.showBalls) {
       let bFill = (p.altBall && i % 2 === 1) ? p.colorBallB : p.colorBall;
@@ -347,7 +348,7 @@ function saveSVG() {
       svg.push(`    <path fill="${p.colorText}" transform="translate(${tx},${ty})" d="${pathData}"/>`);
     } else {
       let fam = fontFamily(currentFontIdx);
-      svg.push(`    <text x="${(r.lx - ox).toFixed(2)}" y="${(r.ly - oy + tyo).toFixed(2)}" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle">${esc(r.letter)}</text>`);
+      svg.push(`    <text x="${(r.lx - ox).toFixed(2)}" y="${(r.ly - oy).toFixed(2)}" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle" dominant-baseline="central">${esc(r.letter)}</text>`);
     }
 
     svg.push(`  </g>`);

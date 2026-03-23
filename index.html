@@ -264,7 +264,17 @@ kbd {
     <input type="text" id="inText" value="POLINIZADOS"
            oninput="this.value=this.value.toUpperCase()">
   </div>
-<!-- LÍNEA -->
+<!-- HAZ -->
+  <hr>
+  <div class="sec">Haz</div>
+
+  <div class="grp">
+    <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="326°" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inAngle" min="1" max="360" value="326"
+           oninput="syncSlider('inAngle','vAngle',this.value,'°')">
+  </div>
+
+  <!-- LÍNEA -->
   <hr>
   <div class="sec">Línea</div>
 
@@ -339,6 +349,12 @@ kbd {
     <button class="ghost" onclick="resetOrigin()" title="[C] Centrar origen">⌖</button>
   </div>
 
+  <!-- LINKS -->
+  <div style="display:flex;gap:5px;margin-top:8px">
+    <a href="game.html" style="flex:1;background:#252525;color:#aaa;border:1px solid #333;padding:8px 6px;font-family:monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;text-align:center;text-decoration:none;transition:color .12s,border-color .12s" onmouseover="this.style.color='#fff';this.style.borderColor='#888'" onmouseout="this.style.color='#aaa';this.style.borderColor='#333'">Modo Spray →</a>
+    <a href="anim.html" style="flex:1;background:#252525;color:#aaa;border:1px solid #333;padding:8px 6px;font-family:monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;text-align:center;text-decoration:none;transition:color .12s,border-color .12s" onmouseover="this.style.color='#fff';this.style.borderColor='#888'" onmouseout="this.style.color='#aaa';this.style.borderColor='#333'">Animación →</a>
+  </div>
+
   <!-- ATAJOS -->
   <div class="instructions">
     <div class="instr-title">Atajos y controles</div>
@@ -395,7 +411,7 @@ kbd {
 <script>
 // ── VALORES FIJOS DE GRÁFICA ──────────────────────────────────────────────────
 const GFX = {
-  angle     : 360,
+  angle     : 326,
   rIn       : 53,
   rOutBase  : 3000,
   jitter    : 83,

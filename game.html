@@ -163,7 +163,6 @@ kbd { display: inline-block; font-size: 7px; color: #777; background: #181818; b
     <div class="sc-row"><kbd>WASD</kbd><span class="sc-desc">Mover origen</span></div>
     <div class="sc-row"><kbd>ratón</kbd><span class="sc-desc">Apuntar dirección</span></div>
     <div class="sc-row"><kbd>espacio</kbd><span class="sc-desc">Disparar spray</span></div>
-    <div class="sc-row"><kbd>J</kbd><span class="sc-desc">Nueva semilla jitter</span></div>
     <div class="sc-row"><kbd>C</kbd><span class="sc-desc">Centrar origen</span></div>
     <div class="sc-row"><kbd>X</kbd><span class="sc-desc">Limpiar canvas</span></div>
   </div>
@@ -213,7 +212,6 @@ window.addEventListener('keydown', e => {
       document.activeElement.tagName === 'SELECT') return;
   KEYS[e.code] = true;
   if (e.code === 'Space') { e.preventDefault(); spaceDown = true; }
-  if (e.code === 'KeyJ') jitterSeed = Math.floor(Math.random() * 99999);
   if (e.code === 'KeyC') centerOrigin();
   if (e.code === 'KeyX') clearStamps();
 });
@@ -271,11 +269,11 @@ function setup() {
 
 async function initFonts() {
   try {
-    let ff = new FontFace('1nationalpark', 'url(fonts/1nationalpark.otf)');
+    let ff = new FontFace('1nationalpark', 'url(fonts/1nationalpark.ttf)');
     let loaded = await ff.load();
     document.fonts.add(loaded);
     p5Font = '1nationalpark';
-    otFont = await opentype.load('fonts/1nationalpark.otf').catch(() => null);
+    otFont = await opentype.load('fonts/1nationalpark.ttf').catch(() => null);
   } catch(e) {
     p5Font = 'sans-serif';
     otFont = null;
@@ -393,11 +391,8 @@ function draw() {
   aimAngle  += diff * p.aimLerp;
   rotation   = aimAngle;
 
-  // Estado disparo — jitter vivo mientras dispara
+  // Estado disparo
   let isFiring = spaceDown && p5Font;
-  if (isFiring && frameCount % 3 === 0) {
-    jitterSeed = Math.floor(Math.random() * 99999);
-  }
 
   // Stamp al soltar
   if (wasFiring && !isFiring && p5Font) {
@@ -490,7 +485,7 @@ function drawMolecule(r, p, tyo) {
   push();
   translate(r.ox, r.oy);
   rotate(r.fa);
-  stroke(p.colorFg); strokeWeight(p.weight); noFill();
+  stroke(p.colorFg); strokeWeight(p.weight); strokeCap(ROUND); noFill();
   drawingContext.setLineDash([]);
   drawingContext.lineDashOffset = 0;
   line(r.rIn, 0, r.rLine, 0);
@@ -506,9 +501,9 @@ function drawMolecule(r, p, tyo) {
   noStroke();
   drawingContext.font           = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
   drawingContext.textAlign      = 'center';
-  drawingContext.textBaseline   = 'alphabetic';
+  drawingContext.textBaseline   = 'middle';
   drawingContext.fillStyle      = p.colorText;
-  drawingContext.fillText(r.letter, 0, tyo);
+  drawingContext.fillText(r.letter, 0, 0);
   pop();
 }
 
@@ -516,8 +511,6 @@ function drawMolecule(r, p, tyo) {
 function stampSpray(p) {
   let rays = calcRays(p, posX, posY, rotation);
   if (!rays.length) return;
-  let tyo = typoOffset(p.fontSize);
-
   rays.forEach(r => {
     if (p.stampLines) {
       buf.push();
@@ -540,9 +533,9 @@ function stampSpray(p) {
     buf.noStroke();
     buf.drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
     buf.drawingContext.textAlign    = 'center';
-    buf.drawingContext.textBaseline = 'alphabetic';
+    buf.drawingContext.textBaseline = 'middle';
     buf.drawingContext.fillStyle    = p.colorText;
-    buf.drawingContext.fillText(r.letter, 0, tyo);
+    buf.drawingContext.fillText(r.letter, 0, 0);
     buf.pop();
   });
 
@@ -573,7 +566,7 @@ function windowResized() {
   buf = createGraphics(width, height);
   buf.clear();
   stamps.forEach(s => {
-    let p = s.p, tyo = typoOffset(p.fontSize);
+    let p = s.p;
     s.rays.forEach(r => {
       if (p.stampLines) {
         buf.push(); buf.translate(r.ox, r.oy); buf.rotate(r.fa);
@@ -591,9 +584,9 @@ function windowResized() {
       buf.noStroke();
       buf.drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
       buf.drawingContext.textAlign    = 'center';
-      buf.drawingContext.textBaseline = 'alphabetic';
+      buf.drawingContext.textBaseline = 'middle';
       buf.drawingContext.fillStyle    = p.colorText;
-      buf.drawingContext.fillText(r.letter, 0, tyo);
+      buf.drawingContext.fillText(r.letter, 0, 0);
       buf.pop();
     });
   });
