@@ -1,25 +1,25 @@
-// POLINIZADOR v4.0 — Gráfica fija festival
-// Los parámetros de aspecto (colores, dash, apertura, jitter, etc.) se leen
-// de la constante GFX definida en index.html. Solo son ajustables los
-// parámetros de escala, tamaño, posición y lienzo.
+// POLINIZADOR v3.7
+// Un solo spray. Fuentes desde fonts/index.json. Color picker bg/fg.
+// Arrastrar • rojo → mueve origen. Arrastrar canvas → rotass.
 
-const SIDEBAR_W  = 240;
-const HIDE_AFTER = 80;
+const SIDEBAR_W  = 268;
+const HIDE_AFTER = 80; 
 
 // ── Fuentes ───────────────────────────────────────────────────────────────────
 let FONTS          = [];
 let currentFontIdx = 0;
-let p5Font         = null;
-let otFont         = null;
+let p5Font         = null;   // nombre CSS para renderizado en canvas
+let otFont         = null;   // objeto opentype.Font para exportar paths
 let _tyCache       = {};
 
 // ── Estado del spray ──────────────────────────────────────────────────────────
 let originX, originY;
-let rotation   = 0;
-let jitterSeed = 42;
+let rotation     = 0;
+let jitterSeed   = 42;
 
 // ── Bounding box de trabajo ───────────────────────────────────────────────────
-let bbW = 770, bbH = 1920;
+// El canvas ocupa toda la ventana; el bbox es el área de dibujo/export.
+let bbW = 800, bbH = 600;
 let zoom = 1.0;
 function bbX() { return (width  - bbW) / 2; }
 function bbY() { return (height - bbH) / 2; }
@@ -30,8 +30,10 @@ let draggingRotation = false;
 let lastMouseAngle   = 0;
 let mouseIdleTimer   = 0;
 
+// ── PRELOAD (vacío — fuentes se cargan async) ─────────────────────────────────
 function preload() {}
 
+// ── SETUP ─────────────────────────────────────────────────────────────────────
 function setup() {
   let canvas = createCanvas(windowWidth - SIDEBAR_W, windowHeight);
   canvas.parent('canvas-parent');
@@ -42,51 +44,90 @@ function setup() {
 }
 
 // ── CARGA DE FUENTES ──────────────────────────────────────────────────────────
-// Fuente fija: 1nationalpark
+// Usa FontFace nativo — evita los problemas de timing de loadFont() de p5.
+// p5Font guarda el nombre CSS de la familia, no un objeto p5.Font.
+// El renderizado usa drawingContext.font directamente.
+
+let fontLoadPromises = [];
 
 async function initFonts() {
+  let sel = document.getElementById('fontSelect');
+
   try {
-    let ff = new FontFace('1nationalpark', 'url(fonts/1nationalpark.otf)');
-    let loaded = await ff.load();
-    document.fonts.add(loaded);
-    p5Font = '1nationalpark';
-    otFont = await opentype.load('fonts/1nationalpark.otf').catch(() => null);
-  } catch(e) {
-    console.warn('Font load failed, using fallback');
-    p5Font = 'monospace';
-    otFont = null;
+    let res   = await fetch('fonts/index.json');
+    let files = await res.json();
+    if (!Array.isArray(files) || files.length === 0) throw new Error('empty');
+    FONTS = files.map(f => ({
+      label  : f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+      file   : 'fonts/' + f,
+      family : f.replace(/\.[^.]+$/, ''),
+    }));
+  } catch {
+    FONTS = [{ label: 'VulfMono Bold', file: 'VulfMono-Bold.otf', family: 'VulfMono-Bold' }];
   }
+
+  // Registrar todas con FontFace (para canvas) y opentype (para SVG export)
+  fontLoadPromises = FONTS.map(f => {
+    let ff = new FontFace(f.family, `url(${f.file})`);
+    let cssP = ff.load().then(loaded => { document.fonts.add(loaded); return true; })
+                        .catch(() => false);
+    // También parsear con opentype.js para poder exportar paths
+    let otP = opentype.load(f.file).then(font => { f.otFont = font; })
+                                    .catch(() => {});
+    return Promise.all([cssP, otP]);
+  });
+
+  // Esperar primera fuente antes de arrancar
+  await fontLoadPromises[0];
+  p5Font = FONTS[0].family;
+  otFont = FONTS[0].otFont || null;
+
+  // Pueblar select
+  sel.innerHTML = '';
+  FONTS.forEach((f, i) => {
+    let opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = f.label;
+    sel.appendChild(opt);
+  });
+
+  sel.addEventListener('change', async () => {
+    let i = parseInt(sel.value);
+    await fontLoadPromises[i];
+    currentFontIdx = i;
+    _tyCache = {};
+    p5Font = FONTS[i].family;
+    otFont = FONTS[i].otFont || null;
+  });
 }
 
 function fontFamily(idx) {
-  return '1nationalpark';
+  return (FONTS.length && FONTS[idx]) ? FONTS[idx].family : 'monospace';
 }
 
 // ── LEER PARÁMETROS ───────────────────────────────────────────────────────────
-// Los valores de gráfica se leen de GFX (constante fija).
-// Solo los controles de escala/tamaño/lienzo vienen del DOM.
 function getP() {
   return {
-    txt       : document.getElementById('inText').value.toUpperCase(),
-    angle     : radians(GFX.angle),
-    rIn       : GFX.rIn,
-    rOutBase  : GFX.rOutBase,
-    jitter    : GFX.jitter,
-    weight    : parseFloat(document.getElementById('inWeight').value),
-    dash      : GFX.dash,
-    showBalls : GFX.showBalls,
-    ballSize  : parseInt(document.getElementById('inBallSize').value),
-    fontSize  : parseInt(document.getElementById('inFontSize').value),
-    linePad   : GFX.linePad,
-    linesBack : GFX.linesBack,
-    flipText  : document.getElementById('checkFlip').checked,
-    ballStroke: GFX.ballStroke,
-    colorBg   : GFX.colorBg,
-    colorFg   : GFX.colorFg,
-    colorBall : GFX.colorBall,
-    colorBallB: GFX.colorBallB,
-    altBall   : GFX.altBall,
-    colorText : GFX.colorText,
+    txt        : document.getElementById('inText').value.toUpperCase(),
+    angle      : radians(parseFloat(document.getElementById('inAngle').value)),
+    rIn        : parseInt(document.getElementById('inRin').value),
+    rOutBase   : parseInt(document.getElementById('inRout').value),
+    jitter     : parseInt(document.getElementById('inJitter').value),
+    weight     : parseFloat(document.getElementById('inWeight').value),
+    dash       : parseInt(document.getElementById('inDash').value),
+    showBalls  : document.getElementById('checkBalls').checked,
+    ballSize   : parseInt(document.getElementById('inBallSize').value),
+    fontSize   : parseInt(document.getElementById('inFontSize').value),
+    linePad    : parseInt(document.getElementById('inLinePad').value),
+    linesBack  : document.getElementById('checkLinesBack').checked,
+    flipText   : document.getElementById('checkFlip').checked,
+    ballStroke : document.getElementById('checkBallStroke').checked,
+    colorBg    : document.getElementById('inColorBg').value,
+    colorFg    : document.getElementById('inColorFg').value,
+    colorBall  : document.getElementById('inColorBall').value,
+    colorBallB : document.getElementById('inColorBallB').value,
+    altBall    : document.getElementById('checkAltBall').checked,
+    colorText  : document.getElementById('inColorText').value,
   };
 }
 
@@ -94,7 +135,7 @@ function getP() {
 function calcRays(p) {
   let steps = p.txt.length;
   if (steps === 0) return [];
-  let txt    = p.flipText ? p.txt.split('').reverse().join('') : p.txt;
+  let txt = p.flipText ? p.txt.split('').reverse().join('') : p.txt;
   let margin = p.showBalls
     ? (p.ballSize / 2 + p.weight + p.linePad)
     : (p.weight * 2 + 10 + p.linePad);
@@ -119,6 +160,7 @@ function calcRays(p) {
 }
 
 // ── COLISIÓN ──────────────────────────────────────────────────────────────────
+// Usa las coordenadas del bounding box, no el canvas completo.
 function calcCollision(a, margin) {
   let dx = cos(a), dy = sin(a), t = Infinity;
   let x0 = bbX(), y0 = bbY();
@@ -147,11 +189,14 @@ function getTypoOffset(fontSize) {
 function draw() {
   let p = getP();
 
+  // Fondo del canvas (fuera del bbox)
   background(40);
 
+  // Centro visual del canvas — pivot del zoom
   let cx = width  / 2;
   let cy = height / 2;
 
+  // Aplicar zoom centrado en el canvas
   drawingContext.save();
   drawingContext.translate(cx, cy);
   drawingContext.scale(zoom, zoom);
@@ -159,7 +204,7 @@ function draw() {
 
   let bx = bbX(), by = bbY();
 
-  // Clip al bbox
+  // Clip al bbox (en espacio zoomed)
   drawingContext.save();
   drawingContext.beginPath();
   drawingContext.rect(bx, by, bbW, bbH);
@@ -189,12 +234,12 @@ function draw() {
   // Borde del bbox
   noFill();
   stroke(90);
-  strokeWeight(1 / zoom);
+  strokeWeight(1 / zoom); // borde siempre 1px visual
   drawingContext.setLineDash([4 / zoom, 4 / zoom]);
   rect(bx, by, bbW, bbH);
   drawingContext.setLineDash([]);
 
-  // Indicador de origen
+  // Indicador de origen — dentro del zoom para que aparezca en las coords correctas
   mouseIdleTimer++;
   let a = constrain(map(mouseIdleTimer, HIDE_AFTER*0.5, HIDE_AFTER, 220, 0), 0, 220);
   if (a > 0) {
@@ -221,9 +266,18 @@ function doLine(r, p) {
   stroke(p.colorFg);
   strokeWeight(p.weight);
   noFill();
+  if (p.dash > 0) {
+    let len = r.rLine - r.rIn;
+    let off = len > 0 ? (len % (p.dash * 2)) / 2 : 0;
+    drawingContext.setLineDash([p.dash, p.dash]);
+    drawingContext.lineDashOffset = -off;
+  } else {
+    drawingContext.setLineDash([]);
+    drawingContext.lineDashOffset = 0;
+  }
+  line(r.rIn, 0, r.rLine, 0);
   drawingContext.setLineDash([]);
   drawingContext.lineDashOffset = 0;
-  line(r.rIn, 0, r.rLine, 0);
   pop();
 }
 
@@ -247,6 +301,7 @@ function doBall(r, p, fs, tyo, idx) {
 }
 
 // ── RATÓN ─────────────────────────────────────────────────────────────────────
+// Convierte coordenadas de pantalla (mouseX/Y del canvas) a coordenadas reales (sin zoom)
 function screenToWorld(sx, sy) {
   let cx = width  / 2;
   let cy = height / 2;
@@ -292,50 +347,63 @@ function mouseReleased() {
 
 // ── EXPORTAR SVG ──────────────────────────────────────────────────────────────
 function saveSVG() {
-  let p    = getP();
+  let p   = getP();
   let rays = calcRays(p);
   if (rays.length === 0) return;
 
   let fs  = p.fontSize;
   let tyo = getTypoOffset(fs);
+  // SVG usa el bbox como área de documento; coordenadas se compensan con el offset
   let W   = bbW, H = bbH;
-  let ox  = bbX(), oy = bbY();
+  let ox  = bbX(), oy = bbY();   // offset canvas→bbox
+  let fam = FONTS.length ? fontFamily(currentFontIdx) : 'sans-serif';
   let fg  = p.colorFg;
   let bg  = p.colorBg;
   let sw  = p.weight;
+  let da  = p.dash > 0 ? ` stroke-dasharray="${p.dash} ${p.dash}"` : '';
 
-  let upm   = otFont ? otFont.unitsPerEm : 1;
+  // Precalcular offsets tipográficos si opentype disponible
+  let upm = otFont ? otFont.unitsPerEm : 1;
   let scale = fs / upm;
-  let hCapOffsetY = 0;
+  let hCapOffsetY = 0, hCapOffsetX_cache = {};
   if (otFont) {
     let hGlyph = otFont.charToGlyph('H');
     let hBB    = hGlyph.getBoundingBox();
     hCapOffsetY = (hBB.y2 * scale) / 2;
   }
 
-  let ballR      = (p.ballSize / 2).toFixed(2);
+  let ballFill   = p.colorBall;
   let ballStroke = p.ballStroke ? `stroke="${fg}" stroke-width="${sw}"` : `stroke="none"`;
+  let ballR      = (p.ballSize / 2).toFixed(2);
 
   let svg = [];
   svg.push(`<?xml version="1.0" encoding="UTF-8"?>`);
   svg.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`);
   svg.push(`  <rect width="${W}" height="${H}" fill="${bg}"/>`);
 
+  // Cada molécula = un <g> propio con línea → bola → letra en orden de pintado
+  // Las coordenadas del canvas se compensan restando el offset del bbox (ox, oy)
   rays.forEach((r, i) => {
-    if (r.skip) return;
+    if (r.skip) return;  // espacio — hueco angular sin dibujo
     svg.push(`  <g id="molecula-${i}">`);
 
-    let x1 = (originX - ox + cos(r.fa)*r.rIn  ).toFixed(2);
-    let y1 = (originY - oy + sin(r.fa)*r.rIn  ).toFixed(2);
-    let x2 = (originX - ox + cos(r.fa)*r.rLine).toFixed(2);
-    let y2 = (originY - oy + sin(r.fa)*r.rLine).toFixed(2);
-    svg.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fg}" stroke-width="${sw}" fill="none"/>`);
+    // — Línea (coordenadas relativas al bbox)
+    let x1  = (originX - ox + cos(r.fa)*r.rIn  ).toFixed(2);
+    let y1  = (originY - oy + sin(r.fa)*r.rIn  ).toFixed(2);
+    let x2  = (originX - ox + cos(r.fa)*r.rLine).toFixed(2);
+    let y2  = (originY - oy + sin(r.fa)*r.rLine).toFixed(2);
+    let dof = p.dash > 0
+      ? ` stroke-dashoffset="${(-(r.rLine - r.rIn) % (p.dash * 2) / 2).toFixed(2)}"`
+      : '';
+    svg.push(`    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${fg}" stroke-width="${sw}" fill="none"${da}${dof}/>`);
 
+    // — Bola
     if (p.showBalls) {
-      let bFill = (p.altBall && i % 2 === 1) ? p.colorBallB : p.colorBall;
+      let bFill = (p.altBall && i % 2 === 1) ? p.colorBallB : ballFill;
       svg.push(`    <circle cx="${(r.lx - ox).toFixed(2)}" cy="${(r.ly - oy).toFixed(2)}" r="${ballR}" fill="${bFill}" ${ballStroke}/>`);
     }
 
+    // — Letra
     if (otFont) {
       let glyph    = otFont.charToGlyph(r.letter);
       let pathData = glyph.getPath(0, 0, fs).toPathData(3);
@@ -358,7 +426,7 @@ function saveSVG() {
   let blob = new Blob([svg.join('\n')], {type:'image/svg+xml;charset=utf-8'});
   Object.assign(document.createElement('a'), {
     href: URL.createObjectURL(blob),
-    download: 'polinizador_v4.0.svg',
+    download: 'polinizador_v3.7.svg',
   }).click();
 }
 
@@ -368,8 +436,8 @@ function esc(s) {
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function readBBox() {
-  let w = parseInt(document.getElementById('inBbW').value) || 770;
-  let h = parseInt(document.getElementById('inBbH').value) || 1920;
+  let w = parseInt(document.getElementById('inBbW').value) || 800;
+  let h = parseInt(document.getElementById('inBbH').value) || 600;
   bbW = Math.max(100, Math.min(w, 4000));
   bbH = Math.max(100, Math.min(h, 4000));
 }
@@ -384,6 +452,7 @@ function setZoom(v) {
 
 function applyBBox() {
   readBBox();
+  // Recentrar origen si queda fuera del nuevo bbox
   let bx = bbX(), by = bbY();
   originX = constrain(originX, bx + 10, bx + bbW - 10);
   originY = constrain(originY, by + 10, by + bbH - 10);
@@ -403,8 +472,9 @@ function randomOrigin() {
   rotation = Math.random() * TWO_PI;
 }
 
-// ── TECLADO ───────────────────────────────────────────────────────────────────
+// ── TECLADO — listener nativo (no depende del foco del canvas) ────────────────
 window.addEventListener('keydown', function(e) {
+  // No actuar si el foco está en un input, select o textarea
   let tag = document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
 
@@ -421,6 +491,7 @@ window.addEventListener('keydown', function(e) {
     case 'z': case 'Z': setZoom(1); break;
     case '+': case '=': setZoom(zoom * 1.1); break;
     case '-': case '_': setZoom(zoom * 0.9); break;
+
     case 'ArrowLeft':
       e.preventDefault();
       rotation -= Math.PI / 180;
@@ -429,14 +500,30 @@ window.addEventListener('keydown', function(e) {
       e.preventDefault();
       rotation += Math.PI / 180;
       break;
+
+    case 'ArrowUp': {
+      e.preventDefault();
+      let sl = document.getElementById('inRout');
+      sl.value = Math.min(parseInt(sl.value) + 10, parseInt(sl.max));
+      sl.dispatchEvent(new Event('input'));
+      break;
+    }
+    case 'ArrowDown': {
+      e.preventDefault();
+      let sl = document.getElementById('inRout');
+      sl.value = Math.max(parseInt(sl.value) - 10, parseInt(sl.min));
+      sl.dispatchEvent(new Event('input'));
+      break;
+    }
   }
 });
 
+// Scroll para zoom
 function mouseWheel(e) {
   if (mouseX <= SIDEBAR_W) return;
   let factor = e.delta > 0 ? 0.9 : 1.1;
   setZoom(zoom * factor);
-  return false;
+  return false; // evita scroll de página
 }
 
 function windowResized() { resizeCanvas(windowWidth - SIDEBAR_W, windowHeight); }

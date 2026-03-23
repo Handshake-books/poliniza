@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>POLINIZADOR — ANIMACIÓN v4.0</title>
+<title>POLINIZADOR — ANIMACIÓN</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -96,35 +96,67 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
 <body>
 
 <div id="sidebar">
-  <h1>Polinizador — Anim v4.0</h1>
+  <h1>Polinizador — Anim</h1>
 
   <!-- TEXTO -->
   <div class="grp">
     <label>Palabra</label>
     <input type="text" id="inText" value="POLINIZADOS" oninput="this.value=this.value.toUpperCase()">
   </div>
-<!-- Valores Haz fijados en GFX -->
+  <div class="grp">
+    <label>Fuente</label>
+    <select id="fontSelect"><option>cargando…</option></select>
+  </div>
+
+  <hr><div class="sec">Haz</div>
+  <div class="grp">
+    <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="87°" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inAngle" min="1" max="360" value="87" oninput="syncSlider('inAngle','vAngle',this.value,'°')">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Hueco central</label><input class="val" id="vRin" value="40 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRin" min="0" max="300" value="40" oninput="syncSlider('inRin','vRin',this.value,' px')">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Largo spray</label><input class="val" id="vRout" value="291 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRout" min="10" max="3000" value="291" oninput="syncSlider('inRout','vRout',this.value,' px')">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Jitter</label><input class="val" id="vJitter" value="83 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inJitter" min="0" max="400" value="83" oninput="syncSlider('inJitter','vJitter',this.value,' px')">
+  </div>
+
   <hr><div class="sec">Línea</div>
   <div class="grp">
-    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="8.5 pt" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inWeight" min="0.5" max="20" step="0.5" value="8.5" oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
+    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="2 pt" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="2" oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
   </div>
-  <!-- Punteado y sep. fijados en GFX (off / 15px) -->
+  <div class="grp">
+    <div class="lrow"><label>Punteado</label><input class="val" id="vDash" value="off" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inDash" min="0" max="40" value="0" oninput="syncSlider('inDash','vDash',this.value,this.value>0?' px':'','',true)">
+  </div>
+  <div class="grp">
+    <div class="lrow"><label>Sep. línea→bola</label><input class="val" id="vPad" value="15 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inLinePad" min="0" max="120" value="15" oninput="syncSlider('inLinePad','vPad',this.value,' px')">
+  </div>
 
   <hr><div class="sec">Moléculas</div>
-  <!-- Bolitas y trazo en bola fijados en GFX (siempre ON) -->
+  <div class="tog"><input type="checkbox" id="checkBalls" checked><label for="checkBalls">Mostrar bolitas</label></div>
+  <div class="tog"><input type="checkbox" id="checkBallStroke" checked><label for="checkBallStroke">Trazo en bola</label></div>
   <div class="grp">
-    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="159 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inBallSize" min="10" max="400" value="159" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="53 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inBallSize" min="10" max="180" value="53" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
   </div>
-  <!-- Color bola fijado en GFX -->
+  <div class="color-row"><label>Color bola</label><input type="color" id="inColorBall" value="#ffffff"></div>
   <div class="grp">
-    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="135 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inFontSize" min="4" max="300" value="135" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
+    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="36 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inFontSize" min="4" max="160" value="36" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
   </div>
-  <!-- Color letra fijado en GFX -->
+  <div class="color-row"><label>Color letra</label><input type="color" id="inColorText" value="#000000"></div>
 
-  <!-- Colores fijados en GFX -->
+  <hr><div class="sec">Color</div>
+  <div class="color-row"><label>Fondo</label><input type="color" id="inColorBg" value="#ffffff"></div>
+  <div class="color-row"><label>Líneas + trazo</label><input type="color" id="inColorFg" value="#000000"></div>
 
   <!-- FORMATO -->
   <hr><div class="sec">Cartel — tamaño total</div>
@@ -327,24 +359,6 @@ function syncFromVal(inputEl) {
 }
 </script>
 
-<!-- VALORES FIJOS GRÁFICA -->
-<script>
-const GFX = {
-  angle     : 360,
-  rIn       : 53,
-  rOutBase  : 3000,
-  jitter    : 83,
-  dash      : 0,
-  linePad   : 15,
-  showBalls : true,
-  ballStroke: true,
-  colorBg   : '#14e069',
-  colorFg   : '#8a8a8a',
-  colorBall : '#000000',
-  colorText : '#8a8a8a',
-};
-</script>
-
 <!-- MAIN SKETCH -->
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
@@ -440,20 +454,43 @@ function setup() {
 // FUENTES (misma lógica que sketch.js)
 // ═══════════════════════════════════════════════════════════════════════════
 async function initFonts() {
+  let sel = document.getElementById('fontSelect');
   try {
-    let ff = new FontFace('1nationalpark', 'url(fonts/1nationalpark.otf)');
-    let loaded = await ff.load();
-    document.fonts.add(loaded);
-    p5Font = '1nationalpark';
-    otFont = await opentype.load('fonts/1nationalpark.otf').catch(() => null);
-  } catch(e) {
-    p5Font = 'sans-serif';
-    otFont = null;
+    let res = await fetch('fonts/index.json');
+    let files = await res.json();
+    if (!Array.isArray(files) || !files.length) throw '';
+    FONTS = files.map(f => ({
+      label: f.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+      file:  'fonts/' + f,
+      family: f.replace(/\.[^.]+$/, ''),
+    }));
+  } catch {
+    FONTS = [{ label: 'sans-serif', file: null, family: 'sans-serif' }];
   }
+  fontLoadPromises = FONTS.map(f => {
+    if (!f.file) return Promise.resolve();
+    let ff  = new FontFace(f.family, `url(${f.file})`);
+    let css = ff.load().then(l => { document.fonts.add(l); }).catch(() => {});
+    let ot  = opentype.load(f.file).then(font => { f.otFont = font; }).catch(() => {});
+    return Promise.all([css, ot]);
+  });
+  await fontLoadPromises[0];
+  p5Font = FONTS[0].family;
+  otFont = FONTS[0].otFont || null;
+  sel.innerHTML = '';
+  FONTS.forEach((f, i) => {
+    let o = document.createElement('option');
+    o.value = i; o.textContent = f.label; sel.appendChild(o);
+  });
+  sel.addEventListener('change', async () => {
+    let i = parseInt(sel.value);
+    await fontLoadPromises[i];
+    currentFontIdx = i; _tyCache = {};
+    p5Font = FONTS[i].family;
+    otFont = FONTS[i].otFont || null;
+  });
 }
-function fontFam(idx) {
-  return '1nationalpark';
-}
+function fontFam(idx) { return FONTS[idx]?.family || 'sans-serif'; }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PARÁMETROS
@@ -461,21 +498,21 @@ function fontFam(idx) {
 function getP() {
   return {
     txt       : (document.getElementById('inText').value || 'A').toUpperCase(),
-    angle     : radians(GFX.angle),
-    rIn       : GFX.rIn,
-    rOutBase  : GFX.rOutBase,
-    jitter    : GFX.jitter,
+    angle     : radians(parseFloat(document.getElementById('inAngle').value)),
+    rIn       : parseInt(document.getElementById('inRin').value),
+    rOutBase  : parseInt(document.getElementById('inRout').value),
+    jitter    : parseInt(document.getElementById('inJitter').value),
     weight    : parseFloat(document.getElementById('inWeight').value),
-    dash      : GFX.dash,
-    showBalls : GFX.showBalls,
+    dash      : parseInt(document.getElementById('inDash').value),
+    showBalls : document.getElementById('checkBalls').checked,
     ballSize  : parseInt(document.getElementById('inBallSize').value),
     fontSize  : parseInt(document.getElementById('inFontSize').value),
-    linePad   : GFX.linePad,
-    ballStroke: GFX.ballStroke,
-    colorBg   : GFX.colorBg,
-    colorFg   : GFX.colorFg,
-    colorBall : GFX.colorBall,
-    colorText : GFX.colorText,
+    linePad   : parseInt(document.getElementById('inLinePad').value),
+    ballStroke: document.getElementById('checkBallStroke').checked,
+    colorBg   : document.getElementById('inColorBg').value,
+    colorFg   : document.getElementById('inColorFg').value,
+    colorBall : document.getElementById('inColorBall').value,
+    colorText : document.getElementById('inColorText').value,
     dur        : parseFloat(document.getElementById('inDur').value),
     fps        : parseInt(document.getElementById('inFps').value),
     liveJitter : document.getElementById('checkLiveJitter').checked,
@@ -620,9 +657,12 @@ function draw() {
 
   // Parámetros animables: si el kf tiene valor propio lo interpola, si no usa el slider global
   if (keyframes.length >= 2) {
-    p.angle    = interpScalar(keyframes, animT, 'apertura', GFX.angle) * Math.PI / 180;
-    p.rOutBase = interpScalar(keyframes, animT, 'rOut', GFX.rOutBase);
-    p.jitter   = interpScalar(keyframes, animT, 'jitter', GFX.jitter);
+    let ga = radians(parseFloat(document.getElementById('inAngle').value));
+    let gr = parseInt(document.getElementById('inRout').value);
+    let gj = parseInt(document.getElementById('inJitter').value);
+    p.angle    = interpScalar(keyframes, animT, 'apertura', degrees(ga)) * Math.PI / 180;
+    p.rOutBase = interpScalar(keyframes, animT, 'rOut', gr);
+    p.jitter   = interpScalar(keyframes, animT, 'jitter', gj);
   }
 
   // Jitter vivo orgánico — fluctúa basado en ruido de tiempo
@@ -904,18 +944,21 @@ function updateAnglePanel() {
   document.getElementById('kf-angle-slider').value = deg;
   document.getElementById('kf-angle-val').value    = deg + '°';
 
-  // Apertura
-  let apertura = kf.apertura !== undefined ? kf.apertura : GFX.angle;
+  // Apertura — si no tiene valor propio, mostrar el global
+  let globalAngle = parseFloat(document.getElementById('inAngle').value);
+  let apertura = kf.apertura !== undefined ? kf.apertura : globalAngle;
   document.getElementById('kf-apertura-slider').value = apertura;
   document.getElementById('kf-apertura-val').value    = Math.round(apertura) + '°';
 
   // Largo
-  let rOut = kf.rOut !== undefined ? kf.rOut : GFX.rOutBase;
+  let globalRout = parseInt(document.getElementById('inRout').value);
+  let rOut = kf.rOut !== undefined ? kf.rOut : globalRout;
   document.getElementById('kf-rout-slider').value = rOut;
   document.getElementById('kf-rout-val').value    = Math.round(rOut) + ' px';
 
   // Jitter
-  let jitter = kf.jitter !== undefined ? kf.jitter : GFX.jitter;
+  let globalJitter = parseInt(document.getElementById('inJitter').value);
+  let jitter = kf.jitter !== undefined ? kf.jitter : globalJitter;
   document.getElementById('kf-jitter-slider').value = jitter;
   document.getElementById('kf-jitter-val').value    = Math.round(jitter) + ' px';
 }
@@ -1048,9 +1091,12 @@ async function _doExportVideo(mimeType, ext, filename) {
     // Interpolación de posición, ángulo y parámetros animados
     let pos = catmullRom(keyframes, t);
     let rot = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', GFX.angle) * Math.PI / 180;
-    p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
-    p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
+    let ga2     = radians(parseFloat(document.getElementById('inAngle').value));
+    let gr2     = parseInt(document.getElementById('inRout').value);
+    let gj2     = parseInt(document.getElementById('inJitter').value);
+    p.angle    = interpScalar(keyframes, t, 'apertura', degrees(ga2)) * Math.PI / 180;
+    p.rOutBase = interpScalar(keyframes, t, 'rOut', gr2);
+    p.jitter   = interpScalar(keyframes, t, 'jitter', gj2);
     if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * (p.jitterSpeed||8) * 63.7) * 0.5 + 0.5) * 99999);
 
     // 1. Imagen de fondo del cartel (cubre todo el offscreen)
@@ -1200,9 +1246,12 @@ async function exportPngZip() {
     let pos = catmullRom(keyframes, t);
     let savedRot = rotation;
     rotation = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', GFX.angle) * Math.PI / 180;
-    p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
-    p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
+    let ga = radians(parseFloat(document.getElementById('inAngle').value));
+    let gr = parseInt(document.getElementById('inRout').value);
+    let gj = parseInt(document.getElementById('inJitter').value);
+    p.angle    = interpScalar(keyframes, t, 'apertura', degrees(ga)) * Math.PI / 180;
+    p.rOutBase = interpScalar(keyframes, t, 'rOut', gr);
+    p.jitter   = interpScalar(keyframes, t, 'jitter', gj);
     if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * (p.jitterSpeed||8) * 63.7) * 0.5 + 0.5) * 99999);
 
     // Fondo: imagen de cartel o transparente
@@ -1276,9 +1325,12 @@ async function exportZip() {
 
     // Aplicar ángulo y parámetros animados para este frame
     rotation   = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', GFX.angle) * Math.PI / 180;
-    p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
-    p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
+    let ga     = radians(parseFloat(document.getElementById('inAngle').value));
+    let gr     = parseInt(document.getElementById('inRout').value);
+    let gj     = parseInt(document.getElementById('inJitter').value);
+    p.angle    = interpScalar(keyframes, t, 'apertura', degrees(ga)) * Math.PI / 180;
+    p.rOutBase = interpScalar(keyframes, t, 'rOut', gr);
+    p.jitter   = interpScalar(keyframes, t, 'jitter', gj);
     if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * p.jitterSpeed * 63.7) * 0.5 + 0.5) * 99999);
 
     let rays = calcRays(p, pos.x, pos.y);
