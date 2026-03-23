@@ -46,11 +46,11 @@ function setup() {
 
 async function initFonts() {
   try {
-    let ff = new FontFace('1nationalpark', 'url(fonts/1nationalpark.otf)');
+    let ff = new FontFace('1nationalpark', 'url(fonts/1nationalpark.ttf)');
     let loaded = await ff.load();
     document.fonts.add(loaded);
     p5Font = '1nationalpark';
-    otFont = await opentype.load('fonts/1nationalpark.otf').catch(() => null);
+    otFont = await opentype.load('fonts/1nationalpark.ttf').catch(() => null);
   } catch(e) {
     console.warn('Font load failed, using fallback');
     p5Font = 'monospace';
