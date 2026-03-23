@@ -261,7 +261,7 @@ kbd {
   <!-- TEXTO -->
   <div class="grp">
     <label>Palabra</label>
-    <input type="text" id="inText" value="POLINIZADOS 6202 "
+    <input type="text" id="inText" value="POLINIZADOS"
            oninput="this.value=this.value.toUpperCase()">
   </div>
 <!-- HAZ -->
@@ -272,6 +272,12 @@ kbd {
     <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="326°" onchange="syncFromVal(this)"></div>
     <input type="range" id="inAngle" min="1" max="360" value="326"
            oninput="syncSlider('inAngle','vAngle',this.value,'°')">
+  </div>
+
+  <div class="grp">
+    <div class="lrow"><label>Hueco central</label><input class="val" id="vRin" value="53 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRin" min="0" max="300" value="53"
+           oninput="syncSlider('inRin','vRin',this.value,' px')">
   </div>
 
   <!-- LÍNEA -->
@@ -312,10 +318,10 @@ kbd {
   <div class="grp">
     <label>Área de dibujo</label>
     <div class="bbox-row">
-      <input type="number" id="inBbW" value="1080" min="100" max="4000" step="1"
+      <input type="number" id="inBbW" value="770" min="100" max="4000" step="1"
              onchange="applyBBox()" title="Ancho en px">
       <span class="bbox-x">×</span>
-      <input type="number" id="inBbH" value="1080" min="100" max="4000" step="1"
+      <input type="number" id="inBbH" value="1920" min="100" max="4000" step="1"
              onchange="applyBBox()" title="Alto en px">
       <span class="bbox-unit">px</span>
     </div>
@@ -335,7 +341,7 @@ kbd {
       <input class="val" id="vZoom" value="100%" onchange="setZoomFromVal(this)">
     </div>
     <div class="inline-row">
-      <input type="range" id="inZoom" min="0.1" max="4" step="0.05" value="0.5"
+      <input type="range" id="inZoom" min="0.1" max="4" step="0.05" value="1"
              oninput="setZoom(this.value)">
       <button class="ghost" onclick="setZoom(1)" title="[Z] Reset zoom">1:1</button>
     </div>

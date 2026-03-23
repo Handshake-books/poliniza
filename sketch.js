@@ -69,7 +69,7 @@ function getP() {
   return {
     txt       : document.getElementById('inText').value.toUpperCase(),
     angle     : radians(parseFloat(document.getElementById('inAngle').value || GFX.angle)),
-    rIn       : GFX.rIn,
+    rIn       : parseInt(document.getElementById('inRin').value),
     rOutBase  : GFX.rOutBase,
     jitter    : GFX.jitter,
     weight    : parseFloat(document.getElementById('inWeight').value),

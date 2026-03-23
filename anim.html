@@ -109,23 +109,27 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="326°" onchange="syncFromVal(this)"></div>
     <input type="range" id="inAngle" min="1" max="360" value="326" oninput="syncSlider('inAngle','vAngle',this.value,'°')">
   </div>
+  <div class="grp">
+    <div class="lrow"><label>Hueco central</label><input class="val" id="vRin" value="53 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inRin" min="0" max="300" value="53" oninput="syncSlider('inRin','vRin',this.value,' px')">
+  </div>
 
   <hr><div class="sec">Línea</div>
   <div class="grp">
-    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="5 pt" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="5" oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
+    <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="8.5 pt" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="8.5" oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
   </div>
 
 
   <hr><div class="sec">Moléculas</div>
 
   <div class="grp">
-    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="70px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inBallSize" min="10" max="180" value="70" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="159 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inBallSize" min="10" max="180" value="159" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
   </div>
   <div class="grp">
-    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="57 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inFontSize" min="4" max="160" value="57" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
+    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="135 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inFontSize" min="4" max="160" value="135" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
   </div>
 
 
@@ -150,11 +154,11 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
   <div class="grp">
     <label>Tamaño cartel (px)</label>
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
-      <input type="number" id="inPosterW" value="1920" min="100" max="4000" step="1"
+      <input type="number" id="inPosterW" value="1080" min="100" max="4000" step="1"
              onchange="applyPoster()" title="Ancho"
              style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
       <span style="font-size:11px;color:#555">×</span>
-      <input type="number" id="inPosterH" value="1080" min="100" max="4000" step="1"
+      <input type="number" id="inPosterH" value="1920" min="100" max="4000" step="1"
              onchange="applyPoster()" title="Alto"
              style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
       <span style="font-size:10px;color:#444">px</span>
@@ -360,11 +364,11 @@ let rotation   = 0;  // ángulo actual interpolado en cada frame
 let jitterSeed = 42;
 
 // Cartel total (coordenadas en espacio del cartel, en px del export)
-let posterW = 1920, posterH = 1080;
+let posterW = 1080, posterH = 1920;
 
 // Zona de animación dentro del cartel (en px del cartel)
 let animZoneX = 0, animZoneY = 0;
-let bbW = 1920, bbH = 810;  // ancho/alto de la zona de animación
+let bbW = 800, bbH = 600;  // ancho/alto de la zona de animación
 
 // Imagen de fondo del cartel
 let bgImage = null;  // p5.Image o null
@@ -450,7 +454,7 @@ function getP() {
   return {
     txt       : (document.getElementById('inText').value || 'A').toUpperCase(),
     angle     : radians(parseFloat(document.getElementById('inAngle').value)),
-    rIn       : GFX.rIn,
+    rIn       : parseInt(document.getElementById('inRin').value),
     rOutBase  : GFX.rOutBase,
     jitter    : GFX.jitter,
     weight    : parseFloat(document.getElementById('inWeight').value),
