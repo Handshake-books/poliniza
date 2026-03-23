@@ -236,6 +236,18 @@ let FONTS = [], currentFontIdx = 0, p5Font = null, otFont = null;
 let fontLoadPromises = [];
 let _tyCache = {};
 
+function typoOffset(fontSize) {
+  let key = '1np_' + fontSize;
+  if (_tyCache[key] !== undefined) return _tyCache[key];
+  let oc = document.createElement('canvas');
+  oc.width = oc.height = Math.ceil(fontSize * 2);
+  let ctx = oc.getContext('2d');
+  ctx.font = fontSize + 'px "1nationalpark"';
+  let cap = ctx.measureText('H').actualBoundingBoxAscent || fontSize * 0.7;
+  _tyCache[key] = cap / 2;
+  return cap / 2;
+}
+
 let posX, posY;
 let velX = 0, velY = 0;
 let rotation = 0;
@@ -498,12 +510,13 @@ function drawMolecule(r, p, tyo) {
     if (p.ballStroke) { stroke(p.colorFg); strokeWeight(p.weight); } else noStroke();
     ellipse(0, 0, p.ballSize, p.ballSize);
   }
+  let tyo = typoOffset(p.fontSize);
   noStroke();
-  drawingContext.font           = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+  drawingContext.font           = p.fontSize + 'px "1nationalpark"';
   drawingContext.textAlign      = 'center';
-  drawingContext.textBaseline   = 'middle';
+  drawingContext.textBaseline   = 'alphabetic';
   drawingContext.fillStyle      = p.colorText;
-  drawingContext.fillText(r.letter, 0, 0);
+  drawingContext.fillText(r.letter, 0, tyo);
   pop();
 }
 
@@ -531,11 +544,12 @@ function stampSpray(p) {
       buf.ellipse(0, 0, p.ballSize, p.ballSize);
     }
     buf.noStroke();
-    buf.drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+    let tyo = typoOffset(p.fontSize);
+    buf.drawingContext.font         = p.fontSize + 'px "1nationalpark"';
     buf.drawingContext.textAlign    = 'center';
-    buf.drawingContext.textBaseline = 'middle';
+    buf.drawingContext.textBaseline = 'alphabetic';
     buf.drawingContext.fillStyle    = p.colorText;
-    buf.drawingContext.fillText(r.letter, 0, 0);
+    buf.drawingContext.fillText(r.letter, 0, tyo);
     buf.pop();
   });
 
@@ -582,11 +596,12 @@ function windowResized() {
         buf.ellipse(0, 0, p.ballSize, p.ballSize);
       }
       buf.noStroke();
-      buf.drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+      let tyo2 = typoOffset(p.fontSize);
+      buf.drawingContext.font         = p.fontSize + 'px "1nationalpark"';
       buf.drawingContext.textAlign    = 'center';
-      buf.drawingContext.textBaseline = 'middle';
+      buf.drawingContext.textBaseline = 'alphabetic';
       buf.drawingContext.fillStyle    = p.colorText;
-      buf.drawingContext.fillText(r.letter, 0, 0);
+      buf.drawingContext.fillText(r.letter, 0, tyo2);
       buf.pop();
     });
   });

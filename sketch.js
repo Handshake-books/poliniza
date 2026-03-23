@@ -131,13 +131,12 @@ function calcCollision(a, margin) {
 
 // ── CENTRADO TIPOGRÁFICO ──────────────────────────────────────────────────────
 function getTypoOffset(fontSize) {
-  if (!FONTS.length) return fontSize * 0.18;
-  let key = currentFontIdx + '_' + fontSize.toFixed(1);
+  let key = '1np_' + fontSize.toFixed(1);
   if (_tyCache[key] !== undefined) return _tyCache[key];
   let oc  = document.createElement('canvas');
   oc.width = oc.height = Math.ceil(fontSize * 2);
   let ctx = oc.getContext('2d');
-  ctx.font = `${fontSize}px "${fontFamily(currentFontIdx)}"`;
+  ctx.font = fontSize + 'px "1nationalpark"';
   let cap = ctx.measureText('H').actualBoundingBoxAscent || fontSize * 0.7;
   _tyCache[key] = cap / 2;
   return cap / 2;
@@ -174,7 +173,7 @@ function draw() {
     let rays = calcRays(p);
     if (rays.length > 0) {
       let fs  = p.fontSize;
-      let tyo = 0; // baseline=middle, no offset needed
+      let tyo = getTypoOffset(fs);
       if (p.linesBack) {
         rays.forEach(r => { if (!r.skip) doLine(r, p); });
         rays.forEach((r, i) => { if (!r.skip) doBall(r, p, fs, tyo, i); });
@@ -239,11 +238,11 @@ function doBall(r, p, fs, tyo, idx) {
     ellipse(0, 0, p.ballSize, p.ballSize);
   }
   noStroke();
-  drawingContext.font = `${fs}px "${p5Font || 'monospace'}"`;
+  drawingContext.font = fs + 'px "1nationalpark"';
   drawingContext.textAlign = 'center';
-  drawingContext.textBaseline = 'middle';
+  drawingContext.textBaseline = 'alphabetic';
   drawingContext.fillStyle = p.colorText;
-  drawingContext.fillText(r.letter, 0, 0);
+  drawingContext.fillText(r.letter, 0, tyo);
   pop();
 }
 
@@ -311,7 +310,7 @@ function saveSVG() {
   if (otFont) {
     let hGlyph = otFont.charToGlyph('H');
     let hBB    = hGlyph.getBoundingBox();
-    hCapOffsetY = -((hBB.y1 + hBB.y2) / 2) * scale;
+    hCapOffsetY = (hBB.y2 * scale) / 2;
   }
 
   let ballR      = (p.ballSize / 2).toFixed(2);
@@ -348,7 +347,7 @@ function saveSVG() {
       svg.push(`    <path fill="${p.colorText}" transform="translate(${tx},${ty})" d="${pathData}"/>`);
     } else {
       let fam = fontFamily(currentFontIdx);
-      svg.push(`    <text x="${(r.lx - ox).toFixed(2)}" y="${(r.ly - oy).toFixed(2)}" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="${fam}" text-anchor="middle" dominant-baseline="central">${esc(r.letter)}</text>`);
+      svg.push(`    <text x="${(r.lx - ox).toFixed(2)}" y="${(r.ly - oy + tyo).toFixed(2)}" fill="${p.colorText}" font-size="${fs.toFixed(2)}" font-family="1nationalpark" text-anchor="middle">${esc(r.letter)}</text>`);
     }
 
     svg.push(`  </g>`);

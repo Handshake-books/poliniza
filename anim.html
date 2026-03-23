@@ -103,7 +103,7 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     <label>Palabra</label>
     <input type="text" id="inText" value="POLINIZADOS" oninput="this.value=this.value.toUpperCase()">
   </div>
-  <!-- HAZ -->
+
   <hr><div class="sec">Haz</div>
   <div class="grp">
     <div class="lrow"><label>Apertura</label><input class="val" id="vAngle" value="326°" onchange="syncFromVal(this)"></div>
@@ -113,24 +113,22 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
   <hr><div class="sec">Línea</div>
   <div class="grp">
     <div class="lrow"><label>Grosor</label><input class="val" id="vWeight" value="8.5 pt" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inWeight" min="0.5" max="20" step="0.5" value="8.5" oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
+    <input type="range" id="inWeight" min="0.5" max="12" step="0.5" value="8.5" oninput="syncSlider('inWeight','vWeight',this.value,' pt')">
   </div>
-  <!-- Punteado y sep. fijados en GFX (off / 15px) -->
+
 
   <hr><div class="sec">Moléculas</div>
-  <!-- Bolitas y trazo en bola fijados en GFX (siempre ON) -->
+
   <div class="grp">
     <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="159 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inBallSize" min="10" max="400" value="159" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+    <input type="range" id="inBallSize" min="10" max="180" value="159" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
   </div>
-  <!-- Color bola fijado en GFX -->
   <div class="grp">
     <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="135 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inFontSize" min="4" max="300" value="135" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
+    <input type="range" id="inFontSize" min="4" max="160" value="135" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
   </div>
-  <!-- Color letra fijado en GFX -->
 
-  <!-- Colores fijados en GFX -->
+
 
   <!-- FORMATO -->
   <hr><div class="sec">Cartel — tamaño total</div>
@@ -233,18 +231,6 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     </div>
     <input type="range" id="kf-apertura-slider" min="1" max="360" step="1" value="87" style="width:100%;accent-color:#888;height:2px;margin-bottom:8px" oninput="setKfParam('apertura',parseFloat(this.value)); document.getElementById('kf-apertura-val').value=this.value+'°'">
 
-    <!-- Largo spray -->
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
-      <span style="font-size:9px;color:#777">Largo spray</span>
-      <input id="kf-rout-val" style="font-size:9px;color:#ddd;width:44px;text-align:right;background:transparent;border:none;border-bottom:1px solid #333;outline:none;font-family:monospace" value="—" onchange="setKfParam('rOut',parseFloat(this.value))">
-    </div>
-    <input type="range" id="kf-rout-slider" min="10" max="3000" step="1" value="291" style="width:100%;accent-color:#888;height:2px;margin-bottom:8px" oninput="setKfParam('rOut',parseFloat(this.value)); document.getElementById('kf-rout-val').value=this.value+' px'">
-
-    <!-- Jitter amplitud -->
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">
-      <span style="font-size:9px;color:#777">Jitter</span>
-  
-    </div>
 
   </div>
 
@@ -263,15 +249,12 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
     <div class="lrow"><label>FPS export</label><input class="val" id="vFps" value="30" onchange="syncFromVal(this)"></div>
     <input type="range" id="inFps" min="12" max="60" step="1" value="30" oninput="syncSlider('inFps','vFps',this.value,'')">
   </div>
-  <!-- Jitter vivo eliminado -->
 
-  <div class="grp" style="margin-top:8px">
-    <div class="lrow">
-      <label>Zoom vista</label>
-      <input class="val" id="vZoom" value="100%" onchange="setZoomFromVal(this)">
-    </div>
+
+  <div class="grp" style="margin-top:4px">
+    <div class="lrow"><label>Zoom vista</label><input class="val" id="vZoom" value="100%" onchange="setZoomFromVal(this)"></div>
     <div style="display:flex;align-items:center;gap:6px">
-      <input type="range" id="inZoom" min="0.1" max="3" step="0.05" value="1" style="flex:1;width:100%;accent-color:#888;height:2px" oninput="setZoomVal(this.value)">
+      <input type="range" id="inZoom" min="0.1" max="3" step="0.05" value="1" style="flex:1;accent-color:#888;height:2px" oninput="setZoomVal(this.value)">
       <button class="ghost" style="font-size:9px;padding:4px 7px" onclick="setZoomVal(1)">1:1</button>
     </div>
   </div>
@@ -334,7 +317,7 @@ function syncFromVal(inputEl) {
 <!-- VALORES FIJOS GRÁFICA -->
 <script>
 const GFX = {
-  angle     : 360,
+  angle     : 326,
   rIn       : 53,
   rOutBase  : 3000,
   jitter    : 83,
@@ -388,9 +371,10 @@ let bgImage = null;  // p5.Image o null
 
 // Escala: el cartel se muestra escalado para caber en el canvas de pantalla
 // screenScale = pixels_pantalla / pixels_cartel
+let uiZoom = 1.0;
 function screenScale() {
-  let sw = width  - 0;
-  let sh = height - 0;
+  let sw = width;
+  let sh = height;
   return Math.min(sw / posterW, sh / posterH) * 0.92 * uiZoom;
 }
 // Offset para centrar el cartel en el canvas de pantalla
@@ -465,7 +449,7 @@ function fontFam(idx) {
 function getP() {
   return {
     txt       : (document.getElementById('inText').value || 'A').toUpperCase(),
-    angle     : radians(parseFloat(document.getElementById('inAngle').value || GFX.angle)),
+    angle     : radians(parseFloat(document.getElementById('inAngle').value)),
     rIn       : GFX.rIn,
     rOutBase  : GFX.rOutBase,
     jitter    : GFX.jitter,
@@ -590,15 +574,15 @@ function calcCol(a, margin, ox, oy) {
 }
 
 function typoOffset(fs) {
-  if (!FONTS.length) return fs * 0.18;
-  let key = currentFontIdx + '_' + fs;
+  let key = '1np_' + fs;
   if (_tyCache[key] !== undefined) return _tyCache[key];
   let oc = document.createElement('canvas');
-  oc.width = oc.height = Math.ceil(fs*2);
+  oc.width = oc.height = Math.ceil(fs * 2);
   let ctx = oc.getContext('2d');
-  ctx.font = `${fs}px "${fontFam(currentFontIdx)}"`;
-  let cap = ctx.measureText('H').actualBoundingBoxAscent || fs*0.7;
-  _tyCache[key] = cap/2; return cap/2;
+  ctx.font = fs + 'px "1nationalpark"';
+  let cap = ctx.measureText('H').actualBoundingBoxAscent || fs * 0.7;
+  _tyCache[key] = cap / 2;
+  return cap / 2;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -624,9 +608,8 @@ function draw() {
 
   // Parámetros animables: si el kf tiene valor propio lo interpola, si no usa el slider global
   if (keyframes.length >= 2) {
-    p.angle    = interpScalar(keyframes, animT, 'apertura', parseFloat(document.getElementById('inAngle').value || GFX.angle)) * Math.PI / 180;
-    p.rOutBase = interpScalar(keyframes, animT, 'rOut', GFX.rOutBase);
-    p.jitter   = interpScalar(keyframes, animT, 'jitter', GFX.jitter);
+    let ga = parseFloat(document.getElementById('inAngle').value);
+    p.angle = interpScalar(keyframes, animT, 'apertura', ga) * Math.PI / 180;
   }
 
 
@@ -657,6 +640,7 @@ function draw() {
 
   if (p5Font) {
     let rays = calcRays(p, pos.x, pos.y);
+    let tyo  = typoOffset(p.fontSize);
     rays.forEach((r, i) => {
       if (r.skip) return;
       drawLine(r, p);
@@ -791,11 +775,11 @@ function drawBall(r, p, tyo, idx) {
     ellipse(0, 0, p.ballSize, p.ballSize);
   }
   noStroke();
-  drawingContext.font         = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
+  drawingContext.font         = p.fontSize + 'px "1nationalpark"';
   drawingContext.textAlign    = 'center';
-  drawingContext.textBaseline = 'middle';
+  drawingContext.textBaseline = 'alphabetic';
   drawingContext.fillStyle    = p.colorText;
-  drawingContext.fillText(r.letter, 0, 0);
+  drawingContext.fillText(r.letter, 0, tyo);
   pop();
 }
 
@@ -904,13 +888,10 @@ function updateAnglePanel() {
   document.getElementById('kf-angle-val').value    = deg + '°';
 
   // Apertura
-  let apertura = kf.apertura !== undefined ? kf.apertura : GFX.angle;
+  let globalAngle = parseFloat(document.getElementById('inAngle').value);
+  let apertura = kf.apertura !== undefined ? kf.apertura : globalAngle;
   document.getElementById('kf-apertura-slider').value = apertura;
   document.getElementById('kf-apertura-val').value    = Math.round(apertura) + '°';
-
-
-
-
 }
 
 // Setter genérico para parámetros por keyframe
@@ -1041,10 +1022,8 @@ async function _doExportVideo(mimeType, ext, filename) {
     // Interpolación de posición, ángulo y parámetros animados
     let pos = catmullRom(keyframes, t);
     let rot = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', parseFloat(document.getElementById('inAngle').value || GFX.angle)) * Math.PI / 180;
-    p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
-    p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
-
+    let ga2 = parseFloat(document.getElementById('inAngle').value);
+    p.angle = interpScalar(keyframes, t, 'apertura', ga2) * Math.PI / 180;
 
     // 1. Imagen de fondo del cartel (cubre todo el offscreen)
     if (bgImage) {
@@ -1127,6 +1106,8 @@ function calcColExport(a, margin, ox, oy) {
 // ox/oy: origen del spray en coords de cartel.
 function drawFrameToCtx(ctx, p, ox, oy) {
   let rays = calcRaysExport(p, ox, oy);
+  let tyo  = typoOffset(p.fontSize);
+
   rays.forEach((r, i) => {
     if (r.skip) return;
 
@@ -1157,10 +1138,10 @@ function drawFrameToCtx(ctx, p, ox, oy) {
     }
 
     ctx.save();
-    ctx.font = `${p.fontSize}px "${p5Font || 'sans-serif'}"`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = p.fontSize + 'px "1nationalpark"';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = p.colorText; ctx.setLineDash([]);
-    ctx.fillText(r.letter, r.lx, r.ly);
+    ctx.fillText(r.letter, r.lx, r.ly + tyo);
     ctx.restore();
   });
 }
@@ -1192,10 +1173,8 @@ async function exportPngZip() {
     let pos = catmullRom(keyframes, t);
     let savedRot = rotation;
     rotation = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', parseFloat(document.getElementById('inAngle').value || GFX.angle)) * Math.PI / 180;
-    p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
-    p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
-
+    let ga = parseFloat(document.getElementById('inAngle').value);
+    p.angle = interpScalar(keyframes, t, 'apertura', ga) * Math.PI / 180;
 
     // Fondo: imagen de cartel o transparente
     if (bgImage) {
@@ -1257,7 +1236,7 @@ async function exportZip() {
   let hCapY = 0;
   if (otFont) {
     let hG = otFont.charToGlyph('H'), hB = hG.getBoundingBox();
-    hCapY = -((hB.y1 + hB.y2) / 2) * scale;
+    hCapY = (hB.y2 * scale) / 2;
   }
 
   for (let f = 0; f < totalFrames; f++) {
@@ -1268,10 +1247,9 @@ async function exportZip() {
 
     // Aplicar ángulo y parámetros animados para este frame
     rotation   = interpAngle(keyframes, t);
-    p.angle    = interpScalar(keyframes, t, 'apertura', parseFloat(document.getElementById('inAngle').value || GFX.angle)) * Math.PI / 180;
-    p.rOutBase = interpScalar(keyframes, t, 'rOut', GFX.rOutBase);
-    p.jitter   = interpScalar(keyframes, t, 'jitter', GFX.jitter);
-
+    let ga = parseFloat(document.getElementById('inAngle').value);
+    p.angle = interpScalar(keyframes, t, 'apertura', ga) * Math.PI / 180;
+    if (p.liveJitter) jitterSeed = Math.floor((Math.sin(t * p.jitterSpeed * 63.7) * 0.5 + 0.5) * 99999);
 
     let rays = calcRays(p, pos.x, pos.y);
     let svg  = buildSVG(p, rays, ox, oy, scale, hCapY);
@@ -1339,7 +1317,7 @@ function buildSVG(p, rays, ox, oy, scale, hCapY) {
       lines.push(`    <path fill="${p.colorText}" transform="translate(${tx},${ty})" d="${pathD}"/>`);
     } else if (r.letter !== ' ') {
       let fam = fontFam(currentFontIdx);
-      lines.push(`    <text x="${(r.lx-bbX()).toFixed(2)}" y="${(r.ly-bbY()).toFixed(2)}" fill="${p.colorText}" font-size="${p.fontSize}" font-family="${fam}" text-anchor="middle" dominant-baseline="central">${r.letter}</text>`);
+      lines.push(`    <text x="${(r.lx-bbX()).toFixed(2)}" y="${(r.ly-bbY()).toFixed(2)}" fill="${p.colorText}" font-size="${p.fontSize}" font-family="${fam}" text-anchor="middle">${r.letter}</text>`);
     }
 
     lines.push(`  </g>`);
@@ -1416,7 +1394,6 @@ function setBBox(w, h) {
   applyAnimZone();
 }
 
-let uiZoom = 1.0;
 function setZoomVal(v) {
   uiZoom = Math.max(0.1, Math.min(3, parseFloat(v) || 1));
   let sl  = document.getElementById('inZoom');
