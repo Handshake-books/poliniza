@@ -120,12 +120,12 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
   <hr><div class="sec">Moléculas</div>
 
   <div class="grp">
-    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="159 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inBallSize" min="10" max="180" value="159" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
+    <div class="lrow"><label>Diámetro bola</label><input class="val" id="vBall" value="70px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inBallSize" min="10" max="180" value="70" oninput="syncSlider('inBallSize','vBall',this.value,' px')">
   </div>
   <div class="grp">
-    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="135 px" onchange="syncFromVal(this)"></div>
-    <input type="range" id="inFontSize" min="4" max="160" value="135" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
+    <div class="lrow"><label>Tamaño letra</label><input class="val" id="vFontSize" value="57 px" onchange="syncFromVal(this)"></div>
+    <input type="range" id="inFontSize" min="4" max="160" value="57" oninput="syncSlider('inFontSize','vFontSize',this.value,' px')">
   </div>
 
 
@@ -150,11 +150,11 @@ kbd { display: inline-block; font-size: 7px; color: #888; background: #1e1e1e; b
   <div class="grp">
     <label>Tamaño cartel (px)</label>
     <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
-      <input type="number" id="inPosterW" value="1080" min="100" max="4000" step="1"
+      <input type="number" id="inPosterW" value="1920" min="100" max="4000" step="1"
              onchange="applyPoster()" title="Ancho"
              style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
       <span style="font-size:11px;color:#555">×</span>
-      <input type="number" id="inPosterH" value="1920" min="100" max="4000" step="1"
+      <input type="number" id="inPosterH" value="1080" min="100" max="4000" step="1"
              onchange="applyPoster()" title="Alto"
              style="width:55px;background:#1e1e1e;border:1px solid #333;color:#eee;padding:5px 6px;font-family:monospace;font-size:11px;text-align:right;outline:none">
       <span style="font-size:10px;color:#444">px</span>
